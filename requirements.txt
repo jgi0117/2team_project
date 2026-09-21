@@ -1,10 +1,4 @@
-# Initial dependencies from the project design; pin after environment validation.
-pandas
+# 분석 기능의 초기 의존성. 개발 환경 검증 후 버전을 고정합니다.
 numpy
+pandas
 scikit-learn
-prophet
-plotly
-dash
-matplotlib
-seaborn
-jupyterlab

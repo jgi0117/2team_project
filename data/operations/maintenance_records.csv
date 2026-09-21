@@ -1,0 +1,1 @@
+record_id,machineID,component,planned_at,completed_at,maintenance_type,used_lot_id,quantity_used,result,value_source
