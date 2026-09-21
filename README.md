@@ -8,6 +8,7 @@ Azure PdM 공개 예제 데이터로 고장을 예측하고, 가상 조달기간
 
 ## 프로젝트 문서
 
+- [데이터 구성·구현 계획·대시보드 예시](data/readme.md)
 - [원본 프로젝트 개요 및 설계서](docs/프로젝트_개요_및_설계서_Kaggle반영.pdf)
 - [초기 프로젝트 정의 및 요구사항](docs/PROJECT_SPEC.md)
 - [초기 수행 단계와 제출 체크리스트](docs/WORK_PLAN.md)
