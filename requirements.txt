@@ -1,0 +1,10 @@
+# Initial dependencies from the project design; pin after environment validation.
+pandas
+numpy
+scikit-learn
+prophet
+plotly
+dash
+matplotlib
+seaborn
+jupyterlab
