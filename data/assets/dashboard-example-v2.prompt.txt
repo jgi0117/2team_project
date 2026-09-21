@@ -1,0 +1,20 @@
+Use case: ui-mockup.
+Asset type: revised static dashboard for a Korean predictive-maintenance project README.
+Input image: edit target. Preserve its clean white/navy/teal/amber style, Korean typography, main title, and the two middle risk/cost chart panels. Enlarge vertically as needed for readable text. No device frame.
+Main requested change: procurement lead time and spare inventory are read-only information, never dropdown controls. Add lot-specific deadline to put delivered parts into the manufacturing process because of oxidation. This is NOT installed-part replacement date or remaining lifetime.
+Title: "설비 예지보전 · 정비 의사결정".
+Banner: "화면 예시 · 운영조건·예측·비용 수치는 가상입니다".
+Top controls: only "부품 comp2" and "경고 기준 60%" have dropdown arrows. Text "조회 기준일 2015-06-01".
+Below controls, a spacious read-only information strip with NO arrows, input borders, or dropdown styling:
+"조달기간 35일" / "정비 준비 7일" / "가용 예비재고 3개" / "입고 후 사용 가능 기간 30일".
+Note beneath: "산화 이슈 · 입고 후 30일 이내 공정 투입 (가정)".
+Four summary cards: "분석 설비 100대", "경고 설비 8대", "기한 임박 1개", "기한 초과 1개". Small note "기한 임박: 7일 이내".
+Middle chart panels retain risk and costs from edit target, with title of left "설비별 고장 위험", legend "42일 이내 고장 확률" and amber threshold 60%. Right title "정책별 총비용 비교", bars "고장 후 수리 1.5억", "정기 교체 1.2억", "예측 기반 정비 0.9억", subtitle "동일 평가기간 · 가상 시뮬레이션". Brief footer "기간 내 고장 확률이며 정확한 고장일을 뜻하지 않습니다."
+Replace bottom table with generous wide panel title "입고 부품 사용 기한". Columns exactly "입고 로트", "수량", "입고일", "사용 기한", "남은 일수", "상태".
+Rows, all dates in 2015:
+"LOT-01", "2개", "05-10", "06-09", "8일", "사용 가능"
+"LOT-02", "1개", "05-05", "06-04", "3일", "우선 투입 검토"
+"LOT-03", "1개", "04-25", "05-25", "7일 초과", "가용재고 제외"
+Use teal normal, amber imminent, muted red expired. Inventory: 4 physically held, 1 expired, 3 available, no reservations.
+Footer exact: "같은 부품도 입고일에 따라 기한이 다릅니다. 투입 예정일이 사용 기한 이내인지 확인합니다."
+Keep all Korean text legible, no replacement-date fields, no false claims that comp2 really oxidizes, no dropdowns for lead time or inventory.
