@@ -9,6 +9,19 @@
 - `as_of`: 조회·예측 기준시점. 원본 시간대가 미확인이므로 임의로 한국 시간으로 변환하지 않습니다.
 - 부품 기준정보는 component로, 로트·발주·정비 기록은 해당 고유 ID로 연결합니다.
 
+## 가상 운영 데이터의 시점별 조회
+
+`data/operations/`는 2015-04-01 06시~2016-01-01 06시의 재고 기준 정책을 재생한 합성 데이터입니다. 초기 조건은 이전 90일의 교체 수요로 설정했습니다. `inventory_lots.csv`의 수량·상태와 주문·정비 결과는 최종시점 기준이므로 과거 예측 입력에 그대로 조인하지 않습니다. `src.maintenance_planning.operations_snapshot.snapshot(as_of)`로 해당 시점까지의 상태를 조회합니다.
+
+- `inventory_lots.csv`에 `order_id`, `quantity_received`, `ready_at`, `as_of`를 추가했습니다. 시점별 가용 수량은 조회 함수의 `quantity_available`을 사용합니다.
+- `inventory_movements.csv`의 `occurred_at`, `quantity_delta`, `quality_status`로 과거 재고를 복원합니다. 이번 정책은 선예약 없이 필요 시 즉시 출고하므로 예약량은 0입니다.
+- `maintenance_records.csv`에 `source_event_at`, `quantity_requested`를 추가했습니다. 원본 교체 시점은 수요 관측 시점이며 `completed_at`은 가상 공급 정책의 완료 결과입니다. 둘을 원본 학습 이력에서 혼용하지 않습니다.
+- `planned_at`은 이번 기준 정책에서 수요 접수 시점입니다. 미리 아는 고장일이나 예측 기반 정비 계획일을 의미하지 않습니다.
+- 미래 실제 입고·완료 결과는 조회 함수가 숨깁니다. 미래 입고 예정일은 당시 알려진 주문 정보이므로 유지합니다.
+- `costs.csv`의 작업비는 부품 구매비를 포함하지 않습니다. 보유비는 개·일, 정지 손실은 일 단위입니다. 모든 단가와 기한은 시나리오 가정입니다.
+
+구체적인 수치 근거와 재현 명령은 [운영 데이터 안내](../data/operations/README.md)를 따릅니다.
+
 ## 결과 파일 규약
 
 | 결과 파일 | 한 행의 단위 | 필수 필드 |
