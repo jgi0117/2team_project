@@ -1,4 +1,4 @@
-# 로컬 환경과 비밀정보만 제외. data/는 Git으로 관리합니다.
+# 로컬 환경, 비밀정보, 데이터 파일은 Git 추적에서 제외합니다.
 .venv/
 venv/
 __pycache__/
@@ -14,3 +14,5 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+notebooks/
+data/
