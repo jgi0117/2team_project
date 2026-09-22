@@ -1,4 +1,17 @@
-# 분석 기능의 초기 의존성. 개발 환경 검증 후 버전을 고정합니다.
-numpy
-pandas
-scikit-learn
+# Windows / Python 3.14.7의 .venv에서 전처리·학습 실행을 확인한 버전입니다.
+# 설치: python -m pip install -r requirements.txt
+
+# 전처리 및 Isolation Forest 학습·모델 저장
+numpy==2.5.3
+pandas==3.0.6
+scikit-learn==1.9.1
+joblib==1.6.0
+
+# 동일한 환경을 재현하기 위한 간접 의존성
+cloudpickle==3.1.2
+narwhals==2.26.0
+python-dateutil==2.9.0.post0
+scipy==1.18.1
+six==1.17.0
+threadpoolctl==3.7.0
+tzdata==2026.4
