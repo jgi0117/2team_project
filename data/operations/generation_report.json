@@ -23,16 +23,18 @@
     "purchase_orders.csv": 169,
     "inventory_lots.csv": 166,
     "maintenance_records.csv": 2248,
-    "inventory_movements.csv": 2526
+    "inventory_movements.csv": 2526,
+    "suppliers.csv": 2
   },
   "demand_source_sha256": "481ed4e155f609e6ca6130754d2c035453093902a507cce5b3f3e235995f1db6",
   "output_sha256": {
-    "part_master.csv": "34bb86cdd4c823389a6295f8fe45c6cb3832f20c7b9db23c94bbca5b01471a12",
+    "part_master.csv": "0a61a0c5524560a22348264c5ab856072dccb121f2a146cf27a9e8984bb45485",
     "costs.csv": "555037739f22483370b0750c2f7a3b8058c2077b36482c834624c6b32ba251cb",
-    "purchase_orders.csv": "4e4529a2ff3b52099de0ee9e5edf5724f4ff92c6c1a61f67a0a78923795bbccb",
+    "purchase_orders.csv": "3907bbf0ee30093ee0c1efc876ff70464a25b5baa8b4d1e057812b36768574a7",
     "inventory_lots.csv": "9aed6d3038b561543aa704d887340e73e5f2dfc7e898670b6b95defbabe9a25b",
     "maintenance_records.csv": "5391c670fa3287c09c32dd70030c94811fc7340fbec594ccedb686ee1a26e103",
-    "inventory_movements.csv": "5f93e38a9932b8208e1044427ef210f6c94e01e6b89ef9ca89965bf7a2b9c5cb"
+    "inventory_movements.csv": "5f93e38a9932b8208e1044427ef210f6c94e01e6b89ef9ca89965bf7a2b9c5cb",
+    "suppliers.csv": "d3e23c53f44952c751b9d4b3e1d8ba24a7b3ef30600e6606a576b9af0ee2fb63"
   },
   "component_summary": {
     "comp1": {
@@ -75,5 +77,22 @@
       "deliveries": 40,
       "disposed_units": 0
     }
+  },
+  "supplier_extension": {
+    "scenario_id": "synthetic_supplier_v1",
+    "assignment_rule": "One supplier per component, referenced by part_master and existing purchase orders. Assumed attribution; not a supplier-aware replay.",
+    "order_supplier_map": {
+      "comp1": "SUP-001",
+      "comp2": "SUP-002",
+      "comp3": "SUP-001",
+      "comp4": "SUP-002"
+    },
+    "display_fields": {
+      "supplier_name": "suppliers.csv via part_master.supplier_id",
+      "standard_lead_time_days": "part_master.lead_time_days",
+      "available_stock": "Inventory at the chosen time, eligible by readiness, quality and expiry; shared across machines."
+    },
+    "limitations": "Fictitious suppliers. Existing order timing, quantities and receipts are unchanged.",
+    "contacts": "Fictitious department contacts; phone numbers contain XXXX placeholders; emails use non-deliverable example.invalid domain."
   }
 }
