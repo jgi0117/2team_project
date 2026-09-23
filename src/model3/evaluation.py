@@ -22,6 +22,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,6 +38,11 @@ MODEL_ALERT_COLUMNS = {
     "Isolation Forest": "is_anomaly",
     "3-Sigma": "three_sigma_alert",
     "IQR": "iqr_alert",
+}
+MODEL_COLORS = {
+    "Isolation Forest": "#1f77b4",
+    "3-Sigma": "#ff7f0e",
+    "IQR": "#2ca02c",
 }
 
 
@@ -617,6 +623,132 @@ def pre_failure_alert_profile(
     return pd.DataFrame(rows)
 
 
+def select_sample_machines(
+    df: pd.DataFrame,
+    sample_size: int = 4,
+    random_state: int = 42,
+) -> list[int]:
+    """Select a reproducible random sample of machines for visual comparison."""
+    machine_ids = np.sort(df["machineID"].unique())
+    if sample_size <= 0:
+        raise ValueError("sample_size must be positive")
+    if sample_size > len(machine_ids):
+        raise ValueError(
+            f"sample_size={sample_size} exceeds available machines={len(machine_ids)}"
+        )
+    generator = np.random.default_rng(random_state)
+    return sorted(generator.choice(machine_ids, size=sample_size, replace=False).tolist())
+
+
+def unlabeled_method_summary(df: pd.DataFrame) -> pd.DataFrame:
+    """Summarize alert burden and temporal behavior without anomaly labels."""
+    rows = []
+    for model, alert_column in MODEL_ALERT_COLUMNS.items():
+        events = detect_anomaly_events(df, alert_column, model)
+        daily_rate = (
+            df.assign(day=df["as_of"].dt.floor("D"))
+            .groupby("day")[alert_column]
+            .mean()
+        )
+        machine_rate = df.groupby("machineID")[alert_column].mean()
+        rows.append({
+            "model": model,
+            "alert_rows": int(df[alert_column].sum()),
+            "alert_rate": float(df[alert_column].mean()),
+            "alert_event_count": len(events),
+            "mean_event_duration_hours": (
+                float(events["duration_hours"].mean()) if len(events) else np.nan
+            ),
+            "median_event_duration_hours": (
+                float(events["duration_hours"].median()) if len(events) else np.nan
+            ),
+            "max_event_duration_hours": (
+                float(events["duration_hours"].max()) if len(events) else np.nan
+            ),
+            "machines_with_alerts": int(
+                df.loc[df[alert_column].eq(1), "machineID"].nunique()
+            ),
+            "daily_alert_rate_std": float(daily_rate.std(ddof=0)),
+            "machine_alert_rate_std": float(machine_rate.std(ddof=0)),
+        })
+    return pd.DataFrame(rows)
+
+
+def pairwise_alert_agreement(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculate pairwise hourly alert overlap for the three detectors."""
+    rows = []
+    models = list(MODEL_ALERT_COLUMNS)
+    for left_index, left_model in enumerate(models):
+        left = df[MODEL_ALERT_COLUMNS[left_model]].eq(1).to_numpy()
+        for right_model in models[left_index + 1:]:
+            right = df[MODEL_ALERT_COLUMNS[right_model]].eq(1).to_numpy()
+            intersection = int(np.logical_and(left, right).sum())
+            union = int(np.logical_or(left, right).sum())
+            rows.append({
+                "model_a": left_model,
+                "model_b": right_model,
+                "both_alert_rows": intersection,
+                "either_alert_rows": union,
+                "jaccard_similarity": intersection / union if union else np.nan,
+                "model_a_only_rows": int(np.logical_and(left, ~right).sum()),
+                "model_b_only_rows": int(np.logical_and(~left, right).sum()),
+            })
+    return pd.DataFrame(rows)
+
+
+def incremental_alert_value(
+    df: pd.DataFrame,
+    failures: pd.DataFrame,
+    horizons=(24, 48, 72),
+) -> pd.DataFrame:
+    """Measure whether IF-only alerts add failure-associated signal beyond baselines.
+
+    The result is an operational proxy, not anomaly-label accuracy. A row is positive
+    when the same machine has a recorded failure within the specified future horizon.
+    """
+    evaluation_end = df["as_of"].max()
+    rows = []
+    for horizon_hours in horizons:
+        eligible = df.loc[
+            df["as_of"] <= evaluation_end - pd.Timedelta(hours=horizon_hours)
+        ].reset_index(drop=True)
+        future_failure = _future_failure_labels(eligible, failures, horizon_hours)
+        base_rate = float(future_failure.mean()) if len(eligible) else np.nan
+        isolation = eligible["is_anomaly"].eq(1).to_numpy()
+        legacy = eligible[["three_sigma_alert", "iqr_alert"]].eq(1).any(axis=1).to_numpy()
+        segments = {
+            "Isolation Forest only": isolation & ~legacy,
+            "Isolation Forest and legacy": isolation & legacy,
+            "Legacy only": ~isolation & legacy,
+            "No alert": ~isolation & ~legacy,
+        }
+        for segment, mask in segments.items():
+            count = int(mask.sum())
+            failure_rate = float(future_failure[mask].mean()) if count else np.nan
+            rows.append({
+                "horizon_hours": horizon_hours,
+                "segment": segment,
+                "rows": count,
+                "row_share": count / len(eligible) if len(eligible) else np.nan,
+                "future_failure_rate": failure_rate,
+                "base_failure_rate": base_rate,
+                "lift": failure_rate / base_rate if base_rate and count else np.nan,
+            })
+    return pd.DataFrame(rows)
+
+
+def sampled_machine_alert_rows(
+    df: pd.DataFrame,
+    machine_ids: list[int],
+) -> pd.DataFrame:
+    """Return hourly detector flags for the selected machines."""
+    result = df.loc[
+        df["machineID"].isin(machine_ids),
+        ["machineID", "as_of", *MODEL_ALERT_COLUMNS.values()],
+    ].copy()
+    return result.sort_values(["machineID", "as_of"]).reset_index(drop=True)
+
+
 # ---------------------------------------------------------
 # 7. Score Distribution 시각화
 # ---------------------------------------------------------
@@ -829,6 +961,81 @@ def plot_pre_failure_profile(
     plt.close()
 
 
+def plot_sampled_machine_alert_timeline(
+    sampled_rows: pd.DataFrame,
+    failures: pd.DataFrame,
+    output_dir: Path,
+):
+    """Plot hourly alert timestamps as detector lanes for sampled machines."""
+    machine_ids = sampled_rows["machineID"].drop_duplicates().tolist()
+    figure, axes = plt.subplots(
+        len(machine_ids), 1, figsize=(16, 2.6 * len(machine_ids)), sharex=True,
+    )
+    axes = np.atleast_1d(axes)
+    lane_positions = {
+        "Isolation Forest": 2,
+        "3-Sigma": 1,
+        "IQR": 0,
+    }
+
+    for axis, machine_id in zip(axes, machine_ids):
+        machine_rows = sampled_rows.loc[sampled_rows["machineID"].eq(machine_id)]
+        for model, alert_column in MODEL_ALERT_COLUMNS.items():
+            alert_times = machine_rows.loc[
+                machine_rows[alert_column].eq(1), "as_of"
+            ]
+            axis.scatter(
+                alert_times,
+                np.full(len(alert_times), lane_positions[model]),
+                s=13,
+                marker="|",
+                linewidths=1.4,
+                color=MODEL_COLORS[model],
+                label=model,
+            )
+
+        machine_failures = failures.loc[
+            failures["machineID"].eq(machine_id)
+            & failures["failure_time"].between(
+                machine_rows["as_of"].min(), machine_rows["as_of"].max()
+            )
+        ]
+        for failure_time in machine_failures["failure_time"]:
+            axis.axvline(failure_time, color="#b22222", linewidth=0.8, alpha=0.45)
+
+        axis.set_yticks([0, 1, 2])
+        axis.set_yticklabels(["IQR", "3-Sigma", "IF"])
+        axis.set_ylim(-0.6, 2.6)
+        axis.set_title(f"Machine {machine_id}", loc="left", fontsize=11)
+        axis.grid(axis="x", alpha=0.18)
+
+    handles = [
+        Line2D([], [], color=MODEL_COLORS[model], marker="|", linestyle="None",
+               markersize=10, label=model)
+        for model in MODEL_ALERT_COLUMNS
+    ]
+    handles.append(
+        Line2D([], [], color="#b22222", linewidth=1, alpha=0.6,
+               label="Recorded failure")
+    )
+    figure.legend(
+        handles=handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.963),
+        ncol=4,
+        frameon=False,
+    )
+    axes[-1].set_xlabel("Hourly timestamp")
+    figure.suptitle(
+        "Hourly Alert Timeline for Reproducibly Sampled Machines",
+        fontsize=15,
+        y=0.995,
+    )
+    figure.tight_layout(rect=(0, 0, 1, 0.92))
+    figure.savefig(output_dir / "sampled_machine_alert_timeline.png", dpi=180)
+    plt.close(figure)
+
+
 # ---------------------------------------------------------
 # 10. contamination 민감도
 # ---------------------------------------------------------
@@ -883,6 +1090,8 @@ def evaluate(
     failures_path=DEFAULT_FAILURES,
     dataset_path=DEFAULT_DATASET,
     output_dir=DEFAULT_OUTPUT,
+    sample_size: int = 4,
+    sample_seed: int = 42,
 ):
 
     output_dir = Path(output_dir)
@@ -917,6 +1126,13 @@ def evaluate(
         compare_failure_prediction(df, failures_df)
     )
     alert_profile_df = pre_failure_alert_profile(df, failures_df)
+    method_summary_df = unlabeled_method_summary(df)
+    agreement_df = pairwise_alert_agreement(df)
+    incremental_value_df = incremental_alert_value(df, failures_df)
+    sampled_machine_ids = select_sample_machines(
+        df, sample_size=sample_size, random_state=sample_seed
+    )
+    sampled_alerts_df = sampled_machine_alert_rows(df, sampled_machine_ids)
 
     # 시각화
     plot_score_distribution(
@@ -941,6 +1157,12 @@ def evaluate(
 
     plot_pre_failure_profile(
         alert_profile_df,
+        output_dir,
+    )
+
+    plot_sampled_machine_alert_timeline(
+        sampled_alerts_df,
+        failures_df,
         output_dir,
     )
 
@@ -1000,6 +1222,34 @@ def evaluate(
 
     alert_profile_df.to_csv(
         output_dir / "pre_failure_alert_profile.csv",
+        index=False,
+    )
+
+    method_summary_df.to_csv(
+        output_dir / "unlabeled_method_summary.csv",
+        index=False,
+    )
+
+    agreement_df.to_csv(
+        output_dir / "pairwise_alert_agreement.csv",
+        index=False,
+    )
+
+    incremental_value_df.to_csv(
+        output_dir / "incremental_alert_value.csv",
+        index=False,
+    )
+
+    sampled_alerts_df.to_csv(
+        output_dir / "sampled_machine_alert_timeline.csv",
+        index=False,
+    )
+
+    pd.DataFrame({
+        "machineID": sampled_machine_ids,
+        "sample_seed": sample_seed,
+    }).to_csv(
+        output_dir / "sampled_machine_ids.csv",
         index=False,
     )
 
@@ -1088,6 +1338,24 @@ def evaluate(
     ]
     print(comparison_df[display_columns].to_string(index=False))
 
+    print("\n[Unlabeled Method Summary]")
+    print(method_summary_df.to_string(index=False))
+
+    print("\n[Pairwise Hourly Alert Agreement]")
+    print(agreement_df.to_string(index=False))
+
+    print(
+        f"\n[Sampled Machines] seed={sample_seed}: "
+        + ", ".join(map(str, sampled_machine_ids))
+    )
+
+    return {
+        "method_summary": method_summary_df,
+        "agreement": agreement_df,
+        "incremental_value": incremental_value_df,
+        "sampled_machine_ids": sampled_machine_ids,
+    }
+
 
 
 # ---------------------------------------------------------
@@ -1130,6 +1398,20 @@ def main():
         default=DEFAULT_OUTPUT
     )
 
+    parser.add_argument(
+        "--sample-size",
+        type=int,
+        default=4,
+        help="Number of machines in the hourly comparison chart (default: 4)",
+    )
+
+    parser.add_argument(
+        "--sample-seed",
+        type=int,
+        default=42,
+        help="Random seed for reproducible machine sampling (default: 42)",
+    )
+
     args = parser.parse_args()
 
     evaluate(
@@ -1138,6 +1420,8 @@ def main():
         failures_path=args.failures,
         dataset_path=args.dataset,
         output_dir=args.output_dir,
+        sample_size=args.sample_size,
+        sample_seed=args.sample_seed,
     )
 
 
