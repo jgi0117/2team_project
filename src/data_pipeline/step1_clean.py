@@ -2,11 +2,18 @@
 실행: python -m src.data_pipeline.step1_clean
 하는 일  ① 중복 제거  ② 빠진 날 자리 만들기  ③ 이상값 처리  ④ 하루 단위 요약
 출력    data/processed/_work/daily_panel.parquet
+
+[v2 변경] bfill 제거.
+  bfill은 미래 센서값으로 과거 결측을 채우므로 시간 누수(leakage)에 해당한다.
+  ffill(과거값으로 채움)만 사용하고, 연속 결측은 3일까지만 채운다.
+  3일을 넘는 구간은 NaN으로 남긴다 (LightGBM은 NaN을 그대로 학습 가능).
 """
 import numpy as np
 import pandas as pd
 from src.common.paths import RAW_PDM, WORK, find
 from src.common.contract import *
+
+FFILL_LIMIT_DAYS = 3   # 연속 결측 최대 채움 일수
 
 print("1/6 읽는 중 (87만 행, 20초쯤)...")
 tel = pd.read_csv(find(RAW_PDM, "telemetry"), parse_dates=["datetime"])
@@ -42,15 +49,19 @@ panel = panel.merge(agg, on=["machineID", "date"], how="left")
 
 miss = int(panel["n_obs"].isna().sum())
 short = int((panel["n_obs"].fillna(0) < 24).sum()) - miss
-print(f"5/6 완전히 빈 날 {miss:,}개 / 24시간 미만인 날 {short:,}개 → 앞값으로 채움")
+print(f"5/6 완전히 빈 날 {miss:,}개 / 24시간 미만인 날 {short:,}개")
+print(f"    → 과거값(ffill)으로만 채움, 최대 {FFILL_LIMIT_DAYS}일 (bfill 미사용)")
 panel["was_missing"] = panel["n_obs"].isna().astype(int)
 panel["n_obs"] = panel["n_obs"].fillna(0)
 
 panel = panel.sort_values(["machineID", "date"]).reset_index(drop=True)
 scols = [c for c in panel.columns if any(c.startswith(s + "_") for s in SENSORS)]
-g = panel.groupby("machineID")
-panel[scols] = g[scols].ffill()
-panel[scols] = panel.groupby("machineID")[scols].bfill()
+
+na_before = int(panel[scols].isna().sum().sum())
+# ─── 과거 방향으로만 채운다 (미래값 사용 금지) ───────────────────
+panel[scols] = panel.groupby("machineID")[scols].ffill(limit=FFILL_LIMIT_DAYS)
+na_after = int(panel[scols].isna().sum().sum())
+print(f"    센서 결측 {na_before:,} → {na_after:,}개 ({na_before - na_after:,}개 채움)")
 
 err["date"] = err["datetime"].dt.normalize()
 ec = err.pivot_table(index=["machineID", "date"], columns="errorID",
@@ -66,4 +77,11 @@ panel = panel.sort_values(["machineID", "date"]).reset_index(drop=True)
 panel.to_parquet(WORK / "daily_panel.parquet", index=False)
 
 print(f"6/6 ✅ {len(panel):,}행 × {panel.shape[1]}열 → _work/daily_panel.parquet")
-print(f"    남은 결측 셀 {int(panel.isna().sum().sum())}개 (0이어야 정상)")
+left = panel[scols].isna().sum()
+left = left[left > 0]
+if len(left) == 0:
+    print("    남은 센서 결측 0개")
+else:
+    print(f"    남은 센서 결측 {int(left.sum()):,}개 (NaN 허용, LightGBM이 처리)")
+    for c, v in left.items():
+        print(f"      - {c:16s} {int(v):,}개")
