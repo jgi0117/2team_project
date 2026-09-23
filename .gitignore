@@ -1,0 +1,18 @@
+# 로컬 환경과 비밀정보만 제외. data/는 Git으로 관리합니다.
+.venv/
+.venv.broken/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+node_modules/
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+data/
