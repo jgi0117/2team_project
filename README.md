@@ -28,13 +28,14 @@ src/
   common/                 공통 경로, 식별자, 데이터 계약
   data_pipeline/          원본 검증, 전처리, 특징·정답 생성
   failure_prediction/     부품별 고장예측, 시간순 평가
+  model3/                 Isolation Forest 기반 이상 예측·평가
   maintenance_planning/   재고·조달·사용 기한, 발주·정비 판단
   dashboard/              메인 KPI, 우선 점검 목록, 캘린더
   equipment_detail/       설비·부품 상세, 대응 현황, 정비 기록
   statistics/             설비·부품별 통계와 추이
 data/
   raw/azure_pdm/          원본 CSV 5종, Git 추적
-  operations/            추가 구축할 운영 데이터 CSV 양식
+  operations/            재현 가능한 가상 운영 데이터와 생성 설정
   processed/             전처리·예측·정비 계획 결과 저장 위치
 docs/
   2조_프로젝트_기획서.pdf
@@ -42,13 +43,13 @@ docs/
 requirements.txt         Python 분석 기본 의존성
 ```
 
-각 기능의 범위와 입출력은 해당 `src/<기능>/README.md`를 확인합니다. 폴더는 담당 업무의 경계이며 구현 코드는 아직 없습니다. UI 프레임워크는 구현 단계에서 결정합니다.
+GE의 설비 고장 예측 파이프라인은 `src/failure_prediction/`에, GJ의 이상 예측 파이프라인은 `src/model3/`에 있습니다. 가상 운영 데이터 생성기와 과거 시점 조회 기능도 포함하며, UI 프레임워크는 구현 단계에서 결정합니다.
 
 ## 데이터와 연결 원칙
 
 [데이터 안내](data/README.md), [운영 데이터 양식](data/operations/README.md), [공통 데이터 계약](docs/DATA_CONTRACT.md)을 기준으로 작업합니다.
 
-Azure PdM은 100대 설비의 공개 시뮬레이션 데이터입니다. 원본은 실제 공장 실측 데이터가 아닙니다. 부품은 `comp1`~`comp4`를 다루며 실제 부품명은 미제공입니다. 조달·재고·입고·사용 기한·비용은 원본과 분리해 구축합니다. 빈 운영 양식은 값이 확정되지 않았다는 뜻이며 예시 값을 실제 정보로 채우지 않습니다.
+Azure PdM은 100대 설비의 공개 시뮬레이션 데이터입니다. 원본은 실제 공장 실측 데이터가 아닙니다. 부품은 `comp1`~`comp4`를 다루며 실제 부품명은 미제공입니다. 조달·재고·입고·사용 기한·비용은 별도 가상 운영 데이터로 구축했습니다. 2015년 1~3월 교체 수요로 초기 재고를 설정하고 4월 이후를 재생합니다. 모든 값에 가정임을 표시했으며, 과거 판단에는 `operations_snapshot.snapshot()`을 사용해 미래 입고·완료 정보를 제외합니다.
 
 기간 내 고장 확률은 정확한 고장일이나 보장된 잔여수명이 아닙니다. 정비 파일의 교체일을 부품 입고일로 해석하지 않습니다. 과거 이력만으로 예측 입력을 만들고 미래 정보는 정답 생성에만 사용합니다.
 
@@ -62,4 +63,4 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-현재 원본 데이터와 구조만 준비했으며 실행 앱·학습 모델·평가 결과는 없습니다. 의존성 버전은 개발 환경 검증 후 고정합니다. 데이터는 `.gitignore`에서 제외하지 않으며, 원본은 수정하지 않고 처리 결과를 `data/processed/`에 별도 저장합니다.
+현재 원본 및 가상 운영 데이터, 생성·검증·시점별 조회 코드와 GE 설비 고장 예측 모델, GJ 이상 예측 모델 및 평가 결과가 있습니다. 재현 방법과 운영 시뮬레이션 결과는 [운영 데이터 안내](data/operations/README.md)에 정리했습니다. 통합 의존성은 `requirements.txt`에서 관리하며, 원본 데이터는 수정하지 않습니다.

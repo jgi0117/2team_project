@@ -1,8 +1,25 @@
-# 분석 기능의 초기 의존성. 개발 환경 검증 후 버전을 고정합니다.
-numpy
-pandas
-scikit-learn
+# GE 설비 고장 예측과 GJ 이상 예측 모델의 통합 의존성입니다.
+# 설치: python -m pip install -r requirements.txt
+
+# 공통 데이터 처리 및 모델링 (GJ 검증 환경 기준)
+numpy==2.5.3
+pandas==3.0.6
+scikit-learn==1.9.1
+joblib==1.6.0
+
+# GE 설비 고장 예측 모델
 lightgbm
 pyarrow
 torch
 
+# GJ 이상 예측 평가 및 시각화
+matplotlib
+
+# GJ 검증 환경 재현을 위한 간접 의존성
+cloudpickle==3.1.2
+narwhals==2.26.0
+python-dateutil==2.9.0.post0
+scipy==1.18.1
+six==1.17.0
+threadpoolctl==3.7.0
+tzdata==2026.4
