@@ -1,22 +1,26 @@
-"""Slide 14: F10 above F09. Replace panel children with future features."""
+"""Two equipment overviews: sensor anomalies above failure risk."""
 
 from dash import html
 
+from src.F09.dashboard import create_layout
+from src.F09.heatmap import load_predictions
+from src.F10.dashboard import create_layout as create_anomaly_layout
 
-def create_statistics_layout():
+
+def create_statistics_layout(predictions=None):
+    predictions = load_predictions() if predictions is None else predictions
     return html.Main(
         [
             html.H1("통계", className="ui-sr-only"),
             html.Section(
-                html.H2("F10 공정별 이상 위험 히트맵", id="stats-f10-title"),
-                id="stats-f10-content",
-                className="ui-stat-panel",
+                create_anomaly_layout(predictions.as_of.max()),
+                id="stats-f10-content", className="risk-panel",
                 **{"aria-labelledby": "stats-f10-title"},
             ),
             html.Section(
-                html.H2("F09 설비별 고장 예측 히트맵", id="stats-f09-title"),
+                create_layout(predictions),
                 id="stats-f09-content",
-                className="ui-stat-panel",
+                className="risk-panel",
                 **{"aria-labelledby": "stats-f09-title"},
             ),
         ],
