@@ -23,3 +23,6 @@ scipy==1.18.1
 six==1.17.0
 threadpoolctl==3.7.0
 tzdata==2026.4
+
+# 대시보드 UI
+dash>=3.0,<4.0
