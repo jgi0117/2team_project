@@ -19,6 +19,7 @@ def machine_grid(machines, scores, details, *, colors=RISK_COLORS, white_from=0.
     z = [[None] * columns for _ in range(rows)]
     background = [[None] * columns for _ in range(rows)]
     hover = [[""] * columns for _ in range(rows)]
+    machine_numbers = [[None] * columns for _ in range(rows)]
     x, y, labels, text_colors = [], [], [], []
     for index, machine in enumerate(machines):
         row, column = divmod(index, columns)
@@ -27,6 +28,7 @@ def machine_grid(machines, scores, details, *, colors=RISK_COLORS, white_from=0.
         z[row][column] = float(value) if known else None
         background[row][column] = 0
         hover[row][column] = f"<b>M-{machine:03d}</b><br>" + details.get(machine, "결과 없음")
+        machine_numbers[row][column] = int(machine)
         x.append(column)
         y.append(row)
         labels.append(f"{machine:03d}")
@@ -34,13 +36,15 @@ def machine_grid(machines, scores, details, *, colors=RISK_COLORS, white_from=0.
     figure = go.Figure()
     figure.add_trace(go.Heatmap(z=background, x=list(range(columns)), y=list(range(rows)),
                                colorscale=[[0, "#e4e8ed"], [1, "#e4e8ed"]], showscale=False,
-                               customdata=hover, hovertemplate="%{customdata}<extra></extra>",
+                               customdata=machine_numbers, text=hover,
+                               hovertemplate="%{text}<extra></extra>",
                                xgap=5, ygap=5, hoverongaps=False))
     figure.add_trace(go.Heatmap(z=z, x=list(range(columns)), y=list(range(rows)),
-                               coloraxis="coloraxis", customdata=hover,
-                               hovertemplate="%{customdata}<extra></extra>",
+                               coloraxis="coloraxis", customdata=machine_numbers, text=hover,
+                               hovertemplate="%{text}<extra></extra>",
                                xgap=5, ygap=5, hoverongaps=False))
     figure.add_trace(go.Scatter(x=x, y=y, mode="text", text=labels,
+                               customdata=[int(machine) for machine in machines],
                                textfont=dict(size=12, color=text_colors),
                                hoverinfo="skip", showlegend=False))
     figure.update_layout(

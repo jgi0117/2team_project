@@ -216,38 +216,44 @@ f08_history = dbc.Collapse(
 )
 
 # ---------------- layout ----------------
-layout = html.Div(className="page-detail", children=[
-    dcc.Store(id="store-selected-machine", data=None),
-    dcc.Store(id="store-selected-comp", data=None),
+def create_detail_layout(machine_id=None):
+    selected = machine_id if machine_id in MACHINES else MACHINES[0]
+    return html.Div(className="page-detail", children=[
+        dcc.Store(id="store-selected-machine", data=selected),
+        dcc.Store(id="store-selected-comp", data=None),
 
-    html.Div(className="hdr", children=[
-        html.Span("설비 상세 —", style={"fontSize": "clamp(15px,1.6vw,18px)",
-                                       "fontWeight": 700}),
-        html.Span(f"M-{MACHINES[0]:03d}", id="detail-machine-name",
-                  style={"fontSize": "clamp(15px,1.6vw,18px)", "fontWeight": 800}),
-        dcc.Dropdown(
-            id="detail-machine-select",
-            options=[{"label": f"M-{machine:03d}", "value": machine} for machine in MACHINES],
-            value=MACHINES[0], clearable=False,
-            className="detail-machine-select",
+        html.Div(className="hdr", children=[
+            html.Span("설비 상세 —", style={"fontSize": "clamp(15px,1.6vw,18px)",
+                                           "fontWeight": 700}),
+            html.Span(f"M-{selected:03d}", id="detail-machine-name",
+                      style={"fontSize": "clamp(15px,1.6vw,18px)", "fontWeight": 800}),
+            dcc.Dropdown(
+                id="detail-machine-select",
+                options=[{"label": f"M-{machine:03d}", "value": machine} for machine in MACHINES],
+                value=selected, clearable=False,
+                className="detail-machine-select",
+            ),
+            html.Span(f"기준일 {AS_OF}", id="detail-asof", className="hdr-right",
+                      style={"fontSize": "12px", "color": "#667"}),
+        ]),
+        html.P(
+            "부품별 확률은 저장된 예측 결과를 프레임의 기간에 맞춰 표시합니다. 채택 표시·종합 진단·센서 분석·발주·이력은 데이터 연결 전 UI 프레임입니다.",
+            className="detail-frame-note",
         ),
-        html.Span(f"기준일 {AS_OF}", id="detail-asof", className="hdr-right",
-                  style={"fontSize": "12px", "color": "#667"}),
-    ]),
-    html.P(
-        "부품별 확률은 저장된 예측 결과를 프레임의 기간에 맞춰 표시합니다. 채택 표시·종합 진단·센서 분석·발주·이력은 데이터 연결 전 UI 프레임입니다.",
-        className="detail-frame-note",
-    ),
 
-    f05_stage,
-    f07_panel,
-    f08_supplier,
-    f08_history,
-])
+        f05_stage,
+        f07_panel,
+        f08_supplier,
+        f08_history,
+    ])
+
+
+layout = create_detail_layout()
 
 
 @callback(
     Output("detail-machine-name", "children"),
+    Output("store-selected-machine", "data"),
     *[Output(f"hs-prob-{comp}", "children") for comp in COMPS],
     Input("detail-machine-select", "value"),
 )
@@ -265,7 +271,7 @@ def show_machine(machine_id):
         ]
         probabilities.append("--%" if selected.empty or selected.isna().all()
                              else f"{selected.iloc[0]:.1%}")
-    return f"M-{machine_id:03d}", *probabilities
+    return f"M-{machine_id:03d}", machine_id, *probabilities
 
 
 # ---------------- 프레임 콜백 (열림/닫힘만) ----------------

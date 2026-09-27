@@ -24,3 +24,4 @@ python -m src.UI.dashboard
 - `assets/shared/dashboard.css`: 공통 사이드바 스타일입니다. `assets/statistics/`와 `assets/detail/`의 CSS는 각 화면 스타일입니다.
 
 통계 화면은 `/`, 설비 상세 화면은 `/detail`에서 확인할 수 있습니다. 사이드바의 설비별·통계 항목으로 화면을 전환합니다. 설비 상세 프레임은 GE의 `src/ui/pages/detail.py`와 `src/ui/assets/detail.css`에서 가져왔습니다.
+통계 화면의 F09·F10 히트맵에서 설비 칸이나 번호를 클릭하면 `/detail?machine=<설비번호>`로 이동해 해당 설비가 선택됩니다.

@@ -7,7 +7,7 @@ def panel_contents(*, title, title_id, meaning, date, graph_id, figure, anomaly=
     return [
         html.Header([
             html.H2(title, id=title_id),
-            html.Span(meaning, className="risk-meaning"),
+            html.Span(f"{meaning} · 설비 칸 클릭 시 상세 보기", className="risk-meaning"),
             html.Div([
                 html.Span("낮음"),
                 html.Span(className="risk-gradient risk-gradient--anomaly" if anomaly else "risk-gradient"),
