@@ -1,7 +1,7 @@
 """Compact equipment-level anomaly overview, aligned with F09's cutoff."""
 
 import pandas as pd
-from src.UI.heatmap_panel import panel_contents
+from src.UI.pages.statistics.heatmap_panel import panel_contents
 
 from src.F09.heatmap import machine_ids
 from .heatmap import build_heatmap, load_predictions

@@ -1,6 +1,6 @@
 """A compact, control-free overview of all machines."""
 
-from src.UI.heatmap_panel import panel_contents
+from src.UI.pages.statistics.heatmap_panel import panel_contents
 
 from .heatmap import build_heatmap, load_predictions, machine_ids
 

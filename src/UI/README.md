@@ -16,11 +16,11 @@ python -m src.UI.dashboard
 ## 팀 작업 연결
 
 - `dashboard.py`: 통계 화면과 설비 상세 화면을 하나의 Dash 앱으로 실행하며 사이드바 링크로 화면을 전환합니다.
-- `statistics_page.py`: 통계 콘텐츠와 사이드바를 배치합니다.
-- `sidebar.py`: `create_sidebar(main_href=None, equipment_href=None, active="statistics")`은 현재 화면을 표시하고 통계·설비 상세 링크를 제공합니다.
-- `statistics.py`: `create_statistics_layout()`을 다른 Dash 앱의 페이지 콘텐츠로 넣을 수 있습니다.
+- `pages/statistics/`: 통계 화면 구성(`page.py`, `layout.py`)과 공통 히트맵 패널(`heatmap_panel.py`)입니다.
+- `pages/detail/page.py`: GE 설비 상세 UI 프레임과 설비 선택·부품 확률 콜백입니다.
+- `shared/sidebar.py`: 두 화면에서 사용하는 사이드바와 현재 화면 표시입니다.
 - `stats-f10-content`: 설비별 이상 위험 히트맵입니다. 저장된 IF 결과를 사용합니다.
 - `stats-f09-content`: 설비별 고장 위험 히트맵입니다. 부품 예측 결과를 설비별로 요약합니다.
-- `assets/dashboard.css`: 공통 사이드바 스타일입니다. `assets/heatmap-dashboard.css`는 통계 히트맵 영역에만 적용합니다.
+- `assets/shared/dashboard.css`: 공통 사이드바 스타일입니다. `assets/statistics/`와 `assets/detail/`의 CSS는 각 화면 스타일입니다.
 
 통계 화면은 `/`, 설비 상세 화면은 `/detail`에서 확인할 수 있습니다. 사이드바의 설비별·통계 항목으로 화면을 전환합니다. 설비 상세 프레임은 GE의 `src/ui/pages/detail.py`와 `src/ui/assets/detail.css`에서 가져왔습니다.

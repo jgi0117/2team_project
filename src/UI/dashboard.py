@@ -5,9 +5,9 @@ from pathlib import Path
 import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, dcc, html
 
-from .pages.detail import layout as detail_layout
-from .sidebar import create_sidebar
-from .statistics_page import create_statistics_page
+from .pages.detail.page import layout as detail_layout
+from .pages.statistics.page import create_statistics_page
+from .shared.sidebar import create_sidebar
 
 
 def create_detail_page():

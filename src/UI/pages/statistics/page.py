@@ -2,8 +2,8 @@
 
 from dash import html
 
-from .sidebar import create_sidebar
-from .statistics import create_statistics_layout
+from ...shared.sidebar import create_sidebar
+from .layout import create_statistics_layout
 
 
 def create_statistics_page():

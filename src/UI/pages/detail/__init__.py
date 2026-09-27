@@ -1,0 +1,1 @@
+"""Equipment detail dashboard page."""
