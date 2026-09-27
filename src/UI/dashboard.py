@@ -13,7 +13,7 @@ from .statistics_page import create_statistics_page
 def create_detail_page():
     return html.Div(
         [create_sidebar(equipment_href="/detail", active="equipment"), detail_layout],
-        className="ui-dashboard",
+        className="ui-dashboard ui-dashboard--detail",
     )
 
 

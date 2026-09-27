@@ -1,5 +1,7 @@
 /* ============ 공통 ============ */
-.page-detail{ padding: clamp(10px,1.5vw,20px); background:#eef2f6; min-height:100vh; }
+.page-detail{ min-width:0; padding: clamp(10px,1.5vw,20px); background:#eef2f6; }
+.detail-machine-select{ width:150px; min-width:130px; }
+.detail-frame-note{ margin:0 0 12px; color:#53677a; font-size:12px; }
 
 .box{ border:1px solid #d9dee5; border-radius:10px; background:#fff;
       padding: clamp(8px,1vw,14px); }
@@ -18,7 +20,8 @@
        border-radius:4px; white-space:nowrap; }
 
 /* ============ F05 무대 ============ */
-.stage{ position:relative; }
+.stage{ display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,320px);
+        gap:14px; align-items:start; }
 
 .stage-canvas{
   position:relative; width:100%;
@@ -55,10 +58,7 @@
 
 /* F06 오버레이 레이어 */
 .f06-layer{
-  position:absolute; top:clamp(118px,26%,168px); left:14px;
-  width:min(320px,44%);
-  max-height:calc(100% - clamp(136px,28%,188px)); overflow:auto;
-  z-index:10; box-shadow:0 4px 16px rgba(0,0,0,.18);
+  position:static; width:auto; max-height:none; overflow:visible;
 }
 .f06-row{ display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
 .f06-gauge{ flex:0 0 96px; }
@@ -68,10 +68,10 @@
 
 /* ============ 992px 이하 : 겹침 해제 → 아래로 내려 쌓기 ============ */
 @media (max-width:991.98px){
+  .stage{ grid-template-columns:minmax(0,1fr); }
   .stage-canvas{ aspect-ratio:4/3; max-height:none; }
   .f06-layer{
-    position:static; width:auto; max-height:none; overflow:visible;
-    margin-top:12px; box-shadow:none;
+    margin-top:0;
   }
   .hotspot{ max-width:46%; }
 }

@@ -2,6 +2,12 @@
 # 설비 상세 페이지 - 프레임(빈 박스 + id + 펼침/접힘) / 반응형
 from dash import html, dcc, Input, Output, callback, ctx
 import dash_bootstrap_components as dbc
+from src.F09.heatmap import load_predictions, machine_ids
+
+PREDICTIONS = load_predictions()
+MACHINES = machine_ids()
+AS_OF = PREDICTIONS.as_of.max()
+MODEL_VERSION = sorted(PREDICTIONS.loc[PREDICTIONS.as_of.eq(AS_OF), "model_version"].unique())[-1]
 
 COMPS    = ["comp1", "comp2", "comp3", "comp4"]
 DECISION = {"comp1": 8, "comp2": 42, "comp3": 16, "comp4": 24}
@@ -217,17 +223,49 @@ layout = html.Div(className="page-detail", children=[
     html.Div(className="hdr", children=[
         html.Span("설비 상세 —", style={"fontSize": "clamp(15px,1.6vw,18px)",
                                        "fontWeight": 700}),
-        html.Span("--", id="detail-machine-name",
+        html.Span(f"M-{MACHINES[0]:03d}", id="detail-machine-name",
                   style={"fontSize": "clamp(15px,1.6vw,18px)", "fontWeight": 800}),
-        html.Span("기준일 --", id="detail-asof", className="hdr-right",
+        dcc.Dropdown(
+            id="detail-machine-select",
+            options=[{"label": f"M-{machine:03d}", "value": machine} for machine in MACHINES],
+            value=MACHINES[0], clearable=False,
+            className="detail-machine-select",
+        ),
+        html.Span(f"기준일 {AS_OF}", id="detail-asof", className="hdr-right",
                   style={"fontSize": "12px", "color": "#667"}),
     ]),
+    html.P(
+        "부품별 확률은 저장된 예측 결과를 프레임의 기간에 맞춰 표시합니다. 채택 표시·종합 진단·센서 분석·발주·이력은 데이터 연결 전 UI 프레임입니다.",
+        className="detail-frame-note",
+    ),
 
     f05_stage,
     f07_panel,
     f08_supplier,
     f08_history,
 ])
+
+
+@callback(
+    Output("detail-machine-name", "children"),
+    *[Output(f"hs-prob-{comp}", "children") for comp in COMPS],
+    Input("detail-machine-select", "value"),
+)
+def show_machine(machine_id):
+    rows = PREDICTIONS.loc[
+        PREDICTIONS.as_of.eq(AS_OF)
+        & PREDICTIONS.model_version.eq(MODEL_VERSION)
+        & PREDICTIONS.machineID.eq(machine_id)
+    ]
+    probabilities = []
+    for comp in COMPS:
+        selected = rows.loc[
+            rows.component.eq(comp) & rows.horizon_days.eq(DECISION[comp]),
+            "failure_probability",
+        ]
+        probabilities.append("--%" if selected.empty or selected.isna().all()
+                             else f"{selected.iloc[0]:.1%}")
+    return f"M-{machine_id:03d}", *probabilities
 
 
 # ---------------- 프레임 콜백 (열림/닫힘만) ----------------
