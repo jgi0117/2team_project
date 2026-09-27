@@ -3,8 +3,14 @@
 from dash import dcc, html
 
 
-def create_sidebar(main_href=None, equipment_href=None):
-    def menu(label, href):
+def create_sidebar(main_href=None, equipment_href=None, active="statistics"):
+    def menu(label, href, selected=False):
+        if selected:
+            return html.Span(
+                label,
+                className="ui-nav-item ui-nav-item--active",
+                **{"aria-current": "page"},
+            )
         if href is None:
             return html.Button(
                 label,
@@ -19,12 +25,8 @@ def create_sidebar(main_href=None, equipment_href=None):
         html.Nav(
             [
                 menu("메인화면", main_href),
-                menu("설비별", equipment_href),
-                html.Span(
-                    "통계",
-                    className="ui-nav-item ui-nav-item--active",
-                    **{"aria-current": "page"},
-                ),
+                menu("설비별", equipment_href, active == "equipment"),
+                menu("통계", "/", active == "statistics"),
             ],
             **{"aria-label": "대시보드 메뉴"},
         ),

@@ -22,4 +22,4 @@ python -m src.UI.app
 - 각 영역의 `children`을 실제 기능으로 교체하면 됩니다. 제목을 교체할 때는 `aria-labelledby`에 연결된 제목 ID도 유지하거나 함께 수정합니다.
 - `assets/dashboard.css`: 통합 앱의 assets 폴더에 포함합니다. 바깥 레이아웃에 `ui-dashboard` 클래스를 적용하면 사이드바와 통계 화면이 나란히 배치됩니다.
 
-메인화면과 설비별 상세화면, 해당 화면의 라우팅은 포함하지 않습니다.
+통계 화면은 `/`, 설비 상세 화면은 `/detail`에서 확인할 수 있습니다. 설비 상세 화면은 GE의 UI 프레임을 `pages/detail.py`와 `assets/detail.css`로 옮긴 상태이며, 데이터와 모델 연동은 아직 포함하지 않습니다.
