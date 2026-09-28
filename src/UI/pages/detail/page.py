@@ -112,7 +112,10 @@ f05_summary = html.Div(
 f05_stage = html.Div(className="stage", children=[
     html.Div(className="stage-canvas", children=[
         html.Div(id="f05-equip-img", className="stage-bg",
-                 children=html.Div("설비 이미지 / 3D 영역")),
+                 children=html.Img(
+                     src="/assets/equipment-comp-layout.png",
+                     alt="4개 부품 위치가 표시된 산업용 설비",
+                 )),
         f05_summary,
         *[el for c in COMPS for el in hotspot(c)],
         html.Div(className="stage-actions", children=[
