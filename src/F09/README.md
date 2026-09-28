@@ -9,7 +9,7 @@
 - 최신 예측일의 28일 결과를 기본 사용합니다. 28일 결과가 없으면 해당 모델의 가장 긴 예측기간을 사용합니다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m src.UI.dashboard
+.\.venv\Scripts\python.exe -m src.ui.app
 ```
 
 독립 HTML 출력:

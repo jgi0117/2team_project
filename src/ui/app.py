@@ -1,4 +1,4 @@
-"""Run the combined dashboard with python -m src.UI.dashboard."""
+"""Run the combined dashboard with python -m src.ui.app."""
 
 from pathlib import Path
 from urllib.parse import parse_qs
@@ -7,6 +7,7 @@ import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, ctx, dcc, html
 from dash.exceptions import PreventUpdate
 
+from .pages.main import layout as main_layout
 from .pages.detail.page import MACHINES, create_detail_layout
 from .pages.statistics.page import create_statistics_page
 from .shared.sidebar import create_sidebar
@@ -35,9 +36,16 @@ def machine_from_click(click_data):
 
 def create_detail_page(machine_id=None):
     return html.Div(
-        [create_sidebar(equipment_href="/detail", active="equipment"),
+        [create_sidebar(active="equipment"),
          create_detail_layout(machine_id)],
         className="ui-dashboard ui-dashboard--detail",
+    )
+
+
+def create_main_page():
+    return html.Div(
+        [create_sidebar(active="main"), main_layout],
+        className="ui-dashboard ui-dashboard--main",
     )
 
 
@@ -63,7 +71,9 @@ def create_app():
     def display_page(pathname, search):
         if pathname == "/detail":
             return create_detail_page(selected_machine(search))
-        return create_statistics_page()
+        if pathname == "/statistics":
+            return create_statistics_page()
+        return create_main_page()
 
     @app.callback(
         Output("ui-location", "pathname"),
