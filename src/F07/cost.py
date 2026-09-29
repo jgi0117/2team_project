@@ -49,7 +49,11 @@ def need_window(machine_id: int, component: str, as_of=None):
     return (low, mode, high)
 
 
-def analyze_order(machine_id: int, component: str, as_of=None) -> dict:
-    """이 설비 부품 1개의 발주일별 기대 총비용 (보유·폐기 vs 지연 긴급 비용, 필요 시점 불확실성 반영)."""
-    result = order_timing(machine_id, component, as_of, need_window(machine_id, component, as_of))
+def analyze_order(machine_id: int, component: str, as_of=None, late_tolerance: float = 0.2) -> dict:
+    """이 설비 부품 1개의 발주일별 기대 총비용 (보유·폐기 vs 지연 긴급 비용, 필요 시점 불확실성 반영).
+
+    late_tolerance: 늦게 도착할 확률이 이 값 이하인 마지막 날을 발주 마감으로 본다.
+    """
+    result = order_timing(machine_id, component, as_of, need_window(machine_id, component, as_of),
+                          late_tolerance=late_tolerance)
     return {"feature": "F07", **result}

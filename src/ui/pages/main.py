@@ -7,9 +7,10 @@ from dash.exceptions import PreventUpdate
 
 from src.ui.ai_data import f03_summary
 from src.ui.config import UI_AS_OF, valid_as_of
+from src.ui.settings import merged
 from src.ui.live_data import (
     DEFAULT_SORT, ISSUE_LABEL, SORTS, STATUS_LABEL, available_months, f01_rise, f02_stock,
-    history, item_by_key, kpi_detail, kpis, ranked_items,
+    history, item_by_key, kpi_detail, kpis, ranked_items, safety_stock_info,
 )
 
 TOP_N = 5
@@ -107,7 +108,7 @@ def cal_chip(item, rank):
     )
 
 
-def make_calendar(items, ranks, as_of):
+def make_calendar(items, ranks, as_of, per_day=CHIPS_PER_DAY):
     year, month = int(as_of[:4]), int(as_of[5:7])
     by_date = {}
     for item in items:
@@ -122,11 +123,12 @@ def make_calendar(items, ranks, as_of):
     for day in range(1, days + 1):
         date = f"{year}-{month:02d}-{day:02d}"
         day_items = by_date.get(date, [])
-        chips = [cal_chip(item, ranks.get(item["key"])) for item in day_items[:CHIPS_PER_DAY]]
+        chips = [cal_chip(item, ranks.get(item["key"])) for item in day_items[:per_day]]
         # '+N건 더 보기'는 날짜 줄에 둔다 → 칸이 낮아도 잘리지 않음
-        more = (html.Button(f"+{len(day_items) - CHIPS_PER_DAY}건 더 보기",
-                            id={"type": "mn-day-more", "date": date}, className="mn-chip-more")
-                if len(day_items) > CHIPS_PER_DAY else None)
+        more = (html.Button([f"+{len(day_items) - per_day}", html.Span("건 더 보기", className="mn-more-long")],
+                            id={"type": "mn-day-more", "date": date}, className="mn-chip-more",
+                            title=f"{len(day_items)}건 모두 보기")
+                if len(day_items) > per_day else None)
         state = ("mn-day--today" if date == as_of else
                  "mn-day--past" if date < as_of else "")
         head = [html.Span(str(day), className="mn-day-num")] + ([more] if more else [])
@@ -199,6 +201,42 @@ def day_list(items, ranks):
                      html.Small("숫자는 우선 확인 TOP5 순위입니다.", className="mn-modal-hint")])
 
 
+def safety_explain(info):
+    """예측 미채택 부품의 안전재고 설명 (모든 수치는 모델 평가·운영 데이터 값)."""
+    covered = info["coverage_days"]
+    lift = info["lift"] or 0
+    return html.Div([
+        html.P([html.B(f"{info['component']}는 고장 시점을 미리 맞히기 어려워, 고장 예측 대신 재고를 미리 쌓아 두고 대응합니다."),
+                " 이 방식을 안전재고라고 부릅니다."], className="mn-safety-lead"),
+        html.Div([
+            html.Div([html.H4("왜 예측을 쓰지 않나요?"),
+                      html.Ul([
+                          html.Li(f"{info['decision_days']}일 안에 고장날 설비를 골라내는 능력이 무작위와 거의 같습니다 — "
+                                  f"위험 상위 10%를 골라도 실제 고장 비율이 평균의 {lift:.2f}배입니다."),
+                          html.Li(f"{info['decision_days']}일 동안 설비 {info['base_rate'] * 100:.0f}%가 이 부품 고장을 겪을 만큼 "
+                                  "고장이 흔해서, 특정 설비를 골라 대비하는 의미가 작습니다."),
+                          html.Li(f"조달 {info['lead']}일 + 준비 {info['prep']}일 = {info['decision_days']}일이 필요해서, "
+                                  "고장 조짐을 보고 주문하면 이미 늦습니다."),
+                      ])], className="mn-safety-col"),
+            html.Div([html.H4("그래서 어떻게 대응하나요?"),
+                      html.Ul([
+                          html.Li(f"공용 창고에 목표 {info['target_stock']}개를 유지합니다 (최근 90일 하루 평균 "
+                                  f"{info['daily_demand']}개 사용)."),
+                          html.Li(f"사용 기한이 입고 후 {info['shelf_life']}일로 짧아, 너무 많이 쌓으면 폐기됩니다 — "
+                                  "그래서 조금씩 자주 보충합니다."),
+                          html.Li("설비별 발주 시점을 따로 계산하지 않고, 재고가 목표보다 줄면 보충 발주합니다."),
+                      ])], className="mn-safety-col"),
+        ], className="mn-safety-grid"),
+        html.Div([
+            html.Div([html.Span("현재 가용 재고"), html.Strong(f"{info['stock']}개")]),
+            html.Div([html.Span("목표 재고"), html.Strong(f"{info['target_stock']}개")]),
+            html.Div([html.Span("버틸 수 있는 기간"), html.Strong(f"약 {covered}일" if covered is not None else "—")]),
+            html.Div([html.Span("다음 입고 예정"), html.Strong(info["next_receipt"] or "없음")]),
+            html.Div([html.Span("보충 권장 수량"), html.Strong(f"{info['recommended']}개")]),
+        ], className="mn-safety-stats"),
+    ], className="mn-safety")
+
+
 # ---------------- F01 / F02 / 과거 대응률 ----------------
 def base_figure():
     figure = go.Figure()
@@ -238,7 +276,9 @@ def f02_table(rows):
     body = html.Tbody([
         html.Tr([
             html.Td(str(rank)),
-            html.Td([row["component"]] + ([html.Small(" 안전재고", className="mn-table-note")]
+            html.Td([row["component"]] + ([html.Button("안전재고 ⓘ", id={"type": "mn-safety", "comp": row["component"]},
+                                                       n_clicks=0, className="mn-safety-btn",
+                                                       title="왜 안전재고로 대응하는지 보기")]
                                           if not row["adopted"] else [])),
             html.Td(f"{row['stock']}개", className="is-alert" if row["stock"] == 0 else ""),
             html.Td(f"{row['risky']}대"),
@@ -381,8 +421,11 @@ def make_f03_panel(as_of=UI_AS_OF):
     )
 
 
-def build_layout(as_of, f03=None):
+def build_layout(as_of, f03=None, settings=None):
+    settings = merged(settings)
     months = available_months(as_of)
+    first_weekday, days = calendar.monthrange(int(as_of[:4]), int(as_of[5:7]))
+    weeks = -(-((first_weekday + 1) % 7 + days) // 7)
     month_options = [{"label": f"{m[:4]}년 {int(m[5:])}월", "value": m} for m in months]
     return html.Div(
         [
@@ -420,7 +463,7 @@ def build_layout(as_of, f03=None):
                                 html.Div(dcc.Dropdown(
                                     id="mn-top5-sort",
                                     options=[{"label": label, "value": value} for value, (label, _) in SORTS.items()],
-                                    value=DEFAULT_SORT, clearable=False, searchable=False,
+                                    value=settings["main_sort"], clearable=False, searchable=False,
                                     style={"width": "100%"},
                                 ), className="mn-sort"),
                             ], className="mn-sort-row"),
@@ -430,7 +473,8 @@ def build_layout(as_of, f03=None):
                                      id="mn-top5-foot", className="mn-top5-foot mn-hidden"),
                         ], id="mn-f02-slot", className=TOP5_CLOSED[0]),
                     ], className="mn-hero-body"),
-                ], className="mn-hero"),
+                ], className="mn-hero",
+                   style={"--cal-rows": weeks, "--cal-chips": settings["main_chips_per_day"]}),
             ], id="mn-middle", className=TOP5_CLOSED[1]),
 
             # 확률 급상승 | 재고 × 위험 (첫 화면에서 여기까지)
@@ -456,7 +500,7 @@ def build_layout(as_of, f03=None):
                                  dcc.RadioItems(id="mn-hist-range",
                                                 options=[{"label": label, "value": value}
                                                          for value, label in HIST_RANGES],
-                                                value="6", className="mn-seg", inline=True),
+                                                value=settings["main_hist_range"], className="mn-seg", inline=True),
                                  html.Div([
                                      dcc.Dropdown(id="mn-hist-start", options=month_options,
                                                   value=months[max(0, len(months) - 6)], clearable=False,
@@ -509,8 +553,8 @@ def build_layout(as_of, f03=None):
 layout = build_layout(UI_AS_OF)
 
 
-def create_main_layout(as_of=UI_AS_OF):
-    return build_layout(as_of, make_f03_panel(as_of))
+def create_main_layout(as_of=UI_AS_OF, settings=None):
+    return build_layout(as_of, make_f03_panel(as_of), settings)
 
 
 @callback(
@@ -536,14 +580,16 @@ def toggle_top5(_show, _close, middle_class):
     Input("store-todo-dismissed", "data"),
     Input("mn-top5-sort", "value"),
     Input("store-as-of", "data"),
+    State("store-settings", "data"),
 )
-def render_todo(dismissed, sort, as_of):
+def render_todo(dismissed, sort, as_of, settings):
     as_of = valid_as_of(as_of)
-    items = ranked_items(dismissed, sort, as_of)
+    settings = merged(settings)
+    items = ranked_items(dismissed, sort, as_of, settings["main_if_threshold"])
     top = items[:TOP_N]
     ranks = {item["key"]: rank for rank, item in enumerate(top, 1)}
     count = len(dismissed or [])
-    return (make_calendar(items, ranks, as_of), make_top5(top, count, as_of),
+    return (make_calendar(items, ranks, as_of, int(settings["main_chips_per_day"])), make_top5(top, count, as_of),
             f"처리해서 지운 항목 {count}건", "mn-top5-foot" + ("" if count else " mn-hidden"))
 
 
@@ -573,20 +619,25 @@ def render_history(orders, as_of, choice, start, end):
     Input({"type": "mn-kpi", "key": ALL}, "n_clicks"),
     Input("mn-f01-more", "n_clicks"),
     Input({"type": "mn-day-more", "date": ALL}, "n_clicks"),
+    Input({"type": "mn-safety", "comp": ALL}, "n_clicks"),
     State("store-as-of", "data"),
     State("store-todo-dismissed", "data"),
     State("mn-top5-sort", "value"),
+    State("store-settings", "data"),
     prevent_initial_call=True,
 )
-def show_more(_kpis, _f01, _days, as_of, dismissed, sort):
+def show_more(_kpis, _f01, _days, _safety, as_of, dismissed, sort, settings):
     trigger = ctx.triggered_id
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
     if trigger == "mn-f01-more":
         return True, "확률 급상승 알림 · 전체", f01_full_table(f01_rise(valid_as_of(as_of)))
+    if trigger["type"] == "mn-safety":
+        comp = trigger["comp"]
+        return True, f"{comp} · 안전재고로 대응하는 이유", safety_explain(safety_stock_info(comp, valid_as_of(as_of)))
     if trigger["type"] == "mn-day-more":
         date = trigger["date"]
-        items = ranked_items(dismissed, sort, valid_as_of(as_of))
+        items = ranked_items(dismissed, sort, valid_as_of(as_of), merged(settings)["main_if_threshold"])
         ranks = {item["key"]: rank for rank, item in enumerate(items[:TOP_N], 1)}
         day_items = sorted((item for item in items if item["date"] == date),
                            key=lambda item: ranks.get(item["key"], 99))
@@ -607,16 +658,17 @@ def show_more(_kpis, _f01, _days, as_of, dismissed, sort):
     Input("mn-action-cancel", "n_clicks"),
     Input("mn-action-delete", "n_clicks"),
     State("store-as-of", "data"),
+    State("store-settings", "data"),
     prevent_initial_call=True,
 )
-def open_action(_cal, _cards, _cancel, _delete, as_of):
+def open_action(_cal, _cards, _cancel, _delete, as_of, settings):
     trigger = ctx.triggered_id
     if trigger in ("mn-action-cancel", "mn-action-delete"):
         return False, None, no_update, no_update
     # 항목이 다시 그려질 때도 호출되므로 실제 클릭(n_clicks > 0)만 처리
     if not isinstance(trigger, dict) or not ctx.triggered[0]["value"]:
         raise PreventUpdate
-    item = item_by_key(trigger["key"], valid_as_of(as_of))
+    item = item_by_key(trigger["key"], valid_as_of(as_of), merged(settings)["main_if_threshold"])
     if item is None:
         raise PreventUpdate
     body = [html.Strong(item_title(item), className="mn-action-title"),

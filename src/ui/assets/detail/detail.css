@@ -553,6 +553,63 @@
 .page-detail .dt-mix-note{ flex-basis:100%; color:var(--ui-text-subtle); font-weight:400; line-height:1.5; }
 .page-detail .f07-scenario-risk{ color:var(--ui-text-subtle); font-size:11px; font-weight:700; }
 
+/* 발주 검토: 안전재고 부품 */
+.page-detail .dt-safety{ padding:16px 18px; border:1px solid var(--ui-border); border-radius:16px; background:var(--ui-surface); }
+
+/* 교체 이력: 부품별 한 줄 타임라인 */
+.page-detail .dt-strips{ display:flex; flex-direction:column; gap:6px; }
+.page-detail .dt-strip-head{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 14px; margin-bottom:6px; }
+.page-detail .dt-strip-head h3{ margin:0; }
+.page-detail .dt-strip-legend{ display:flex; gap:14px; color:var(--ui-text-muted); font-size:12px; font-weight:700; }
+.page-detail .dt-strip-legend > span{ display:inline-flex; align-items:center; gap:6px; }
+.page-detail .dt-strip-row{
+    display:grid;
+    grid-template-columns:150px minmax(0,1fr) 96px;
+    align-items:center;
+    gap:14px;
+    padding:8px 12px;
+    border-radius:10px;
+    background:var(--ui-surface-muted);
+}
+.page-detail .dt-strip-row.has-fail{ background:var(--ui-danger-tint); }
+.page-detail .dt-strip-row--axis{ padding-top:0; padding-bottom:0; background:none; }
+.page-detail .dt-strip-label{ display:flex; flex-direction:column; gap:3px; }
+.page-detail .dt-strip-label b{ color:var(--ui-ink); font-size:15px; }
+.page-detail .dt-count{ margin-right:6px; padding:1px 7px; border-radius:999px; background:var(--ui-surface); color:var(--ui-text-muted); font-size:11px; font-weight:800; }
+.page-detail .dt-count--plan{ color:var(--ui-navy-700); }
+.page-detail .dt-count--fail{ background:var(--ui-danger); color:#fff; }
+.page-detail .dt-strip-track{ position:relative; height:26px; margin:0 9px; }
+.page-detail .dt-strip-line{ position:absolute; top:50%; left:0; right:0; height:2px; background:var(--ui-border); }
+.page-detail .dt-strip-ticks{ position:relative; height:16px; margin:0 9px; }
+.page-detail .dt-strip-tick{ position:absolute; transform:translateX(-50%); color:var(--ui-text-subtle); font-size:11px; font-weight:700; white-space:nowrap; }
+.page-detail .dt-mark{
+    position:absolute;
+    top:50%;
+    display:grid;
+    place-items:center;
+    width:14px;
+    height:14px;
+    border:2px solid var(--ui-surface);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    font-size:9px;
+    font-style:normal;
+    font-weight:800;
+    line-height:1;
+    cursor:default;
+}
+.page-detail .dt-mark--plan{ background:var(--ui-navy-700); }
+.page-detail .dt-mark--fail{ z-index:1; width:18px; height:18px; background:var(--ui-danger); color:#fff; }
+.page-detail .dt-mark--legend{ position:static; transform:none; }
+.page-detail .dt-strip-last{ display:flex; flex-direction:column; align-items:flex-end; line-height:1.25; }
+.page-detail .dt-strip-last span{ color:var(--ui-text-subtle); font-size:11px; font-weight:700; }
+.page-detail .dt-strip-last b{ color:var(--ui-ink); font-size:14px; }
+.page-detail .dt-strip-last small{ color:var(--ui-text-muted); font-size:11px; }
+@media (max-width:575.98px){
+    .page-detail .dt-strip-row{ grid-template-columns:minmax(0,1fr) 80px; }
+    .page-detail .dt-strip-track, .page-detail .dt-strip-ticks{ grid-column:1 / -1; grid-row:2; }
+}
+
 /* 교체 이력 페이지 넘기기 */
 .page-detail .dt-pager{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:10px; }
 .page-detail .dt-pager-text{ color:var(--ui-text-muted); font-size:13px; font-weight:800; }
@@ -599,4 +656,5 @@
 .hs-pop-table th, .hs-pop-table td{ padding:4px 7px; text-align:center; white-space:nowrap; }
 .hs-pop-table th{ color:var(--ui-text-muted); font-weight:800; }
 .hs-pop-table .is-decision{ background:var(--ui-yellow-tint); color:var(--ui-ink); font-weight:800; }
+.hs-pop-safety{ margin:0 0 8px; color:var(--ui-text); font-size:12px; line-height:1.5; }
 .hs-pop-note{ display:block; margin-top:8px; color:var(--ui-text-muted); font-size:11px; }

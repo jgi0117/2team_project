@@ -10,6 +10,7 @@ from dash import html, dcc, Input, Output, State, ALL, callback, ctx
 from dash.exceptions import PreventUpdate
 
 from src.ui.config import UI_AS_OF, valid_as_of
+from src.ui.settings import merged
 from src.ui.live_data import ranked_items
 from src.ui.shared.sidebar import create_sidebar
 
@@ -190,8 +191,8 @@ def render_history(log, _init=None):
     ], className="od-table"), className="od-scroll od-history-table")
 
 
-def top5_matches(orders, dismissed, as_of):
-    top = ranked_items(dismissed, as_of=valid_as_of(as_of))[:5]
+def top5_matches(orders, dismissed, as_of, settings=None):
+    top = ranked_items(dismissed, as_of=valid_as_of(as_of), if_threshold=merged(settings)["main_if_threshold"])[:5]
     ordered = {(order["machine"], order["component"]) for order in orders or []}
     return [item for item in top
             if (item["machine"], item.get("component")) in ordered
@@ -204,10 +205,11 @@ def top5_matches(orders, dismissed, as_of):
     Input("od-last-submit", "data"),
     State("store-todo-dismissed", "data"),
     State("store-as-of", "data"),
+    State("store-settings", "data"),
     prevent_initial_call=True,
 )
-def ask_dismiss(orders, dismissed, as_of):
-    matches = top5_matches(orders, dismissed, as_of)
+def ask_dismiss(orders, dismissed, as_of, settings):
+    matches = top5_matches(orders, dismissed, as_of, settings)
     if not matches:
         raise PreventUpdate
     names = ", ".join(f"M-{item['machine']:03d}" + (f" {item['component']}" if item.get("component") else "")
@@ -222,10 +224,11 @@ def ask_dismiss(orders, dismissed, as_of):
     State("od-last-submit", "data"),
     State("store-todo-dismissed", "data"),
     State("store-as-of", "data"),
+    State("store-settings", "data"),
     prevent_initial_call=True,
 )
-def dismiss(submitted, orders, dismissed, as_of):
-    matches = top5_matches(orders, dismissed, as_of)
+def dismiss(submitted, orders, dismissed, as_of, settings):
+    matches = top5_matches(orders, dismissed, as_of, settings)
     if not submitted or not matches:
         raise PreventUpdate
     return list(dict.fromkeys([*(dismissed or []), *(item["key"] for item in matches)]))

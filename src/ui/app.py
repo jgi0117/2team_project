@@ -13,6 +13,8 @@ from .pages.statistics.page import create_statistics_page
 from .pages.order.page import create_order_page
 from .shared.sidebar import create_sidebar
 from .config import UI_AS_OF, valid_as_of
+from .settings import DEFAULTS, merged
+from .shared.settings_modal import settings_modal
 
 
 def selected_machine(search):
@@ -38,17 +40,17 @@ def machine_from_click(click_data):
     return machine_id
 
 
-def create_detail_page(machine_id=None, as_of=UI_AS_OF):
+def create_detail_page(machine_id=None, as_of=UI_AS_OF, settings=None):
     return html.Div(
         [create_sidebar(active="equipment", as_of=as_of),
-         create_detail_layout(machine_id, as_of)],
+         create_detail_layout(machine_id, as_of, settings)],
         className="ui-dashboard ui-dashboard--detail",
     )
 
 
-def create_main_page(as_of=UI_AS_OF):
+def create_main_page(as_of=UI_AS_OF, settings=None):
     return html.Div(
-        [create_sidebar(active="main", as_of=as_of), create_main_layout(as_of)],
+        [create_sidebar(active="main", as_of=as_of), create_main_layout(as_of, settings)],
         className="ui-dashboard ui-dashboard--main",
     )
 
@@ -74,6 +76,11 @@ def create_app():
         dcc.Store(id="store-order-cart", storage_type="session", data=[]),
         # 발주 화면 장바구니: 설비·부품·협력사별 수량. 설비 화면 '발주 담기'로 쌓인다.
         dcc.Store(id="store-order-basket", storage_type="session", data=[]),
+        # 설정 창: 기본값·기준(브라우저에 저장), 접속 기록
+        dcc.Store(id="store-settings", storage_type="local", data=dict(DEFAULTS)),
+        dcc.Store(id="store-login-log", storage_type="local", data=[]),
+        dcc.Store(id="store-session-started", storage_type="session", data=False),
+        settings_modal(),
         html.Div(id="ui-page"),
     ])
 
@@ -82,16 +89,18 @@ def create_app():
         Input("ui-location", "pathname"),
         Input("ui-location", "search"),
         Input("store-as-of", "data"),
+        Input("store-settings", "data"),
     )
-    def display_page(pathname, search, as_of):
+    def display_page(pathname, search, as_of, settings):
         as_of = valid_as_of(as_of)
+        settings = merged(settings)
         if pathname == "/detail":
-            return create_detail_page(selected_machine(search), as_of)
+            return create_detail_page(selected_machine(search), as_of, settings)
         if pathname == "/statistics":
-            return create_statistics_page(as_of)
+            return create_statistics_page(as_of, settings)
         if pathname == "/order":
             return create_order_page(as_of)
-        return create_main_page(as_of)
+        return create_main_page(as_of, settings)
 
     @app.callback(
         Output("ui-location", "pathname"),

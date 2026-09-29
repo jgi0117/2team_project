@@ -13,6 +13,7 @@ from functools import lru_cache
 import pandas as pd
 
 from src.common.labels import load_events
+from src.common.paths import OPS, PROCESSED
 from src.F01 import build_detection
 from src.F02 import build_procurement
 from src.F04 import build_tracking
@@ -154,8 +155,8 @@ def kpi_detail(key, as_of):
 
 
 # ---------------- 할 일 · TOP5 ----------------
-@lru_cache(maxsize=32)
-def _todo_cached(as_of):
+@lru_cache(maxsize=64)
+def _todo_cached(as_of, if_threshold=None):
     items = []
     plan_rows = _candidates(as_of)
     plan_rows = plan_rows.loc[plan_rows.component.map(ADOPTED)]
@@ -176,29 +177,32 @@ def _todo_cached(as_of):
         })
     anomaly = detection(as_of)["anomaly_map"]
     if not anomaly.empty:
-        flagged = anomaly.loc[anomaly.is_anomaly.astype(str).str.lower().isin(["1", "true"])]
+        # 설정의 '이상 신호 기준'이 있으면 그 값, 없으면 모델 기준(threshold)으로 판정
+        cut = anomaly.threshold.astype(float) if if_threshold is None else float(if_threshold)
+        flagged = anomaly.loc[anomaly.anomaly_score.astype(float) > cut]
         for r in flagged.sort_values("anomaly_score", ascending=False).head(5).itertuples():
+            limit = float(r.threshold) if if_threshold is None else float(if_threshold)
             items.append({
                 "key": f"{int(r.machineID)}-if", "machine": int(r.machineID), "issue": "anomaly",
                 "action": "점검", "date": _day(as_of),
-                "risk": min(100, int(round(100 * float(r.anomaly_score) / max(float(r.threshold) * 1.3, 1e-9)))),
-                "note": f"센서 IF 이상 점수 {float(r.anomaly_score):.3f} (기준 {float(r.threshold):.2f} 초과)",
+                "risk": min(100, int(round(100 * float(r.anomaly_score) / max(limit * 1.3, 1e-9)))),
+                "note": f"센서 IF 이상 점수 {float(r.anomaly_score):.3f} (기준 {limit:.2f} 초과)",
             })
     return items
 
 
-def todo_items(as_of):
-    return [dict(item) for item in _todo_cached(as_of)]
+def todo_items(as_of, if_threshold=None):
+    return [dict(item) for item in _todo_cached(as_of, if_threshold)]
 
 
-def ranked_items(dismissed=(), sort=DEFAULT_SORT, as_of="2015-10-05"):
+def ranked_items(dismissed=(), sort=DEFAULT_SORT, as_of="2015-10-05", if_threshold=None):
     key = SORTS.get(sort, SORTS[DEFAULT_SORT])[1]
-    items = [item for item in todo_items(as_of) if item["key"] not in set(dismissed or ())]
+    items = [item for item in todo_items(as_of, if_threshold) if item["key"] not in set(dismissed or ())]
     return sorted(items, key=lambda item: (key(item), -item["risk"]))
 
 
-def item_by_key(key, as_of="2015-10-05"):
-    return next((item for item in todo_items(as_of) if item["key"] == key), None)
+def item_by_key(key, as_of="2015-10-05", if_threshold=None):
+    return next((item for item in todo_items(as_of, if_threshold) if item["key"] == key), None)
 
 
 # ---------------- F01 급상승 · F02 재고 × 위험 ----------------
@@ -273,9 +277,9 @@ def history(as_of, orders=(), start=None, end=None):
 
 
 # ---------------- 설비 상세: 발주 검토 · 협력사 · 조치 이력 ----------------
-def cost_review(machine_id, comp, as_of, rise=None):
+def cost_review(machine_id, comp, as_of, rise=None, late_tolerance=20):
     """F07 발주일별 기대 총비용을 detail 화면 형식(만원, 날짜)으로."""
-    result = analyze_order(int(machine_id), comp, as_of)
+    result = analyze_order(int(machine_id), comp, as_of, late_tolerance=float(late_tolerance) / 100)
     plan = result["plan"]
     start = pd.Timestamp(plan["as_of"]).normalize()
     curve = result["curve"]
@@ -313,6 +317,7 @@ def cost_review(machine_id, comp, as_of, rise=None):
         "slack": max(deadline_day, 0), "reason": reason,
         "status": "late" if too_late else ("order_due" if deadline_day <= 7 else "watch"),
         "target": _day(result["target_at"]), "need_from": need_from, "need_to": need_to,
+        "tolerance": int(late_tolerance),
     }
 
 
@@ -342,3 +347,40 @@ def replacement_history(machine_id, as_of, months=12):
               "delay": None if pd.isna(r.delay_days) else float(r.delay_days)}
              for r in records.itertuples()]
     return {"start": _day(start), "end": _day(cutoff), "rows": timeline, "records": table}
+
+
+# ---------------- comp2 안전재고 근거 ----------------
+@lru_cache(maxsize=1)
+def _metrics():
+    return pd.read_csv(PROCESSED / "model_metrics.csv")
+
+
+def safety_stock_info(comp, as_of):
+    """예측을 채택하지 않은 부품이 왜 안전재고로 대응하는지: 모델 성능·조달 조건·현재 재고 (모두 데이터 값)."""
+    meta = _parts().loc[comp]
+    decision = int(meta.lead_time_days + meta.preparation_days)
+    metrics = _metrics()
+    row = metrics.loc[metrics.component.eq(comp) & metrics.horizon_days.eq(decision) & metrics.source.eq("ml")]
+    values = row.set_index("metric").value.to_dict()
+    plan = build_maintenance_plan(as_of)
+    part = plan.loc[plan.component.eq(comp)].iloc[0]
+    cutoff = pd.Timestamp(as_of).normalize()
+    events = _events()
+    recent = events.loc[events.component.eq(comp) & events.date.between(cutoff - pd.Timedelta(days=90), cutoff)]
+    daily = len(recent) / 90
+    stock = int(part.available_stock)
+    receipt = part.expected_receipt_at
+    return {
+        "component": comp, "decision_days": decision, "lead": int(meta.lead_time_days),
+        "prep": int(meta.preparation_days), "shelf_life": int(meta.shelf_life_days),
+        "target_stock": int(meta.target_stock), "stock": stock,
+        "recommended": int(part.recommended_quantity), "daily_demand": round(daily, 2),
+        "coverage_days": int(stock / daily) if daily else None,
+        "next_receipt": None if pd.isna(receipt) else _day(receipt),
+        "auc": values.get("auc"), "lift": values.get("lift_top10"), "base_rate": values.get("base_rate"),
+    }
+
+
+@lru_cache(maxsize=1)
+def _parts():
+    return pd.read_csv(OPS / "part_master.csv").set_index("component")

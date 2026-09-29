@@ -53,7 +53,8 @@ def create_sidebar(active="main", as_of=UI_AS_OF):
 
     return html.Aside(
         [
-            html.Div([html.Span("⚙", className="ui-brand-mark", **{"aria-hidden": "true"}),
+            html.Div([html.Button("⚙", id="sb-settings-open", n_clicks=0, className="ui-brand-mark",
+                                  title="설정", **{"aria-label": "설정 열기"}),
                       html.Span("설비보전", className="ui-brand-text")],
                      className="ui-brand"),
             profile(),

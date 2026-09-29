@@ -8,7 +8,7 @@ from src.F10.dashboard import create_layout as create_anomaly_layout
 from src.ui.config import upto_as_of
 
 
-def create_statistics_layout(predictions=None, as_of=None):
+def create_statistics_layout(predictions=None, as_of=None, horizon=None):
     predictions = upto_as_of(load_predictions() if predictions is None else predictions, as_of)
     return html.Main(
         [
@@ -19,7 +19,7 @@ def create_statistics_layout(predictions=None, as_of=None):
                 **{"aria-labelledby": "stats-f10-title"},
             ),
             html.Section(
-                create_layout(predictions, predictions.as_of.max()),
+                create_layout(predictions, predictions.as_of.max(), horizon),
                 id="stats-f09-content",
                 className="risk-panel",
                 **{"aria-labelledby": "stats-f09-title"},

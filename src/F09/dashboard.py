@@ -36,10 +36,10 @@ def _view(data, as_of, horizon_days=None):
     return figure, title, meaning, horizons, horizon
 
 
-def create_layout(data=None, as_of=None):
+def create_layout(data=None, as_of=None, horizon_days=None):
     data = load_predictions() if data is None else data
     as_of = data.as_of.max() if as_of is None else pd.Timestamp(as_of).strftime("%Y-%m-%d")
-    figure, title, meaning, horizons, horizon = _view(data, as_of)
+    figure, title, meaning, horizons, horizon = _view(data, as_of, horizon_days)
     controls = dcc.RadioItems(
         id="f09-horizon",
         options=[{"label": f"{days}일", "value": days} for days in horizons],

@@ -15,6 +15,9 @@ from src.F09.heatmap import load_predictions, machine_ids
 from src.ui import live_data
 from src.ui.ai_data import f05_diagnosis, f06_analysis
 from src.ui.config import upto_as_of, valid_as_of
+from src.ui.settings import merged
+from src.ui.pages.main import safety_explain
+from copy import deepcopy
 from src.ui.pages.order.page import add_line, basket_line
 
 PREDICTIONS = load_predictions()
@@ -122,9 +125,12 @@ def hotspot(comp):
         ],
     )
 
+    safety_note = ([] if on else [html.P(
+        "예측으로 고장 시점을 맞히기 어려운 부품이라, 설비별 발주 대신 공용 창고에 안전재고를 유지해 대응합니다. "
+        "아래 점수는 참고용입니다.", className="hs-pop-safety")])
     pop = dbc.Popover(
-        [dbc.PopoverHeader(f"{comp} 기간별 고장 위험 점수"),
-         dbc.PopoverBody([
+        [dbc.PopoverHeader(f"{comp} 기간별 고장 위험 점수" if on else f"{comp} · 안전재고 대응 부품"),
+         dbc.PopoverBody([*safety_note,
              html.Div(className="pop-scroll", children=html.Div(
                  id=f"hs-pop-table-{comp}",
                  children=html.Table([
@@ -262,8 +268,8 @@ def review_item(comp, summary=None, body=None):
     ])
 
 
-def reviews_panel(machine_id, as_of):
-    content = review_content(machine_id, as_of)
+def reviews_panel(machine_id, as_of, tolerance=20):
+    content = review_content(machine_id, as_of, tolerance)
     return html.Section(id="dt-review", className="dt-band dt-panel", children=[
         section_head("발주 시점 · 비용 검토",
                      html.Span("말풍선의 '발주 검토'를 누르면 해당 부품이 열려요", className="dt-head-hint"),
@@ -293,7 +299,7 @@ f08_supplier = dbc.Collapse(
 # ---------------- ⑤ 교체 이력 ----------------
 f08_history = dbc.Collapse(
     id="f08-history-collapse", is_open=False,
-    children=html.Section(className="dt-band dt-panel", children=[
+    children=html.Section(id="dt-history-section", className="dt-band dt-panel", children=[
         section_head("교체 이력",
                      html.Div(html.Button("닫기", id="btn-f08-history-close", n_clicks=0, className="dt-btn"),
                               className="btns")),
@@ -308,9 +314,24 @@ f08_history = dbc.Collapse(
 
 
 # ---------------- layout ----------------
-def create_detail_layout(machine_id=None, as_of=None):
+def with_sensor(section, sensor):
+    """센서 이상 근거 섹션을 복사해 기본 센서를 설정값으로."""
+    section = deepcopy(section)
+
+    def walk(node):
+        for child in getattr(node, "children", None) or []:
+            if getattr(child, "id", None) == "f06-sensor-select":
+                child.value = sensor
+            elif not isinstance(child, str):
+                walk(child)
+    walk(section)
+    return section
+
+
+def create_detail_layout(machine_id=None, as_of=None, settings=None):
     selected = machine_id if machine_id in MACHINES else MACHINES[0]
     as_of = valid_as_of(as_of)
+    settings = merged(settings)
     return html.Div(className="page-detail", children=[
         dcc.Store(id="store-selected-machine", data=selected),
         dcc.Store(id="store-selected-comp", data=None),
@@ -319,8 +340,8 @@ def create_detail_layout(machine_id=None, as_of=None):
         html.Div(id="dt-scroll-done", hidden=True),
 
         canvas(selected, as_of),
-        f06_overlay,
-        reviews_panel(selected, as_of),
+        with_sensor(f06_overlay, settings["detail_sensor"]),
+        reviews_panel(selected, as_of, settings["detail_late_tolerance"]),
         f08_supplier,
         f08_history,
         html.P("고장 위험은 부품별 예측 모델, 센서 이상은 별도의 이상 탐지 결과입니다. "
@@ -682,37 +703,50 @@ def toggle_reviews(*args):
 def review_body(comp, curve, part):
     """발주일별 기대 총비용. 시나리오 3점·최저점·발주 마감·늦을 위험 구간을 한 그래프에."""
     figure = figure_base()
-    hover = [f"예상 총비용 {total:,.1f}만원<br>· 일찍 받아 기다리는 비용 {early:,.2f}만원"
-             f"<br>· 늦게 받을 위험 비용 {late:,.1f}만원 (늦을 확률 {late_p}%)"
+    big = max(curve["totals"]) >= 10_000                       # 1억 이상이면 억 단위로
+    unit, scale = ("억", 10_000) if big else ("만", 1)
+    totals = [value / scale for value in curve["totals"]]
+    fmt = lambda v: f"{v / 10_000:,.2f}억원" if v >= 10_000 else f"{v:,.1f}만원"   # 1억 미만은 만원
+    hover = [f"예상 총비용 {fmt(total)}<br>· 일찍 받아 기다리는 비용 {early:,.2f}만원"
+             f"<br>· 늦게 받을 위험 비용 {fmt(late)} (늦을 확률 {late_p}%)"
              for total, early, late, late_p in zip(curve["totals"], curve["early"], curve["late"], curve["late_p"])]
     figure.add_trace(go.Scatter(
-        x=curve["dates"], y=curve["totals"], mode="lines", line={"color": NAVY, "width": 2.5},
+        x=curve["dates"], y=totals, mode="lines", line={"color": NAVY, "width": 2.5},
         fill="tozeroy", fillcolor="rgba(0,53,102,.07)", customdata=hover,
         hovertemplate="%{x} 발주<br>%{customdata}<extra></extra>"))
     # 발주 시나리오(오늘·1주·2주 뒤)를 같은 곡선 위의 점으로 → 오른쪽 카드와 1:1
-    points = [(d, label) for d, label in ((0, "오늘"), (7, "1주 뒤"), (14, "2주 뒤")) if d < len(curve["dates"])]
-    figure.add_trace(go.Scatter(
-        x=[curve["dates"][d] for d, _ in points], y=[curve["totals"][d] for d, _ in points],
-        mode="markers+text", text=[label for _, label in points], textposition="bottom center",
-        marker={"size": 9, "color": "white", "line": {"color": NAVY, "width": 2}},
-        textfont={"size": 11, "color": MUTED}, hoverinfo="skip"))
+    points = [(d, label) for d, label in ((0, "오늘"), (7, "1주"), (14, "2주")) if d < len(curve["dates"])]
     best = curve["best_day"]
     figure.add_trace(go.Scatter(
-        x=[curve["dates"][best]], y=[curve["totals"][best]], mode="markers+text",
-        marker={"size": 14, "color": YELLOW, "line": {"color": NAVY, "width": 2}},
-        text=[f"최저 {curve['totals'][best]:,.1f}만원"], textposition="top center",
-        textfont={"color": INK, "size": 12}, hoverinfo="skip"))
-    risky = [date for date, p in zip(curve["dates"], curve["late_p"]) if p > 20]
+        x=[curve["dates"][d] for d, _ in points], y=[totals[d] for d, _ in points],
+        mode="markers+text", text=["" if d == best else label for d, label in points],
+        textposition="top left",   # 오르는 곡선의 왼쪽 위 = 빈 공간
+        marker={"size": 9, "color": "white", "line": {"color": NAVY, "width": 2}},
+        textfont={"size": 11, "color": MUTED}, hoverinfo="skip"))
+    edge = best / max(len(totals) - 1, 1)
+    figure.add_trace(go.Scatter(
+        x=[curve["dates"][best]], y=[totals[best]], mode="markers",
+        marker={"size": 14, "color": YELLOW, "line": {"color": NAVY, "width": 2}}, hoverinfo="skip"))
+    label = f"최저 {fmt(curve['totals'][best])}" + (" · 오늘" if best == 0 else "")
+    figure.add_annotation(x=curve["dates"][best], y=totals[best], text=f"<b>{label}</b>", showarrow=True,
+                          arrowhead=0, arrowcolor=MUTED, ax=30 if edge < .15 else -44, ay=-80 if edge < .15 else -40,
+                          xanchor="left" if edge < .15 else "right", bgcolor="rgba(255,255,255,.92)",
+                          bordercolor=YELLOW, borderwidth=1.5, borderpad=4, font={"color": INK, "size": 12})
+    tolerance = curve.get("tolerance", 20)
+    risky = [date for date, p in zip(curve["dates"], curve["late_p"]) if p > tolerance]
     if risky:
         figure.add_vrect(x0=risky[0], x1=curve["dates"][-1], fillcolor=DANGER, opacity=.06, line_width=0,
-                         annotation={"text": "늦을 위험 20% 초과", "font": {"size": 11, "color": DANGER}},
+                         annotation={"text": f"늦을 위험 {tolerance}% 초과", "font": {"size": 11, "color": DANGER}},
                          annotation_position="top right")
     if not curve["too_late"]:
         figure.add_vline(x=curve["deadline"], line={"color": DANGER, "width": 1.5, "dash": "dot"},
                          annotation={"text": "발주 마감", "font": {"color": DANGER, "size": 11}},
-                         annotation_position="top left")
-    figure.update_xaxes(showgrid=False, tickformat="%m/%d", linecolor=GRID)
-    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix="만", range=[0, max(curve["totals"]) * 1.18])
+                         annotation_position="top right" if curve["deadline_day"] <= len(totals) * .3 else "top left")
+    start = pd.Timestamp(curve["dates"][0]) - pd.Timedelta(days=1)   # 글자 때문에 x축이 과거로 늘어나지 않게
+    figure.update_xaxes(showgrid=False, tickformat="%m/%d", linecolor=GRID, range=[start, curve["dates"][-1]])
+    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix=unit, tickformat=",", range=[0, max(totals) * 1.22])
+    figure.update_traces(cliponaxis=False, selector={"mode": "markers+text"})
+    figure.update_layout(margin={"l": 56, "r": 40, "t": 34, "b": 34})
 
     parts = curve["best_parts"]
     explain = html.Div([
@@ -774,14 +808,37 @@ def review_body(comp, curve, part):
     ])
 
 
-def review_content(machine_id, as_of):
+def safety_body(comp, info):
+    """예측 미채택 부품: 발주일별 비용 대신 안전재고 설명과 보충 발주."""
+    return html.Div([
+        html.Div(safety_explain(info), className="dt-safety"),
+        html.Div([
+            html.Span("공용 창고 보충이 필요하면 협력사를 고르고 수량을 정하세요", className="dt-acc-foot-hint"),
+            html.Button("발주 목록 담기", id={"type": "f07-stage", "comp": comp}, n_clicks=0,
+                        className="dt-btn dt-btn--primary"),
+        ], className="dt-acc-foot"),
+    ])
+
+
+def review_content(machine_id, as_of, tolerance=20):
     """부품별 (접힌 줄 요약, 펼친 내용)."""
     as_of = resolve_as_of(as_of)
     parts = {part["comp"]: part for part in part_rows(machine_id, as_of)}
     content = {}
     for comp in COMPS:
         part = parts[comp]
-        curve = live_data.cost_review(machine_id, comp, as_of, part["days"])
+        if not part["adopted"]:
+            # 고장 시점 예측을 쓰지 않으므로 '언제 발주하면 가장 쌀까'는 의미가 없다 → 안전재고 상태로 채움
+            info = live_data.safety_stock_info(comp, as_of)
+            content[comp] = ([
+                html.Span("안전재고", className="dt-status dt-status--off"),
+                html.Span("예측 미채택 · 재고로 대응"),
+                html.Span(f"재고 {info['stock']}개 / 목표 {info['target_stock']}개",
+                          className="is-alert" if info["stock"] < info["target_stock"] else ""),
+                html.Span(f"약 {info['coverage_days']}일분" if info["coverage_days"] is not None else ""),
+            ], safety_body(comp, info))
+            continue
+        curve = live_data.cost_review(machine_id, comp, as_of, part["days"], tolerance)
         deadline = (f"발주 마감 {curve['deadline'][5:].replace('-', '/')} (D-{curve['deadline_day']})"
                     if curve["deadline_day"] >= 0 else f"발주 마감 {-curve['deadline_day']}일 지남")
         summary = [
@@ -799,11 +856,12 @@ def review_content(machine_id, as_of):
     Output({"type": "f07-summary", "comp": ALL}, "children"),
     Input("detail-machine-select", "value"),
     State("store-as-of", "data"),
+    State("store-settings", "data"),
     prevent_initial_call=True,
 )
-def show_reviews(machine_id, as_of):
+def show_reviews(machine_id, as_of, settings):
     """설비를 바꾸면 부품별 발주 검토를 다시 계산."""
-    content = review_content(machine_id, as_of)
+    content = review_content(machine_id, as_of, merged(settings)["detail_late_tolerance"])
     comps = [item["id"]["comp"] for item in ctx.outputs_list[0]]
     return [content[comp][1] for comp in comps], [content[comp][0] for comp in comps]
 
@@ -854,8 +912,9 @@ def toggle_supplier(*_):
     Input("store-order-basket", "data"),
     Input("detail-machine-select", "value"),
     State("store-as-of", "data"),
+    State("store-settings", "data"),
 )
-def render_cart(cart, basket, machine_id, as_of):
+def render_cart(cart, basket, machine_id, as_of, settings):
     cart = [item for item in cart or [] if item["machine"] == machine_id]   # 이 설비 것만
     if not cart:
         return ghost("발주 검토에서 '발주 목록 담기'를 누르면 부품별로 쌓입니다", 100)
@@ -864,7 +923,8 @@ def render_cart(cart, basket, machine_id, as_of):
     cards = []
     for item in cart:
         part = next(part for part in part_rows(item["machine"], as_of) if part["comp"] == item["comp"])
-        curve = live_data.cost_review(item["machine"], item["comp"], as_of, part["days"])
+        curve = live_data.cost_review(item["machine"], item["comp"], as_of, part["days"],
+                                      merged(settings)["detail_late_tolerance"])
         rows = []
         for supplier in live_data.suppliers(item["comp"], as_of):
             key = f"{item['key']}|{supplier['id']}"
@@ -988,31 +1048,63 @@ def turn_history_page(_prev, _next, machine_id, page, as_of):
     return min(max(1, (page or 1) + (1 if ctx.triggered_id == "dt-hist-next" else -1)), pages)
 
 
+def history_strips(history):
+    """부품별 한 줄 타임라인: 왼쪽 요약(건수) · 가운데 12개월 띠(교체 표시) · 오른쪽 마지막 교체."""
+    start, end = pd.Timestamp(history["start"]), pd.Timestamp(history["end"])
+    span = max((end - start).days, 1)
+    months = pd.date_range(start.normalize() + pd.offsets.MonthBegin(0), end, freq="MS")
+    ticks = [html.Span(f"{m.month}월", className="dt-strip-tick",
+                       style={"left": f"{100 * (m - start).days / span:.1f}%"}) for m in months]
+    rows = []
+    for comp in COMPS:
+        events = [row for row in history["rows"] if row["comp"] == comp]
+        planned = sum(not row["failure"] for row in events)
+        failed = sum(row["failure"] for row in events)
+        marks = [html.Span("✕" if row["failure"] else "",
+                           className="dt-mark " + ("dt-mark--fail" if row["failure"] else "dt-mark--plan"),
+                           style={"left": f"{100 * (pd.Timestamp(row['date']) - start).days / span:.1f}%"},
+                           title=f"{row['date']} · {'고장 후 교체' if row['failure'] else '예방 교체'} · {row['cost']:,}만원")
+                 for row in events]
+        last = events[0] if events else None
+        since = (end - pd.Timestamp(last["date"])).days if last else None
+        rows.append(html.Div([
+            html.Div([html.B(comp),
+                      html.Span([html.Span(f"예방 {planned}", className="dt-count dt-count--plan"),
+                                 html.Span(f"고장 후 {failed}", className="dt-count dt-count--fail" if failed
+                                           else "dt-count")])], className="dt-strip-label"),
+            html.Div([html.Div(className="dt-strip-line"), *marks], className="dt-strip-track"),
+            html.Div([html.Span("마지막 교체"),
+                      html.B(f"{since}일 전" if since is not None else "기록 없음"),
+                      html.Small(("고장 후" if last["failure"] else "예방") if last else "")],
+                     className="dt-strip-last"),
+        ], className="dt-strip-row" + (" has-fail" if failed else "")))
+    total_fail = sum(row["failure"] for row in history["rows"])
+    worst = max(COMPS, key=lambda c: sum(r["failure"] for r in history["rows"] if r["comp"] == c))
+    headline = (f"최근 {len(months)}개월 교체 {len(history['rows'])}건 중 고장 후 교체 {total_fail}건"
+                + (f" · 고장 후 교체가 가장 많은 부품은 {worst}" if total_fail else " · 모두 고장 전에 미리 교체했어요"))
+    return html.Div([
+        html.Div([html.H3(headline),
+                  html.Div([html.Span([html.I(className="dt-mark dt-mark--plan dt-mark--legend"), "예방 교체(고장 전)"]),
+                            html.Span([html.I("✕", className="dt-mark dt-mark--fail dt-mark--legend"), "고장 후 교체"])],
+                           className="dt-strip-legend")], className="dt-strip-head"),
+        html.Div([html.Div(className="dt-strip-label"), html.Div(ticks, className="dt-strip-ticks"),
+                  html.Div(className="dt-strip-last")], className="dt-strip-row dt-strip-row--axis"),
+        *rows,
+    ], className="dt-strips")
+
+
 @callback(
     Output("f08-history-table", "children"),
     Output("dt-hist-page-text", "children"),
     Input("detail-machine-select", "value"),
     Input("dt-hist-page", "data"),
     State("store-as-of", "data"),
+    State("store-settings", "data"),
 )
-def show_history(machine_id, page, as_of):
-    """교체 이력: 부품별 타임라인(원본 정비 기록) + 최근 기록 표."""
-    history = live_data.replacement_history(machine_id, resolve_as_of(as_of))
-    rows = history["rows"]
-    figure = figure_base()
-    for failure, name, color, symbol in ((False, "예방 교체", NAVY, "circle"), (True, "고장 후 교체", DANGER, "x")):
-        part = [row for row in rows if row["failure"] == failure]
-        figure.add_trace(go.Scatter(
-            x=[row["date"] for row in part], y=[row["comp"] for row in part], mode="markers", name=name,
-            marker={"size": 13, "color": color, "symbol": symbol, "line": {"color": "white", "width": 2}},
-            customdata=[[row["cost"]] for row in part],
-            hovertemplate=f"%{{x}} · %{{y}}<br>{name} · %{{customdata[0]:,}}만원<extra></extra>"))
-    figure.update_layout(showlegend=True, legend={"orientation": "h", "x": 1, "xanchor": "right", "y": 1.18,
-                                                  "font": {"color": INK}},
-                         margin={"l": 8, "r": 12, "t": 28, "b": 8})
-    figure.update_xaxes(range=[history["start"], history["end"]], showgrid=True, gridcolor=GRID,
-                        tickformat="%y.%m", linecolor=GRID)
-    figure.update_yaxes(categoryorder="array", categoryarray=list(reversed(COMPS)), gridcolor=GRID)
+def show_history(machine_id, page, as_of, settings):
+    """교체 이력: 부품별 한 줄 타임라인(원본 정비·고장 기록) + 조치 기록 표(페이지)."""
+    months = int(merged(settings)["detail_history_months"])
+    history = live_data.replacement_history(machine_id, resolve_as_of(as_of), months)
     records = history["records"]
     pages = max(1, -(-len(records) // HISTORY_PAGE))
     page = min(max(int(page or 1), 1), pages)
@@ -1028,13 +1120,8 @@ def show_history(machine_id, page, as_of):
             html.Td("—" if record["delay"] is None else f"{record['delay']:g}일"),
         ]) for record in shown]),
     ], className="dt-table")
-    failures = sum(row["failure"] for row in rows)
     return html.Div(className="dt-history", children=[
-        html.Div([
-            html.H3(f"최근 12개월 교체 {len(rows)}건 · 고장 후 교체 {failures}건"),
-            dcc.Graph(figure=figure, config={"displayModeBar": False}, responsive=True,
-                      style={"height": "clamp(200px,24vh,260px)"}),
-        ], className="dt-f07-block"),
+        html.Div(history_strips(history), className="dt-f07-block"),
         html.Div([html.H3(f"조치 기록 전체 {len(records)}건 (최근순)"), html.Div(table, className="table-scroll")],
                  className="dt-f07-block"),
     ]), f"{page} / {pages} 페이지"
@@ -1042,12 +1129,15 @@ def show_history(machine_id, page, as_of):
 
 @callback(
     Output("f08-history-collapse", "is_open"),
+    Output("dt-scroll", "data", allow_duplicate=True),
     Input("btn-open-history", "n_clicks"),
     Input("btn-f08-history-close", "n_clicks"),
     prevent_initial_call=True,
 )
-def toggle_history(*_):
-    return ctx.triggered_id == "btn-open-history"
+def toggle_history(open_clicks, _close):
+    if ctx.triggered_id == "btn-open-history" and open_clicks:
+        return True, {"id": "dt-history-section", "at": open_clicks}
+    return False, no_update
 
 
 layout = create_detail_layout()
