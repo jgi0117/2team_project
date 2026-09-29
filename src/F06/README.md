@@ -1,55 +1,66 @@
 # F06 · 시간별 센서 이상 분석
 
-설비의 시간별 센서 관측, IF 결과, 3-Sigma/IQR 이탈을 비교합니다. 고장 예측은
-F05의 별도 입력입니다. 센서 이탈을 고장 확률이나 물리적 고장 원인으로 바꾸지 않습니다.
-F06은 LLM을 호출하지 않고 수치와 판정만 반환합니다. Dash와 API/CLI에서 사용할 수 있습니다.
+## 목적과 입력
 
-## 실행
+선택 설비의 최근 센서 시계열을 바탕으로 3-Sigma/IQR 통계 이탈과 저장된 Isolation
+Forest(IF) 결과를 시간별로 나란히 보여줍니다. 고장 예측은 F05가 별도로 다루며 F06은
+LLM을 호출하지 않고 수치와 판정만 반환합니다.
+
+필수 센서 열은 `volt, rotate, pressure, vibration`입니다. 시간 열은 `datetime` 또는
+`as_of`이며 `machineID`와 함께 필요합니다. IF 입력은 `machineID, as_of, anomaly_score,
+threshold, is_anomaly`를 포함합니다.
+
+## 통계 계산
+
+조회 시점 이하에서 선택 설비의 마지막 관측을 `observed_at`으로 고릅니다. 기본
+`window_hours=72`이며 마지막 기준선 시작부터 관측 시점까지의 시간별 추이를 반환합니다.
+각 시간 t의 통계 기준선은 같은 설비에서 t보다 앞선 `[t - window_hours, t)` 관측만
+사용합니다. 따라서 t의 현재 센서값 및 미래 데이터는 기준선에 들어가지 않습니다.
+
+각 센서별로 기준선에 필요한 모든 시간 관측과 센서 값이 있을 때에만 계산합니다.
+
+- 평균과 표준편차: `mean`, 모집단 표준편차 `std(ddof=0)`.
+- 3-Sigma 범위: `[mean - 3 × std, mean + 3 × std]`.
+- 사분위 범위: `IQR = Q3 - Q1`.
+- IQR 탐지 범위: `[Q1 - 1.5 × IQR, Q3 + 1.5 × IQR]`.
+- 현재 값이 범위보다 엄격히 작거나 크면 이상입니다. 경계와 같은 값은 이상이 아닙니다.
+
+기준선이 불완전하거나 현재 센서값이 비면 상태를 미확정으로 둡니다. 표준편차 또는
+IQR가 0인 경우도 0 폭의 범위와 직접 비교하고 `constant_baseline`/`zero_iqr`로
+표시합니다. 임의 epsilon을 더해 점수를 만들지 않습니다.
+
+## IF 결과와 결과 구조
+
+IF CSV에서 같은 설비 및 정확히 같은 관측시각의 행만 연결합니다. `is_anomaly`가
+`anomaly_score > threshold`와 일치하는지 검증합니다. 저장 결과에 센서 원값이 포함되어
+있으면 선택한 telemetry와 값이 맞는지도 확인합니다. IF는 여러 센서 특징에 대한
+설비 단위 탐지이므로 특정 센서의 원인을 말해주지 않습니다.
+
+- `sensors`: 마지막 관측의 센서값, 기준선 크기/범위, 3-Sigma/IQR 판정 및 상태.
+- `timeline`: 관측 구간 각 시각의 센서 통계와 해당 시각 IF 결과.
+- `trend`: 실제로 관측된 원본 센서값. 결측을 보간하지 않습니다.
+- `if`: 마지막 관측의 IF 점수, 저장 임계값 및 경고 여부. 생략 입력이면 `null`.
+- `observation_age_hours`: 조회 기준시각과 마지막 관측의 시간 차.
+- `status`: 모든 센서 통계가 준비되고 IF가 연결되면 `ok`, 일부 정보만 있으면
+  `partial`, 관측 자체가 없으면 `no_data`.
+
+## 실행 방법
 
 ```powershell
 python -m src.F06 --machine-id 1 --as-of "2015-12-28 06:00:00" --if-predictions outputs/model3/predictions.csv
 ```
 
-`--telemetry`는 기본 `data/raw/azure_pdm/PdM_telemetry.csv`, `--window-hours`는
-기본 72입니다. IF 결과를 생략하면 통계 분석만 수행하고 IF 값은 `null`로 둡니다.
+기본 telemetry는 `data/raw/azure_pdm/PdM_telemetry.csv`, 기본 창은 72시간입니다.
+IF 파일을 생략하면 통계 분석만 수행합니다. Python에서는
+`analyze_equipment(telemetry, machine_id, as_of, if_predictions=..., window_hours=72)`를
+호출할 수 있습니다.
 
-## 분석 기준
+## 시각화와 한계
 
-- 조회시점 이전의 마지막 관측 t를 선택합니다. `observed_at`과 관측 경과시간을 반환합니다.
-- 최근 72시간의 각 시각 t에 대해 같은 설비의 `[t-72시간, t)`를 기준선으로 사용합니다.
-  현재 관측과 미래 데이터는 제외합니다.
-- 매시간 관측과 해당 센서 값이 모두 있어야 통계 판정합니다. 결측은 판정 미확정입니다.
-- 3-Sigma: 평균 ± 3 × 모집단 표준편차(`ddof=0`).
-- IQR: Q1 − 1.5 × IQR ~ Q3 + 1.5 × IQR. 경계값과 같으면 이탈이 아닙니다.
-- 기준선 분산/IQR가 0이면 해당 사실을 결과에 표시하고 축소된 범위와 직접 비교합니다.
-  0으로 나누거나 임의 epsilon으로 점수를 증폭하지 않습니다.
-- IF는 기존 `src/model3`의 저장 결과를 읽습니다. 같은 설비·관측시점만 연결하고
-  `anomaly_score > threshold`와 저장된 판정이 일치하는지 확인합니다.
-- IF는 여러 센서 특징을 이용한 별도 탐지입니다. 3-Sigma/IQR 이탈 센서가
-  IF 판단의 원인이라고 단정하지 않습니다. 과거 기준선도 검증된 정상 구간은 아닙니다.
-
-## Python API와 결과
-
-```python
-from src.F06 import analyze_equipment
-
-result = analyze_equipment(telemetry, machine_id=1, as_of="2015-12-28 06:00:00",
-                           if_predictions=if_predictions)
-```
-
-`telemetry`는 `machineID, datetime`(또는 `as_of`)과
-`volt, rotate, pressure, vibration` 열을 받습니다. IF 결과는
-`machineID, as_of, anomaly_score, threshold, is_anomaly` 열을 받습니다.
-
-결과의 `timeline`에는 시간별 센서 3-Sigma/IQR 판정과 설비 전체 IF 판정이 들어갑니다.
-과거 기준선이 모자라거나 관측이 없으면 해당 시각은 미판정으로 표시합니다.
-`sensors`에는 마지막 시점의 센서별 실제 값·기준 범위·판정·결측 상태가 들어갑니다.
-`trend`는 관측 구간의 원래 센서값이며 보간하지 않습니다. 마지막 시점의 `if`와
-`interpretation`도 제공합니다. 화면은 선택한 센서값과 IQR·3-Sigma 경계를
-상단 선그래프에, 설비 전체 IF 점수·경고 기준을 하단 선그래프에 표시합니다.
-IQR의 탐지 상·하한은 화면에서 UDL/LDL, 3-Sigma의 관리 상·하한은
-UCL/LCL로 표시합니다. 이상 시점은 빨간 표식으로 구분하고, 이상이 없으면
-이상 0건을 명시합니다.
+UI는 센서 원값과 IQR/3-Sigma 경계를 위 그래프에, 설비 IF 점수/저장 임계값을 아래
+그래프에 표시합니다. IQR 상·하한은 UDL/LDL, 3-Sigma 한계는 UCL/LCL로 표시합니다.
+이 범위는 해당 과거 구간의 통계 기준이지 검증된 정상 운전 한계가 아닙니다. 센서 이상은
+고장 확률, 고장 원인, 인과관계 또는 설비 고장을 뜻하지 않습니다.
 
 ## 검증
 
@@ -57,4 +68,5 @@ UCL/LCL로 표시합니다. 이상 시점은 빨간 표식으로 구분하고, �
 python -m unittest discover -s tests -p test_f03_f06.py -v
 ```
 
-미래 정보 제외, 현재 관측의 기준선 제외, 결측/일정한 기준선, IF 시점 일치를 검사합니다.
+테스트는 미래 정보와 현재 관측의 기준선 제외, 결측/일정 기준선, IF 시점 및 임계값
+일치를 확인합니다.

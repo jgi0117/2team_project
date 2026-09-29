@@ -225,6 +225,10 @@ def dashboard_overview(as_of=None) -> dict:
     replacement_due_rows = (risk_candidates.loc[
         risk_candidates.target_maintenance_at.le(observed + pd.Timedelta(days=14))
     ].sort_values(["target_maintenance_at", "risk_score"], ascending=[True, False]))
+    order_due_rows = (risk_candidates.loc[
+        risk_candidates.status.isin(["late", "order_due"])
+        & risk_candidates.order_by_at.le(week_end)
+    ].sort_values(["order_by_at", "risk_score"], ascending=[True, False]))
     daily_path = WORK / "pred_ml.parquet"
     surges = []
     if daily_path.is_file():
@@ -255,6 +259,7 @@ def dashboard_overview(as_of=None) -> dict:
         "calibrated": calibrated, "surges": surges, "plan": plan, "top5": top,
         "priority_equipment": priority_equipment,
         "replacement_due_rows": replacement_due_rows,
+        "order_due_rows": order_due_rows,
         "part_risk": part_risk, "history": history, "recent_actions": recent_actions,
         "order_schedule": action_schedule, "action_schedule": action_schedule,
         "schedule_start": schedule_start, "schedule_end": schedule_end,
@@ -264,10 +269,7 @@ def dashboard_overview(as_of=None) -> dict:
             "warning_machines": int(len(warning_machines)),
             "replacement_due": int(len(replacement_due_rows)),
             "late_items": int(risk_candidates.status.eq("late").sum()),
-            "order_due": int(risk_candidates.loc[
-                risk_candidates.status.isin(["late", "order_due"])
-                & risk_candidates.order_by_at.le(week_end)
-            ].shape[0]),
+            "order_due": int(len(order_due_rows)),
             "covered": int(risk_candidates.status.eq("covered").sum()),
             "prediction_rows": int(len(current)),
             **scenario_costs,

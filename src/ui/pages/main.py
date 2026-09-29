@@ -25,6 +25,7 @@ def dashboard_overview(as_of=None):
         "plan": procurement["plan"], "top5": procurement["top5"],
         "priority_equipment": procurement["priority_equipment"],
         "replacement_due_rows": procurement["replacement_due_rows"],
+        "order_due_rows": procurement["order_due_rows"],
         "part_risk": procurement["part_risk"], "kpis": procurement["kpis"],
         "order_schedule": procurement["order_schedule"],
         "action_schedule": procurement["action_schedule"],
@@ -85,13 +86,18 @@ def make_summary_cards(overview):
         f"M-{int(row.machineID):03d} · {row.component} · {row.target_maintenance_at:%m-%d}",
         href=f"/detail?machine={int(row.machineID)}",
     ) for row in overview["replacement_due_rows"].itertuples(index=False)]
+    order_links = [dcc.Link(
+        f"M-{int(row.machineID):03d} · {row.component} · 마감 {row.order_by_at:%m-%d}",
+        href=f"/detail?machine={int(row.machineID)}",
+    ) for row in overview["order_due_rows"].itertuples(index=False)]
     cards = [
         ("경고 설비", f"{kpi['warning_machines']}대", "mn-summary-red", warning_links,
          "경고 설비 상세 보기"),
         ("교체기한 임박", f"{kpi['replacement_due']}건", "mn-summary-blue", replacement_links,
          "14일 이내 정비 예정"),
         ("기한 초과", f"{kpi['late_items']}건", "mn-summary-red", None, None),
-        ("이번 주 발주 필요", f"{kpi['order_due']}건", "", None, None),
+        ("이번 주 발주 필요", f"{kpi['order_due']}건", "", order_links,
+         "발주 확인 대상"),
         ("14일 지연 대비 절감 효과", format_won(kpi["action_savings"]),
          "mn-summary-green", None, None),
     ]
@@ -119,8 +125,6 @@ def make_f03_panel():
         result = {"text": "고장 예측 결과를 불러오지 못했습니다.", "selected": None,
                   "prediction_as_of": None, "horizon_days": None}
     details = []
-    if result.get("horizon_days"):
-        details.append(f"향후 {result['horizon_days']}일 위험")
     selected = result.get("selected")
     if selected:
         details.append(dcc.Link(f"설비 M-{selected['machineID']:03d} 상세 보기",

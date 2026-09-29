@@ -23,6 +23,11 @@ class MainPanelTests(unittest.TestCase):
         replacement_hover = cards.children[1].children[2]
         self.assertEqual(len(replacement_hover.children) - 1,
                          len(overview["replacement_due_rows"]))
+        order_hover = cards.children[3].children[2]
+        self.assertEqual(len(order_hover.children) - 1, len(overview["order_due_rows"]))
+        self.assertIn("마감", order_hover.children[1].children)
+        self.assertTrue(all(link.href.startswith("/detail?machine=")
+                            for link in order_hover.children[1:]))
 
     def test_surge_chart_supports_hover_and_detail_click(self):
         figure = main.surge_figure(main.dashboard_overview("2015-12-21"))
@@ -60,7 +65,7 @@ class MainPanelTests(unittest.TestCase):
         self.assertEqual(panel.children[1].children,
                          "설비 13의 comp2를 우선 확인하세요. 근거: 대응 여유 2일 · 가용재고 0개.")
         self.assertEqual(panel.children[2].children[-1].href, "/detail?machine=13")
-        self.assertIn("향후 7일", panel.children[2].children[0])
+        self.assertNotIn("향후 7일", str(panel.children[2].to_plotly_json()))
         self.assertIn("2015-10-05", rendered.children[0].children[1].children)
         self.assertEqual(main.layout.children[0].children, None)
 

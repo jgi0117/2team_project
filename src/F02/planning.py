@@ -13,6 +13,7 @@ def build_procurement(as_of=None) -> dict:
         "feature": "F02", "as_of": overview["as_of"], "plan": overview["plan"],
         "top5": overview["top5"], "priority_equipment": overview["priority_equipment"],
         "replacement_due_rows": overview["replacement_due_rows"],
+        "order_due_rows": overview["order_due_rows"],
         "part_risk": overview["part_risk"], "kpis": overview["kpis"],
         "order_schedule": overview["order_schedule"],
         "action_schedule": overview["action_schedule"],
