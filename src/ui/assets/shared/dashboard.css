@@ -1,47 +1,79 @@
+/* ============ 앱 공통 틀: 사이드바 + 본문 ============ */
 :root {
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-family: var(--ui-font);
     color: var(--ui-text);
-    background: #f4f7fa;
+    background: var(--ui-bg);
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; font-family: var(--ui-font); background: var(--ui-bg); }
+button, input, select, textarea { font-family: inherit; }
 
 .ui-dashboard {
     display: grid;
-    grid-template-columns: 148px minmax(0, 1fr);
-    min-height: calc(100vh - 32px);
-    margin: 16px;
-    border: 3px solid var(--ui-navy);
-    background: #fff;
+    grid-template-columns: clamp(150px, 11vw, 210px) minmax(0, 1fr);
+    min-height: 100vh;
+    background: var(--ui-bg);
 }
 
 .ui-sidebar {
-    border-right: 3px solid var(--ui-navy);
-    padding-top: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 24px 12px;
+    background: var(--ui-navy);
+    color: #fff;
 }
 
-.ui-sidebar nav { display: flex; flex-direction: column; }
+.ui-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 24px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+}
+.ui-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--ui-yellow);
+    color: var(--ui-ink);
+    font-size: 15px;
+}
+
+.ui-sidebar nav { display: flex; flex-direction: column; gap: 4px; }
 .ui-nav-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-height: 68px;
+    gap: 10px;
     width: 100%;
-    padding: 14px 10px;
+    min-height: 48px;
+    padding: 12px 14px;
     border: 0;
+    border-radius: 10px;
     background: transparent;
-    color: inherit;
+    color: rgba(255, 255, 255, .72);
     font: inherit;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
     text-decoration: none;
 }
+.ui-nav-icon { width: 20px; text-align: center; }
 
 .ui-nav-item:disabled { color: #657489; cursor: default; }
-a.ui-nav-item:hover { background: #edf5fc; }
-a.ui-nav-item:focus-visible { outline: 3px solid #237cbe; outline-offset: -4px; }
-.ui-nav-item--active { background: var(--ui-navy-soft); color: var(--ui-navy); }
+a.ui-nav-item:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+a.ui-nav-item:focus-visible { outline: 3px solid var(--ui-yellow); outline-offset: -3px; }
+.ui-nav-item--active {
+    background: var(--ui-navy-700);
+    color: #fff;
+    box-shadow: inset 4px 0 0 var(--ui-yellow);
+}
 
 .ui-statistics {
     display: grid;
@@ -49,25 +81,6 @@ a.ui-nav-item:focus-visible { outline: 3px solid #237cbe; outline-offset: -4px; 
     gap: 20px;
     padding: 20px;
     min-width: 0;
-}
-
-.ui-stat-panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-    padding: 32px;
-    border: 3px solid var(--ui-navy);
-    background: #fff;
-}
-
-.ui-stat-panel h2 {
-    margin: 0;
-    font-size: clamp(20px, 2.4vw, 34px);
-    line-height: 1.5;
-    text-align: center;
-    word-break: keep-all;
-    overflow-wrap: anywhere;
 }
 
 .ui-sr-only {
@@ -82,13 +95,11 @@ a.ui-nav-item:focus-visible { outline: 3px solid #237cbe; outline-offset: -4px; 
     border: 0;
 }
 
-@media (max-width: 600px) {
-    .ui-dashboard {
-        grid-template-columns: 90px minmax(0, 1fr);
-        margin: 8px;
-        min-height: calc(100vh - 16px);
-    }
-    .ui-nav-item { font-size: 15px; min-height: 60px; }
+@media (max-width: 767.98px) {
+    .ui-dashboard { grid-template-columns: 72px minmax(0, 1fr); }
+    .ui-sidebar { padding: 16px 8px; }
+    .ui-brand { justify-content: center; padding: 0 0 16px; }
+    .ui-brand-text, .ui-nav-text { display: none; }
+    .ui-nav-item { justify-content: center; padding: 12px 0; }
     .ui-statistics { padding: 10px; gap: 10px; }
-    .ui-stat-panel { padding: 16px; }
 }

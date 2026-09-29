@@ -1,35 +1,60 @@
 /* ============ 디자인 토큰 ============
-   색·모서리 등 화면 공통 값. 디자인을 바꿀 때는 여기부터 수정한다.
+   색·글꼴·모서리 등 화면 공통 값. 디자인을 바꿀 때는 여기부터 수정한다.
    (파일명 00_ 은 assets 중 가장 먼저 로드되도록 붙인 것) */
+
+/* 나눔스퀘어 네오 (네이버 나눔글꼴, OFL) — 오프라인 발표를 위해 로컬 파일 사용 */
+@font-face{ font-family:"NanumSquare Neo"; font-weight:400; font-display:swap;
+            src:url("fonts/NanumSquareNeo-bRg.woff2") format("woff2"); }
+@font-face{ font-family:"NanumSquare Neo"; font-weight:700; font-display:swap;
+            src:url("fonts/NanumSquareNeo-cBd.woff2") format("woff2"); }
+@font-face{ font-family:"NanumSquare Neo"; font-weight:800; font-display:swap;
+            src:url("fonts/NanumSquareNeo-dEb.woff2") format("woff2"); }
+
 :root{
-    /* 기본 */
-    --ui-navy:#123a5c;          /* 앱 테두리, 사이드바 */
-    --ui-navy-soft:#cbe6fa;     /* 사이드바 선택 */
-    --ui-bg:#eef2f6;            /* 페이지 배경 */
-    --ui-surface:#fff;          /* 카드 배경 */
-    --ui-surface-muted:#f5f7fb; /* 카드 안 보조 영역 */
-    --ui-border:#d9dee5;
-    --ui-border-soft:#edf0f3;
-    --ui-text:#0b1733;
-    --ui-text-muted:#64748b;
-    --ui-text-subtle:#9aa5b1;
-    --ui-link:#1f4e9c;
+    --ui-font:"NanumSquare Neo","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
 
-    /* 상태 */
-    --ui-danger:#c62828;        /* 위험 부품, 최대 위험 */
-    --ui-alert:#b42318;         /* 이상 신호 문구 */
-    --ui-success:#2f9e44;
-    --ui-info:#1971c2;
-    --ui-off:#9aa5b1;           /* 미채택 부품(안전재고 대응) */
+    /* 주요 팔레트 */
+    --ui-ink:#000814;           /* 가장 진한 글자·강조 배경 */
+    --ui-navy:#001d3d;          /* 사이드바, 달력 요일줄 */
+    --ui-navy-700:#003566;      /* 주요 버튼, 차트 기본색, 순위 배지 */
+    --ui-yellow:#ffc300;        /* 하이라이트 (강조 배지, 오늘) */
+    --ui-yellow-400:#ffd60a;    /* 어두운 배경 위 하이라이트 글자 */
 
-    /* 기능 태그 */
-    --ui-f05:#1f4e9c;
+    /* 옅은 색 (배경에 섞이는 면) */
+    --ui-navy-tint:#e8eef6;
+    --ui-navy-soft:#cfdcec;
+    --ui-yellow-tint:#fff6d6;
+
+    /* 무채색 */
+    --ui-bg:#f3f5f8;            /* 페이지 배경 */
+    --ui-surface:#fff;
+    --ui-surface-muted:#f7f8fa;
+    --ui-border:#e1e6ed;
+    --ui-border-soft:#edf0f4;
+    --ui-text:#0f1a2b;
+    --ui-text-muted:#5b6576;
+    --ui-text-subtle:#8a94a6;
+
+    /* 상태 (팔레트 외 추가 색) */
+    --ui-danger:#d62839;
+    --ui-danger-tint:#fdecee;
+    --ui-success:#1f8a5b;
+    --ui-success-tint:#e6f4ed;
+
+    /* 기존 이름 호환 (설비 상세 화면에서 사용) */
+    --ui-link:var(--ui-navy-700);
+    --ui-alert:var(--ui-danger);
+    --ui-info:var(--ui-navy-700);
+    --ui-off:#9aa5b1;
+    --ui-f05:var(--ui-navy-700);
     --ui-f06:#7b1fa2;
     --ui-f07:#ef6c00;
     --ui-f08:#2e7d32;
 
     /* 모양 */
     --ui-radius:10px;
+    --ui-radius-lg:14px;
     --ui-radius-sm:6px;
-    --ui-shadow:0 2px 8px rgba(0,0,0,.15);
+    --ui-shadow:0 2px 8px rgba(0,8,20,.12);
+    --ui-shadow-soft:0 1px 2px rgba(0,8,20,.05), 0 6px 18px rgba(0,8,20,.05);
 }

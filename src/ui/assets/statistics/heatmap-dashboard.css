@@ -1,6 +1,6 @@
 .ui-dashboard--statistics {
-    height: calc(100vh - 32px);
-    height: calc(100dvh - 32px);
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -58,7 +58,7 @@
 
 @media (max-width: 600px) {
     .ui-dashboard--statistics {
-        height: calc(100vh - 16px);
-        height: calc(100dvh - 16px);
+        height: 100vh;
+        height: 100dvh;
     }
 }

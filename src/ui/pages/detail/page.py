@@ -1,6 +1,6 @@
 # src/ui/pages/detail.py
 # 설비 상세 페이지 - 프레임(빈 박스 + id + 펼침/접힘) / 반응형
-from dash import html, dcc, Input, Output, callback, ctx
+from dash import html, dcc, Input, Output, State, callback, ctx
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
@@ -8,6 +8,7 @@ from plotly.subplots import make_subplots
 from src.F09.heatmap import load_predictions, machine_ids
 from src.ui.ai_data import f05_diagnosis, f06_analysis
 from src.ui.config import upto_as_of
+from src.ui.sample_data import ranked_items
 
 PREDICTIONS = load_predictions()
 MACHINES = machine_ids()
@@ -219,6 +220,7 @@ def create_detail_layout(machine_id=None):
     return html.Div(className="page-detail", children=[
         dcc.Store(id="store-selected-machine", data=selected),
         dcc.Store(id="store-selected-comp", data=None),
+        dcc.ConfirmDialog(id="f07-confirm-dismiss"),
 
         html.Div(className="hdr", children=[
             html.Span("설비 상세 —", className="hdr-title"),
@@ -474,3 +476,45 @@ def toggle_supplier(*_):
 )
 def toggle_history(*_):
     return ctx.triggered_id == "btn-open-history"
+
+
+# ---------------- 발주 → 메인 TOP5에서 삭제 확인 ----------------
+def top5_matches(machine_id, comp, dismissed):
+    """발주한 설비(·부품)가 메인 TOP5에 있으면 그 항목들을 반환."""
+    top = ranked_items(dismissed)[:5]
+    return [item for item in top if item["machine"] == machine_id
+            and (comp is None or item.get("component") in (None, comp))]
+
+
+# TODO(기능): 실제 '발주' 버튼이 생기면 Input을 그 버튼으로 바꾼다. 지금은 F07 '담기'.
+@callback(
+    Output("f07-confirm-dismiss", "displayed"),
+    Output("f07-confirm-dismiss", "message"),
+    Input("btn-add-cart", "n_clicks"),
+    State("store-selected-machine", "data"),
+    State("store-selected-comp", "data"),
+    State("store-todo-dismissed", "data"),
+    prevent_initial_call=True,
+)
+def ask_dismiss(n_clicks, machine_id, comp, dismissed):
+    matches = top5_matches(machine_id, comp, dismissed)
+    if not n_clicks or not matches:
+        raise PreventUpdate
+    label = f"M-{machine_id:03d}" + (f" {comp}" if comp else "")
+    return True, (f"{label}이(가) 메인 화면 '우선 확인 설비 TOP5'에 있습니다.\n"
+                  "우선순위에서 삭제하시겠습니까?")
+
+
+@callback(
+    Output("store-todo-dismissed", "data", allow_duplicate=True),
+    Input("f07-confirm-dismiss", "submit_n_clicks"),
+    State("store-selected-machine", "data"),
+    State("store-selected-comp", "data"),
+    State("store-todo-dismissed", "data"),
+    prevent_initial_call=True,
+)
+def dismiss_ordered(submitted, machine_id, comp, dismissed):
+    matches = top5_matches(machine_id, comp, dismissed)
+    if not submitted or not matches:
+        raise PreventUpdate
+    return list(dict.fromkeys([*(dismissed or []), *(item["key"] for item in matches)]))
