@@ -1,6 +1,9 @@
-# 로컬 환경과 비밀정보만 제외. data/는 Git으로 관리합니다.
+# 로컬 환경과 비밀정보만 제외합니다. 프로젝트 데이터는 Git으로 관리합니다.
 .venv/
 venv/
+.cache/
+.tmp/
+~$*.pptx
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -14,3 +17,4 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+notebooks/

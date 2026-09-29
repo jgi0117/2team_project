@@ -1,0 +1,4 @@
+model_a,model_b,both_alert_rows,either_alert_rows,jaccard_similarity,model_a_only_rows,model_b_only_rows
+Isolation Forest,3-Sigma,1500,8786,0.17072615524698384,4935,2351
+Isolation Forest,IQR,2450,12605,0.1943673145577152,3985,6170
+3-Sigma,IQR,3851,8620,0.44675174013921115,0,4769

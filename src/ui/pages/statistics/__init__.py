@@ -1,0 +1,1 @@
+"""Statistics dashboard page."""
