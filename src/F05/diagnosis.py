@@ -29,10 +29,11 @@ def build_diagnosis(predictions: pd.DataFrame, machine_id: int, as_of, *,
     if data.horizon_days.mod(1).ne(0).any():
         raise ValueError("horizon_days must be integral")
     data["calibrated"] = boolean_values(data.calibrated) if "calibrated" in data else False
-    data = data.loc[data.machineID.eq(machine_id) & data.as_of.le(at)
-                    & data.horizon_days.eq(horizon_days) & data.model_version.eq(model_version)]
-    observed_at = data.as_of.max()
-    data = data.loc[data.as_of.eq(observed_at)].dropna(subset=["failure_probability"]).copy()
+    eligible = data.loc[data.as_of.le(at) & data.horizon_days.eq(horizon_days)
+                        & data.model_version.eq(model_version)].copy()
+    observed_at = eligible.loc[eligible.machineID.eq(machine_id), "as_of"].max()
+    peers = eligible.loc[eligible.as_of.eq(observed_at)].dropna(subset=["failure_probability"])
+    data = peers.loc[peers.machineID.eq(machine_id)].copy()
     base = {"feature": "F05", "machineID": int(machine_id), "as_of": at.isoformat(),
             "horizon_days": int(horizon_days), "model_version": model_version,
             "prediction_as_of": None if pd.isna(observed_at) else observed_at.isoformat()}
@@ -51,24 +52,47 @@ def build_diagnosis(predictions: pd.DataFrame, machine_id: int, as_of, *,
     machine_if = anomaly.get("if") if anomaly else None
     if_state = ("센서 IF 결과 미제공" if machine_if is None else
                 "센서 IF 경고" if machine_if["is_anomaly"] else "센서 IF 경고 없음")
-    lead = (f"설비 {machine_id}: 향후 {horizon_days}일 기준 최고 위험 부품은 "
-            f"{first.component}({score}); {if_state}")
-    evidence = {}
+    peer_scores = peers.groupby("machineID").failure_probability.max()
+    percentile = float(peer_scores.le(float(first.failure_probability)).mean())
+    risk_rank = int(peer_scores.rank(method="min", ascending=False).loc[int(machine_id)])
+    risk_population = int(len(peer_scores))
+    sensor_alerts = 0
     if anomaly and anomaly.get("sensors"):
-        alerts = sum(any(row[method] is not None and row[method]["is_anomaly"]
-                         for method in ("three_sigma", "iqr")) for row in anomaly["sensors"])
+        sensor_alerts = sum(any(row[method] is not None and row[method]["is_anomaly"]
+                                for method in ("three_sigma", "iqr"))
+                            for row in anomaly["sensors"])
+    anomaly_detected = bool(machine_if and machine_if["is_anomaly"])
+    if anomaly_detected or percentile >= .95:
+        condition_status = "priority"
+        lead = f"설비 {machine_id}: 현재 우선 점검이 필요합니다"
+    elif sensor_alerts or percentile >= .80:
+        condition_status = "watch"
+        lead = f"설비 {machine_id}: 현재 상태를 관찰해야 합니다"
+    else:
+        condition_status = "normal"
+        lead = f"설비 {machine_id}: 현재 정상 범위입니다"
+    evidence = {}
+    evidence["risk_position"] = f"동일 조건 {risk_population}대 중 위험 순위 {risk_rank}위, 대표 {score}"
+    if machine_if is not None:
+        sensor_detail = if_state
+        if anomaly and anomaly.get("sensors"):
+            ready = sum(row["status"] == "ok" for row in anomaly["sensors"])
+            sensor_detail += f", 센서 {ready}종 중 {sensor_alerts}종에서 통계 이상 신호"
+        evidence["sensor_status"] = sensor_detail
+    elif anomaly and anomaly.get("sensors"):
         ready = sum(row["status"] == "ok" for row in anomaly["sensors"])
-        evidence["sensor_status"] = f"센서 {ready}종 판정 가능, 그중 {alerts}종에서 통계 이상 신호"
-    for _, row in data.iloc[1:].iterrows():
-        other = (f"고장 확률 {row.failure_probability:.1%}" if calibrated else
-                 f"미보정 위험 점수 {row.failure_probability:.3f}")
-        evidence[str(row.component)] = f"{row.component} {other}"
+        evidence["sensor_status"] = f"센서 IF 결과 미제공, 센서 {ready}종 중 {sensor_alerts}종에서 통계 이상 신호"
+    if condition_status != "normal":
+        evidence["risk_component"] = f"위험 상승을 우선 확인할 부품 {first.component}"
     missing = sorted(set(COMPONENTS) - set(data.component))
     if missing:
         evidence["missing_components"] = f"부품 예측 결과 미제공: {', '.join(missing)}"
-    result = summarize(lead, evidence, task="설비 종합진단: 고장 위험과 센서 이상을 별도 근거로 요약",
+    result = summarize(lead, evidence, task="설비 현재 상태 진단: 상대 위험과 센서 이상을 근거로 상태 요약",
                        selector=selector, limit=3)
     return {**base, "status": "ok", "highest_component": str(first.component),
             "highest_score": float(first.failure_probability), "calibrated": calibrated,
+            "condition_status": condition_status, "risk_percentile": percentile,
+            "risk_rank": risk_rank, "risk_population": risk_population,
+            "anomaly_detected": anomaly_detected, "sensor_alert_count": int(sensor_alerts),
             "sensor_observed_at": anomaly.get("observed_at") if anomaly else None,
             **result}

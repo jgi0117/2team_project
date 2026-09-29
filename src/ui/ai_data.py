@@ -12,6 +12,8 @@ from src.F05 import build_diagnosis
 from src.F06 import analyze_equipment
 from src.ai_summary import QwenSelector
 from src.common.paths import PROCESSED, RAW_PDM, ROOT
+from src.F02 import build_plan
+from src.ui.config import UI_AS_OF
 
 
 _SELECTOR = QwenSelector()
@@ -34,18 +36,18 @@ def _if_predictions():
     return pd.read_csv(_IF_RESULTS) if _IF_RESULTS.is_file() else None
 
 
-@lru_cache(maxsize=1)
-def f03_summary(as_of: str | None = None):
+@lru_cache(maxsize=16)
+def f03_summary(as_of: str = UI_AS_OF):
     predictions = _failure_predictions()
-    if as_of is not None:
-        predictions = predictions.loc[predictions.as_of.le(as_of)]
-    latest = predictions.as_of.max()
+    eligible = predictions.loc[predictions.as_of.le(as_of or UI_AS_OF)]
+    if eligible.empty:
+        raise ValueError("No failure predictions at or before the UI cutoff")
+    latest = eligible.as_of.max()
     current = predictions.loc[predictions.as_of.eq(latest)]
     version = sorted(current.model_version.dropna().unique())[-1]
     horizons = sorted(current.loc[current.model_version.eq(version), "horizon_days"].unique())
     horizon = 7 if 7 in horizons else int(horizons[0])
-    plan_path = PROCESSED / "maintenance_plan.csv"
-    plan = pd.read_csv(plan_path) if plan_path.is_file() else None
+    plan = build_plan(latest)
     with _MODEL_LOCK:
         return build_summary(
             predictions, latest, horizon_days=horizon, model_version=version,

@@ -9,9 +9,8 @@ from collections import OrderedDict
 from dash import html, dcc, Input, Output, State, ALL, callback, ctx
 from dash.exceptions import PreventUpdate
 
-from src.ui import detail_data
 from src.ui.config import UI_AS_OF, valid_as_of
-from src.ui.sample_data import ranked_items
+from src.ui.live_data import ranked_items
 from src.ui.shared.sidebar import create_sidebar
 
 COMPS = ["comp1", "comp2", "comp3", "comp4"]
@@ -248,5 +247,3 @@ def add_line(basket, line):
             return basket
     return [*basket, line]
 
-
-SUPPLIERS = {comp: {s["id"]: s for s in detail_data.suppliers_for(comp)} for comp in COMPS}

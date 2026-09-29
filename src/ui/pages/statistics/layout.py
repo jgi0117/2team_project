@@ -19,7 +19,7 @@ def create_statistics_layout(predictions=None, as_of=None):
                 **{"aria-labelledby": "stats-f10-title"},
             ),
             html.Section(
-                create_layout(predictions),
+                create_layout(predictions, predictions.as_of.max()),
                 id="stats-f09-content",
                 className="risk-panel",
                 **{"aria-labelledby": "stats-f09-title"},

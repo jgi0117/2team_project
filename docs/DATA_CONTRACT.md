@@ -32,6 +32,8 @@
 | model_metrics.csv | 모델·예측기간·평가구간·지표 | model_version, horizon_days, split, metric, value |
 | maintenance_plan.csv | 설비·부품·판단시점 | machineID, component, as_of, priority, target_maintenance_at, available_stock, expected_receipt_at, order_by_at, response_margin_days, status, reason |
 | statistics.csv | 평가기간·설비·부품·지표 | period_start, period_end, machineID, component, metric, value, denominator |
+| procurement_history.csv | 발주 | order_id, component, ordered_at, expected_receipt_at, actual_receipt_at, receipt_delay_days, available_stock_at_order, replenishment_gap_at_order, planned_order_cost |
+| inventory_daily_history.csv | 일자·부품 | date, component, received_qty, issued_qty, closing_on_hand, available_stock, open_order_qty, target_stock, stock_gap, stock_status |
 
 미확정 날짜는 빈 값으로 두고 status와 reason에 이유를 기록합니다. 미확정 값을 0이나 오늘 날짜로 채우지 않습니다. 총계의 machineID 또는 component는 `ALL`을 사용합니다. predictions의 확률은 0~1이며 화면에서만 백분율로 변환합니다.
 

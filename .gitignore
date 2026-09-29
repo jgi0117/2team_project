@@ -18,3 +18,6 @@ node_modules/
 Thumbs.db
 *.log
 notebooks/
+
+# model3 전처리 중간 산출물 (src/model3/preprocessing.py로 재생성)
+/data/processed/model3/

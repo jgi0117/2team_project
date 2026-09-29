@@ -12,7 +12,7 @@ from plotly.subplots import make_subplots
 
 from src.common.paths import PROCESSED
 from src.F09.heatmap import load_predictions, machine_ids
-from src.ui import detail_data
+from src.ui import live_data
 from src.ui.ai_data import f05_diagnosis, f06_analysis
 from src.ui.config import upto_as_of, valid_as_of
 from src.ui.pages.order.page import add_line, basket_line
@@ -311,7 +311,8 @@ def create_detail_layout(machine_id=None, as_of=None):
         f08_supplier,
         f08_history,
         html.P("고장 위험은 부품별 예측 모델, 센서 이상은 별도의 이상 탐지 결과입니다. "
-               "발주 검토·발주 정보의 비용과 업체는 가상 운영 데이터 기반 예시이며, 교체 이력은 원본 정비 기록입니다.",
+               "발주 검토 비용·협력사·조치 기록은 가상 운영 데이터, 교체 타임라인은 원본 정비·고장 기록입니다. "
+               "긴급 대체 업체는 예시입니다.",
                className="detail-frame-note"),
     ])
 
@@ -681,8 +682,10 @@ def review_body(comp, curve, part):
 
     warn = []
     if curve["too_late"]:
-        warn = html.Div(f"조달에 {curve['lead']}일이 걸려 위험 상승({d_label(curve['rise'])}) 전에 받기 어렵습니다. "
+        warn = html.Div(f"{curve['reason']} (정비 목표일 {curve['target']}, 조달 {curve['lead']}일). "
                         "오늘 발주하거나 긴급 대체 업체를 검토하세요.", className="dt-warn")
+    elif curve["status"] in ("order_due", "watch"):
+        warn = html.Div(f"{curve['reason']} · 정비 목표일 {curve['target']}", className="dt-warn")
     scenario = curve["scenario"]
     lowest = min(scenario.values())
 
@@ -697,7 +700,7 @@ def review_body(comp, curve, part):
         html.Div(className="dt-f07-grid", children=[
             html.Div(className="dt-f07-block", children=[
                 html.H3("언제 발주하면 가장 쌀까"),
-                html.P("발주일별 예상 총비용 · 너무 이르면 보관비, 늦으면 고장 후 긴급 대응 비용이 커집니다",
+                html.P("발주를 며칠 미룰 때의 예상 총비용 · 이르면 보관비, 늦으면 긴급 작업·운송·정지 손실이 붙습니다",
                        className="dt-block-note"),
                 dcc.Graph(figure=figure, responsive=True, config={"displayModeBar": False},
                           style={"height": "clamp(200px,24vh,250px)"}),
@@ -742,7 +745,7 @@ def show_reviews(machine_id, as_of):
     bodies, summaries = [], []
     for comp in comps:
         part = parts[comp]
-        curve = detail_data.cost_curve(comp, part["days"] if part["adopted"] else None, as_of)
+        curve = live_data.cost_review(machine_id, comp, as_of, part["days"])
         bodies.append(review_body(comp, curve, part))
         summaries.append([
             status_badge(part["status"]) if part["adopted"] else html.Span("미채택", className="dt-status dt-status--off"),
@@ -809,9 +812,9 @@ def render_cart(cart, basket, as_of):
     cards = []
     for item in cart:
         part = next(part for part in part_rows(item["machine"], as_of) if part["comp"] == item["comp"])
-        curve = detail_data.cost_curve(item["comp"], part["days"] if part["adopted"] else None, as_of)
+        curve = live_data.cost_review(item["machine"], item["comp"], as_of, part["days"])
         rows = []
-        for supplier in detail_data.suppliers_for(item["comp"]):
+        for supplier in live_data.suppliers(item["comp"], as_of):
             key = f"{item['key']}|{supplier['id']}"
             price = won(supplier["price"]) + (f" (할증 {won(supplier['surcharge'])})" if supplier["surcharge"] else "")
             added = in_basket.get(key)
@@ -872,7 +875,7 @@ def add_to_basket(_clicks, quantities, basket):
     qty = next((int(q or 1) for q, item in zip(quantities, ctx.states_list[0]) if item["id"]["key"] == key), 1)
     item_key, supplier_id = key.split("|")
     machine, comp = item_key.split("-", 1)
-    supplier = next(s for s in detail_data.suppliers_for(comp) if s["id"] == supplier_id)
+    supplier = next(s for s in live_data.suppliers(comp, None) if s["id"] == supplier_id)
     return add_line(basket, basket_line(int(machine), comp, supplier, qty))
 
 
@@ -920,7 +923,7 @@ clientside_callback(
 )
 def show_history(machine_id, as_of):
     """교체 이력: 부품별 타임라인(원본 정비 기록) + 최근 기록 표."""
-    history = detail_data.replacement_history(machine_id, resolve_as_of(as_of))
+    history = live_data.replacement_history(machine_id, resolve_as_of(as_of))
     rows = history["rows"]
     figure = figure_base()
     for failure, name, color, symbol in ((False, "예방 교체", NAVY, "circle"), (True, "고장 후 교체", DANGER, "x")):
@@ -937,13 +940,15 @@ def show_history(machine_id, as_of):
                         tickformat="%y.%m", linecolor=GRID)
     figure.update_yaxes(categoryorder="array", categoryarray=list(reversed(COMPS)), gridcolor=GRID)
     table = html.Table([
-        html.Thead(html.Tr([html.Th(name) for name in ("교체일", "부품", "구분", "담당자", "비용")])),
+        html.Thead(html.Tr([html.Th(name) for name in ("계획일", "완료일", "부품", "수량", "결과", "지연")])),
         html.Tbody([html.Tr([
-            html.Td(row["date"]), html.Td(row["comp"]),
-            html.Td(html.Span("고장 후 교체" if row["failure"] else "예방 교체",
-                              className="dt-status dt-status--now" if row["failure"] else "dt-status dt-status--ok")),
-            html.Td(row["worker"]), html.Td(won(row["cost"])),
-        ]) for row in rows[:8]]),
+            html.Td(record["planned"]), html.Td(record["completed"] or "—"), html.Td(record["comp"]),
+            html.Td(f"{record['qty']}개"),
+            html.Td(html.Span("완료" if record["result"] == "completed" else record["result"],
+                              className="dt-status dt-status--ok" if record["result"] == "completed"
+                              else "dt-status dt-status--watch")),
+            html.Td("—" if record["delay"] is None else f"{record['delay']:g}일"),
+        ]) for record in history["records"]]),
     ], className="dt-table")
     failures = sum(row["failure"] for row in rows)
     return html.Div(className="dt-history", children=[
@@ -952,7 +957,8 @@ def show_history(machine_id, as_of):
             dcc.Graph(figure=figure, config={"displayModeBar": False}, responsive=True,
                       style={"height": "clamp(200px,24vh,260px)"}),
         ], className="dt-f07-block"),
-        html.Div([html.H3("최근 기록"), html.Div(table, className="table-scroll")], className="dt-f07-block"),
+        html.Div([html.H3("조치 기록 (최근 10건)"), html.Div(table, className="table-scroll")],
+                 className="dt-f07-block"),
     ])
 
 

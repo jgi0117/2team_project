@@ -7,9 +7,9 @@ from dash.exceptions import PreventUpdate
 
 from src.ui.ai_data import f03_summary
 from src.ui.config import UI_AS_OF, valid_as_of
-from src.ui.sample_data import (
-    DEFAULT_SORT, F01_RISE, F02_STOCK, ISSUE_LABEL, KPIS, SORTS, STATUS_LABEL,
-    available_months, history, item_by_key, kpi_detail, ranked_items,
+from src.ui.live_data import (
+    DEFAULT_SORT, ISSUE_LABEL, SORTS, STATUS_LABEL, available_months, f01_rise, f02_stock,
+    history, item_by_key, kpi_detail, kpis, ranked_items,
 )
 
 TOP_N = 5
@@ -53,9 +53,9 @@ def status_badge(status):
 
 
 # ---------------- 현재 상황 ----------------
-def make_kpis():
+def make_kpis(as_of=UI_AS_OF):
     tiles = []
-    for key, title, icon, value, unit, change, state in KPIS:
+    for key, title, icon, value, unit, change, state in kpis(as_of):
         delta = []
         if change:
             arrow = "▲" if change.startswith("+") else ("▼" if change.startswith("-") else "–")
@@ -198,16 +198,17 @@ def base_figure():
 
 def f01_figure(rows):
     """상승폭이 큰 순서대로 받은 행을 막대로. 1위만 노랑으로 강조."""
-    labels = [f"{machine_label(row['machine'])}<br><span style='font-size:11px;color:{MUTED}'>"
-              f"{row['component']}</span>" for row in rows]
+    labels = [machine_label(row["machine"]) + (f"<br><span style='font-size:11px;color:{MUTED}'>"
+                                                 f"{row['component']}</span>" if row.get("component") else "")
+              for row in rows]
     rises = [row["after"] - row["before"] for row in rows]
     figure = base_figure()
     figure.add_trace(go.Bar(
         x=labels, y=rises, width=0.36, marker_color=[YELLOW] + [NAVY] * (len(rows) - 1),
         text=[f"+{rise}" for rise in rises], textposition="outside", cliponaxis=False,
         textfont={"size": 15, "color": INK, "family": FONT},
-        customdata=[[row["before"], row["after"]] for row in rows],
-        hovertemplate="%{x}<br>지난주 %{customdata[0]} → 이번 주 %{customdata[1]}<extra></extra>",
+        customdata=[[row["machine"], row["before"], row["after"]] for row in rows],
+        hovertemplate="%{x}<br>전일 %{customdata[1]} → 오늘 %{customdata[2]} · 누르면 설비 상세<extra></extra>",
     ))
     figure.update_yaxes(range=[0, max(rises or [1]) * 1.3], showgrid=True, gridcolor=GRID, zeroline=False,
                         tickfont={"color": MUTED}, title={"text": "상승(점)", "font": {"size": 12, "color": MUTED}})
@@ -231,15 +232,15 @@ def f02_table(rows):
     return html.Div(html.Table([head, body], className="mn-table"), className="mn-table-wrap")
 
 
-def f01_full_table():
-    head = html.Thead(html.Tr([html.Th(name) for name in ("순위", "설비", "부품", "지난주", "이번 주", "상승")]))
+def f01_full_table(rows):
+    head = html.Thead(html.Tr([html.Th(name) for name in ("순위", "설비", "전일", "오늘", "상승")]))
     body = html.Tbody([
         html.Tr([html.Td(str(rank)),
                  html.Td(dcc.Link(f"{machine_label(row['machine'])} →", href=f"/detail?machine={row['machine']}",
                                   className="mn-row-link")),
-                 html.Td(row["component"]), html.Td(row["before"]), html.Td(row["after"]),
+                 html.Td(row["before"]), html.Td(row["after"]),
                  html.Td(f"+{row['after'] - row['before']}")])
-        for rank, row in enumerate(F01_RISE, 1)
+        for rank, row in enumerate(rows, 1)
     ])
     return html.Div(html.Table([head, body], className="mn-table"), className="mn-table-wrap")
 
@@ -250,7 +251,7 @@ def rate_figure(rows):
     rates = [round(100 * row["on_time"] / row["due"]) if row["due"] else None for row in rows]
     live = bool(rows) and rows[-1]["current"]
     done = len(rows) - 1 if live else len(rows)
-    hover = "%{x}<br>마감 %{customdata[1]}건 중 제때 발주 %{customdata[0]}건 · %{y}%<extra></extra>"
+    hover = "%{x}<br>교체 %{customdata[1]}건 중 예방 교체 %{customdata[0]}건 · %{y}%<extra></extra>"
     figure = base_figure()
     figure.add_hline(y=TARGET_RATE, line={"color": NAVY_SOFT, "width": 1, "dash": "dot"},
                      annotation={"text": f"목표 {TARGET_RATE}%", "font": {"size": 11, "color": MUTED}},
@@ -279,19 +280,25 @@ def rate_figure(rows):
     return figure
 
 
+def money(manwon):
+    """만원 단위 금액을 읽기 쉽게: 1억 이상은 억원."""
+    return f"{manwon / 10_000:,.1f}억원" if manwon >= 10_000 else f"{manwon:,.0f}만원"
+
+
 def saving_figure(rows):
-    """월별 절감액(만원). 이번 달은 노랑(진행 중)."""
+    """월별 절감액(억원). 이번 달은 노랑(진행 중)."""
+    values = [row["saved"] / 10_000 for row in rows]
     figure = base_figure()
     figure.add_trace(go.Bar(
-        x=[row["month"] for row in rows], y=[row["saved"] for row in rows], width=0.45,
+        x=[row["month"] for row in rows], y=values, width=0.45,
         marker_color=[YELLOW if row["current"] else NAVY for row in rows],
-        text=[f"{row['saved']:,}" for row in rows], textposition="outside", cliponaxis=False,
+        text=[money(row["saved"]) for row in rows], textposition="outside", cliponaxis=False,
         textfont={"size": 12, "color": INK},
-        hovertemplate="%{x}<br>절감액 %{y:,}만원<extra></extra>",
+        hovertemplate="%{x}<br>절감액 %{y:,.1f}억원<extra></extra>",
     ))
-    figure.update_yaxes(range=[0, max([row["saved"] for row in rows] or [1]) * 1.25], showgrid=True, gridcolor=GRID,
+    figure.update_yaxes(range=[0, max(values or [1]) * 1.25], showgrid=True, gridcolor=GRID,
                         zeroline=False, tickfont={"color": MUTED},
-                        title={"text": "만원", "font": {"size": 12, "color": MUTED}})
+                        title={"text": "억원", "font": {"size": 12, "color": MUTED}})
     figure.update_xaxes(type="category", tickfont={"size": 13})
     return figure
 
@@ -302,8 +309,8 @@ def history_summary(rows):
     saved = sum(row["saved"] for row in rows)
     period = f"{rows[0]['key']} ~ {rows[-1]['key']}" if rows else ""
     return [
-        html.Div([html.Span(f"적시 대응률 · {period}"), html.Strong(f"{rate}%")], className="mn-hist-kpi"),
-        html.Div([html.Span(f"누적 절감액 · {period}"), html.Strong(f"{saved:,}만원")],
+        html.Div([html.Span(f"예방 대응률 · {period}"), html.Strong(f"{rate}%")], className="mn-hist-kpi"),
+        html.Div([html.Span(f"누적 절감액 · {period}"), html.Strong(money(saved))],
                  className="mn-hist-kpi is-accent"),
     ]
 
@@ -363,7 +370,7 @@ def build_layout(as_of, f03=None):
             # 현재 상황 | [달력 | (토글) TOP5] — 달력 쪽이 화면의 중심(흰 판)
             html.Div([
                 html.Section([section_head("현재 상황", html.Span("카드를 누르면 상세", className="mn-head-hint")),
-                              make_kpis()],
+                              make_kpis(as_of)],
                              className="mn-block mn-current-summary"),
 
                 html.Div([
@@ -406,13 +413,14 @@ def build_layout(as_of, f03=None):
                 html.Section([
                     section_head("확률 급상승 알림",
                                  html.Button("전체보기 →", id="mn-f01-more", className="mn-more-btn")),
-                    html.P("지난주 대비 고장 위험도가 크게 오른 설비 TOP 3", className="mn-section-sub"),
-                    graph("mn-f01-graph", f01_figure(F01_RISE[:3]), "clamp(190px,20vh,230px)"),
+                    html.P("전일 대비 7일 고장 위험 점수가 크게 오른 위험 설비 TOP 3 · 막대를 누르면 설비 상세",
+                           className="mn-section-sub"),
+                    graph("mn-f01-graph", f01_figure(f01_rise(as_of)[:3]), "clamp(190px,20vh,230px)"),
                 ], className="mn-block mn-insight"),
                 html.Section([
                     section_head("재고 × 위험 교차"),
-                    html.P("재고는 적은데 위험 설비가 많은 부품 순서입니다", className="mn-section-sub"),
-                    f02_table(F02_STOCK),
+                    html.P("부품별 위험 상위 5% 설비 수와 현재 가용 재고 · 즉시 = 발주 마감 도래", className="mn-section-sub"),
+                    f02_table(f02_stock(as_of)),
                 ], className="mn-block mn-insight"),
             ], className="mn-insights mn-band"),
 
@@ -435,21 +443,21 @@ def build_layout(as_of, f03=None):
                              ], className="mn-hist-controls")),
                 html.Div(history_summary(history(as_of)), id="mn-history-rate", className="mn-hist-kpis"),
                 html.Div([
-                    html.Div([html.H3("월별 적시 대응률"),
-                              html.P("그 달에 발주 마감이 온 위험 건 중 마감 전에 발주한 비율 "
-                                     "(마감월 기준이라 다음 달에 처리해도 원래 달의 성적으로 계산)",
-                                     className="mn-chart-note"),
+                    html.Div([html.H3("월별 예방 대응률"),
+                              html.P("그 달 부품 교체 중 고장 전에 미리 교체(예방)한 비율 · 원본 정비·고장 기록 기준 "
+                                     "(기준일이 속한 해 1월부터)", className="mn-chart-note"),
                               graph("mn-history-graph", rate_figure(history(as_of)), "clamp(240px,28vh,320px)")],
                              className="mn-hist-chart"),
                     html.Div([html.H3("월별 절감액"),
-                              html.P("절감액 = 고장 후 대응 비용(부품가 + 긴급 할증 + 긴급 정비 인건비 + 설비 정지 손실) "
+                              html.P("예방 교체 1건당 절감액 = 고장 후 대응 비용(부품가 + 긴급 할증 + 긴급 정비 인건비 + 설비 정지 손실) "
                                      "− 계획 대응 비용(부품가 + 발주 행정비 + 예방 정비 인건비 + 보관비)",
                                      className="mn-chart-note"),
                               graph("mn-saving-graph", saving_figure(history(as_of)), "clamp(240px,28vh,320px)")],
                              className="mn-hist-chart"),
                 ], className="mn-hist-grid"),
             ], className="mn-block mn-history mn-band", id="mn-history"),
-            html.Small("현재 상황·달력·TOP5·하단 그래프는 UI 확인용 예시 데이터입니다.", className="mn-sample-note"),
+            html.Small("위험 점수는 미보정 상대 점수(확률 아님)이며, 재고·조달·비용은 가상 운영 데이터 기반입니다.",
+                       className="mn-sample-note"),
 
             # 항목 클릭 시 뜨는 작은 선택 창
             dcc.Store(id="mn-action-key"),
@@ -543,10 +551,11 @@ def show_more(_kpis, _f01, as_of):
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
     if trigger == "mn-f01-more":
-        return True, "확률 급상승 알림 · 전체", f01_full_table()
+        return True, "확률 급상승 알림 · 전체", f01_full_table(f01_rise(valid_as_of(as_of)))
     key = trigger["key"]
-    title, value, unit = next((t, v, u) for k, t, _, v, u, _, _ in KPIS if k == key)
-    return True, f"{title} {value}{unit}", kpi_table(kpi_detail(key, valid_as_of(as_of)))
+    as_of = valid_as_of(as_of)
+    title, value, unit = next((t, v, u) for k, t, _, v, u, _, _ in kpis(as_of) if k == key)
+    return True, f"{title} {value}{unit}", kpi_table(kpi_detail(key, as_of))
 
 
 @callback(

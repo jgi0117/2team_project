@@ -1,6 +1,7 @@
 """센서 이상 탐지용 전처리. 입력은 PdM_telemetry.csv 하나뿐이다.
 
-실행: python src/model3/preprocessing.py [--test-size 0.2] [--output-dir PATH]
+실행: python src/model3/preprocessing.py [--test-size 0.2 | --test-start 2015-10-05]
+      [--output-dir PATH]
 출력: dataset.csv 하나. split=train/test로 시간순 학습/테스트 구간을 구분한다.
 한 행은 machineID/as_of의 센서 관측이다. 현재 센서는 사용하지만 모든
 이동 통계는 [as_of - window, as_of)만 사용한다. 최초 72시간과 이력이
@@ -161,13 +162,14 @@ def run_preprocessing(
     *,
     audit_only: bool = False,
     test_size: float = 0.2,
+    test_start: str | pd.Timestamp | None = None,
 ) -> dict:
     """이력이 충분한 행만 dataset.csv에 저장. 검사 결과는 반환/콘솔 출력만 한다.
 
     설비 전체의 사용 가능한 고유 시각을 기준으로 마지막 test_size 비율을
     테스트로 배정한다. 같은 시각은 모든 설비에서 같은 split을 갖는다.
     """
-    if not 0 < test_size < 1:
+    if test_start is None and not 0 < test_size < 1:
         raise ValueError("test_size must be between 0 and 1 (exclusive)")
     telemetry = load_data(data_dir)
     report = audit_data(telemetry)
@@ -186,10 +188,19 @@ def run_preprocessing(
         sensors = rows.sort_values("datetime").set_index("datetime")[list(SENSORS)]
         eligible_times.update(sensors.index[_ready_mask(sensors)])
     times = sorted(eligible_times)
-    boundary_index = int(len(times) * (1 - test_size))
-    if not 0 < boundary_index < len(times):
-        raise ValueError("Not enough ready timestamps for a nonempty train/test split")
-    test_start = times[boundary_index]
+    if test_start is None:
+        boundary_index = int(len(times) * (1 - test_size))
+        if not 0 < boundary_index < len(times):
+            raise ValueError("Not enough ready timestamps for a nonempty train/test split")
+        split_at = pd.Timestamp(times[boundary_index])
+    else:
+        split_at = pd.Timestamp(test_start)
+        if pd.isna(split_at) or split_at.tzinfo is not None:
+            raise ValueError("test_start must be a timezone-naive timestamp")
+        if split_at not in times:
+            raise ValueError("test_start must match a ready telemetry timestamp")
+        if split_at <= times[0] or split_at > times[-1]:
+            raise ValueError("test_start must leave nonempty train and test periods")
 
     output_dir.mkdir(parents=True, exist_ok=True)
     count = train_count = test_count = 0
@@ -205,7 +216,7 @@ def run_preprocessing(
                 if frame.empty:
                     continue
                 feature_count = len(frame.columns) - 2  # machineID, as_of 제외
-                frame.insert(2, "split", np.where(frame.as_of < test_start, "train", "test"))
+                frame.insert(2, "split", np.where(frame.as_of < split_at, "train", "test"))
                 frame.to_csv(stream, index=False, header=count == 0, float_format="%.8g")
                 count += len(frame)
                 train_count += int(frame.split.eq("train").sum())
@@ -218,7 +229,7 @@ def run_preprocessing(
         "file": str(output_dir / "dataset.csv"), "rows": count,
         "train_rows": train_count, "test_rows": test_count,
         "excluded_rows": len(telemetry) - count,
-        "features": feature_count, "test_start": str(test_start),
+        "features": feature_count, "test_start": str(split_at),
     }
     return report
 
@@ -229,9 +240,11 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--audit-only", action="store_true", help="원본 품질 검사만 실행")
     parser.add_argument("--test-size", type=float, default=0.2, help="마지막 테스트 기간 비율 (기본 0.2)")
+    parser.add_argument("--test-start", help="테스트 시작 시각 직접 지정 (예: 2015-10-05)")
     args = parser.parse_args()
     report = run_preprocessing(args.data_dir, args.output_dir,
-                               audit_only=args.audit_only, test_size=args.test_size)
+                               audit_only=args.audit_only, test_size=args.test_size,
+                               test_start=args.test_start)
     print(json.dumps({"valid": report["valid"], "output_dir": str(args.output_dir),
                       "output": report.get("output"), "warnings": report["warnings"]},
                      ensure_ascii=False, indent=2))
