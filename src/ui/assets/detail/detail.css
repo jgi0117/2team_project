@@ -16,9 +16,6 @@
 .panel-hdr{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:10px; }
 .panel-hdr .btns{ margin-left:auto; display:flex; gap:6px; }
 
-.ftag{ color:#fff; font-size:11px; font-weight:700; padding:2px 7px;
-       border-radius:4px; white-space:nowrap; }
-
 /* ============ F05 무대 ============ */
 .stage{ display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,320px);
         gap:14px; align-items:start; }
@@ -37,7 +34,10 @@
 .summary-card{ position:absolute; bottom:14px; left:14px;
                width:min(340px,55%); z-index:9; }
 .summary-days{ font-size:clamp(15px,1.6vw,20px); font-weight:800;
-               color:#c62828; line-height:1.15; }
+               color:#334155; line-height:1.15; }
+.diagnosis-normal{ color:#15803d; }
+.diagnosis-watch{ color:#b45309; }
+.diagnosis-priority{ color:#b42318; }
 .summary-sub{ font-size:clamp(10px,0.9vw,11px); color:#667;
               line-height:1.35; overflow-wrap:anywhere; margin-top:4px; }
 
@@ -77,7 +77,18 @@
 .f06-table th{ color:#53677a; font-weight:700; }
 .f06-empty{ color:#7f8794; font-size:11px; padding:10px; }
 
-.pop-scroll{ max-width:88vw; overflow-x:auto; }
+.f07-order-list{ display:grid; grid-template-columns:auto 1fr; gap:4px 10px; margin:8px 0 0; font-size:11px; }
+.f07-order-list dt{ color:#64748b; font-weight:600; }
+.f07-order-list dd{ margin:0; font-weight:700; }
+.f08-action-form{ margin-bottom:8px; }
+.f08-supplier-title{ display:flex; flex-wrap:wrap; gap:8px; align-items:baseline; margin-bottom:8px; }
+.f08-supplier-title span{ color:#64748b; font-size:11px; }
+.f08-info-table{ width:100%; border-collapse:collapse; font-size:11px; }
+.f08-info-table th,.f08-info-table td{ padding:7px 8px; border-bottom:1px solid #e5e9ef; text-align:left; }
+.f08-info-table th{ color:#526579; white-space:nowrap; }
+.f08-user-action{ background:#f0fdf4; }
+.f08-pagination{ display:flex; justify-content:center; align-items:center; gap:10px; margin-top:10px; font-size:11px; color:#526579; }
+
 
 /* ============ 992px 이하 : 겹침 해제 → 아래로 내려 쌓기 ============ */
 @media (max-width:991.98px){

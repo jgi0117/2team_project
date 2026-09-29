@@ -1,22 +1,25 @@
 # src/ui/pages/detail.py
 # 설비 상세 페이지 - 프레임(빈 박스 + id + 펼침/접힘) / 반응형
-from dash import html, dcc, Input, Output, callback, ctx
+from dash import html, dcc, Input, Output, State, callback, ctx
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
+import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from src.F09.heatmap import load_predictions, machine_ids
 from src.ui.ai_data import f05_diagnosis, f06_analysis
+from src.F07 import analyze_order
+from src.F08 import get_history, get_supplier
+from src.ui.config import UI_AS_OF
 
 PREDICTIONS = load_predictions()
 MACHINES = machine_ids()
-AS_OF = PREDICTIONS.as_of.max()
+AS_OF = UI_AS_OF
 MODEL_VERSION = sorted(PREDICTIONS.loc[PREDICTIONS.as_of.eq(AS_OF), "model_version"].unique())[-1]
 
 COMPS    = ["comp1", "comp2", "comp3", "comp4"]
 DECISION = {"comp1": 8, "comp2": 42, "comp3": 16, "comp4": 24}
 ADOPTED  = {"comp1": True, "comp2": False, "comp3": True, "comp4": True}
-HORIZONS = [7, 8, 14, 16, 21, 24, 28, 35, 42]
 SENSOR_NAMES = {"volt": "전압", "rotate": "회전속도", "pressure": "압력", "vibration": "진동"}
 
 # 설비 이미지 위 부품 좌표(%) — 이미지 바뀌면 이 숫자만 수정
@@ -26,10 +29,6 @@ POS = {
     "comp3": {"top": "58%", "left": "32%"},
     "comp4": {"top": "68%", "left": "72%"},
 }
-
-
-def tag(code, color="#1f4e9c"):
-    return html.Span(code, className="ftag", style={"background": color})
 
 
 def ghost(text, min_h=80):
@@ -61,29 +60,14 @@ def hotspot(comp):
         ],
     )
 
-    pop = dbc.Popover(
-        [dbc.PopoverHeader(f"{comp} 기간별 고장 위험 점수"),
-         dbc.PopoverBody(
-             html.Div(className="pop-scroll", children=html.Div(
-                 id=f"hs-pop-table-{comp}",
-                 children=html.Table([
-                     html.Thead(html.Tr([html.Th("기간")] +
-                                        [html.Th(f"{h}일") for h in HORIZONS])),
-                     html.Tbody(html.Tr([html.Td("점수")] +
-                                        [html.Td("--") for _ in HORIZONS])),
-                 ], style={"fontSize": "11px"}))))],
-        id=f"hs-pop-{comp}", target=f"hotspot-{comp}",
-        trigger="hover", placement="auto",
-    )
-    return [dot, bubble, pop]
+    return [dot, bubble]
 
 
 # ---------------- F06 : 겹치는 오버레이 ----------------
 f06_overlay = html.Div(
     id="f06-overlay", className="box f06-layer",
     children=[
-        html.Div([tag("F06", "#7b1fa2"),
-                  html.Span("시간별 센서 이상", style={"fontWeight": 700}),
+        html.Div([html.Span("센서 이상 추이 및 판단 근거", style={"fontWeight": 700}),
                   dcc.Dropdown(
                       id="f06-sensor-select",
                       options=[{"label": f"{label} ({sensor})", "value": sensor}
@@ -113,8 +97,8 @@ f06_overlay = html.Div(
 f05_summary = html.Div(
     id="f05-summary", className="box summary-card",
     children=[
-        html.Div([tag("F05"), html.Span("설비 종합 진단",
-                                        style={"fontWeight": 700, "fontSize": "13px"})],
+        html.Div([html.Span("현재 설비 상태",
+                           style={"fontWeight": 700, "fontSize": "13px"})],
                  style={"display": "flex", "gap": "6px", "alignItems": "center"}),
         html.Div("진단 불러오는 중", id="f05-summary-days", className="summary-days"),
         html.Div("동일 기간 부품 위험 비교", id="f05-summary-note", className="summary-sub"),
@@ -147,12 +131,11 @@ f07_panel = dbc.Collapse(
                       style={"marginTop": "14px", "borderTop": "3px solid #ef6c00"},
                       children=[
         html.Div(className="panel-hdr", children=[
-            tag("F07", "#ef6c00"),
-            html.Span("최적 발주 시점 및 비용 분석 —", style={"fontWeight": 700}),
+            html.Span("발주 시점 및 비용 비교 —", style={"fontWeight": 700}),
             html.Span("--", id="f07-part-label",
                       style={"fontWeight": 700, "color": "#ef6c00"}),
             html.Div(className="btns", children=[
-                dbc.Button("담기", id="btn-add-cart", size="sm",
+                dbc.Button("협력사 확인", id="btn-add-cart", size="sm",
                            color="primary", n_clicks=0),
                 dbc.Button("닫기", id="btn-f07-close", size="sm",
                            color="light", n_clicks=0),
@@ -203,8 +186,7 @@ f08_supplier = dbc.Collapse(
                       style={"marginTop": "12px", "borderTop": "3px solid #2e7d32"},
                       children=[
         html.Div(className="panel-hdr", children=[
-            tag("F08", "#2e7d32"),
-            html.Span("협력사 정보", style={"fontWeight": 700}),
+            html.Span("부품 조달처 및 담당자", style={"fontWeight": 700}),
             html.Div(className="btns", children=[
                 dbc.Button("닫기", id="btn-f08-supplier-close",
                            size="sm", color="light", n_clicks=0)]),
@@ -221,14 +203,27 @@ f08_history = dbc.Collapse(
                       style={"marginTop": "12px", "borderTop": "3px solid #2e7d32"},
                       children=[
         html.Div(className="panel-hdr", children=[
-            tag("F08", "#2e7d32"),
-            html.Span("교체 이력", style={"fontWeight": 700}),
+            html.Span("정비·조치 이력", style={"fontWeight": 700}),
             html.Div(className="btns", children=[
                 dbc.Button("닫기", id="btn-f08-history-close",
                            size="sm", color="light", n_clicks=0)]),
         ]),
-        html.Div(id="f08-history-table", style={"overflowX": "auto"},
-                 children=ghost("교체일 / 부품 / 담당자 / 비용 / 비고", 130)),
+        dbc.Row(className="g-2 f08-action-form", children=[
+            dbc.Col(md=3, children=dcc.Dropdown(
+                id="f08-action-status", clearable=False, value="확인",
+                options=[{"label": value, "value": value}
+                         for value in ["확인", "발주 요청", "점검 완료", "조치 보류"]])),
+            dbc.Col(md=7, children=dbc.Input(id="f08-action-note", placeholder="조치 내용 또는 담당자 메모")),
+            dbc.Col(md=2, children=dbc.Button("기록", id="btn-record-action", color="success",
+                                              className="w-100", n_clicks=0)),
+        ]),
+        html.Div(id="f08-history-table", style={"overflowX": "auto", "marginTop": "10px"},
+                 children=ghost("교체일 / 부품 / 처리 결과 / 조치 메모", 130)),
+        html.Div([
+            dbc.Button("‹", id="btn-history-prev", color="light", size="sm", n_clicks=0),
+            html.Span("1 / 1", id="f08-history-page-label"),
+            dbc.Button("›", id="btn-history-next", color="light", size="sm", n_clicks=0),
+        ], className="f08-pagination"),
     ]),
 )
 
@@ -238,6 +233,8 @@ def create_detail_layout(machine_id=None):
     return html.Div(className="page-detail", children=[
         dcc.Store(id="store-selected-machine", data=selected),
         dcc.Store(id="store-selected-comp", data=None),
+        dcc.Store(id="store-action-log", data=[], storage_type="local"),
+        dcc.Store(id="store-history-page", data=0),
 
         html.Div(className="hdr", children=[
             html.Span("설비 상세 —", style={"fontSize": "clamp(15px,1.6vw,18px)",
@@ -254,7 +251,7 @@ def create_detail_layout(machine_id=None):
                       style={"fontSize": "12px", "color": "#667"}),
         ]),
         html.P(
-            "부품별 고장 예측과 센서 이상은 서로 다른 결과입니다. 센서 분석은 현재 설비의 저장된 관측과 IF 결과를 사용하며, 발주·이력은 UI 프레임입니다.",
+            "부품별 고장 예측과 센서 이상은 서로 다른 결과입니다. 발주 판단은 해당 시점의 재고·입고 예정·조달기간과 합성 비용 조건을 사용합니다.",
             className="detail-frame-note",
         ),
 
@@ -300,14 +297,22 @@ def show_machine(machine_id):
         summary = ("진단 불가", "예측 자료 확인 필요", "종합진단 자료를 읽지 못했습니다")
     else:
         if diagnosis["status"] == "no_data":
-            summary = ("예측 없음", "부품별 위험 점수 없음", diagnosis["text"])
+            summary = (html.Span("판정 불가", className="diagnosis-watch"),
+                       "예측 자료 확인 필요", diagnosis["text"])
         else:
-            score = (f"{diagnosis['highest_score']:.1%}" if diagnosis["calibrated"]
-                     else f"{diagnosis['highest_score']:.3f}")
-            kind = "고장 확률" if diagnosis["calibrated"] else "미보정 위험 점수"
-            summary = (f"최대 위험: {diagnosis['highest_component']}",
-                       f"향후 {diagnosis['horizon_days']}일 · {kind} {score}",
-                       diagnosis["text"])
+            state = diagnosis.get("condition_status", "watch")
+            labels = {"normal": "현재 정상", "watch": "관찰 필요", "priority": "우선 점검 필요"}
+            rank = int(diagnosis.get("risk_rank", 0))
+            population = int(diagnosis.get("risk_population", len(MACHINES)))
+            notes = {
+                "normal": "센서 경고 없음 · 동일 조건 설비 대비 정상 범위",
+                "watch": f"센서 또는 위험도 변화 관찰 · 위험 순위 {rank}/{population}",
+                "priority": ("센서 이상 경고 감지" if diagnosis.get("anomaly_detected") else
+                             f"동일 조건 설비 대비 높은 위험 · 위험 순위 {rank}/{population}"),
+            }
+            summary = (html.Span(labels[state], className=f"diagnosis-{state}"),
+                       f"향후 {diagnosis['horizon_days']}일 고장예측·현재 센서 종합",
+                       f"근거: {notes[state]}")
     return f"M-{machine_id:03d}", machine_id, *scores, *summary
 
 
@@ -495,3 +500,133 @@ def toggle_supplier(*_):
 )
 def toggle_history(*_):
     return ctx.triggered_id == "btn-open-history"
+
+
+def _krw(value):
+    value = float(value)
+    return f"{value / 10_000:,.0f}만원" if abs(value) >= 10_000 else f"{value:,.0f}원"
+
+
+@callback(
+    Output("f07-cost-curve", "figure"),
+    Output("f07-order-info", "children"),
+    Output("f07-cost-d0", "children"),
+    Output("f07-cost-d7", "children"),
+    Output("f07-cost-d14", "children"),
+    Input("store-selected-machine", "data"),
+    Input("store-selected-comp", "data"),
+)
+def show_f07(machine_id, component):
+    if not component:
+        return go.Figure(), html.Div("부품을 선택하세요"), "--", "--", "--"
+    result = analyze_order(int(machine_id), component, AS_OF)
+    curve = result["curve"]
+    optimum = result["optimum"]
+    figure = go.Figure()
+    figure.add_trace(go.Scatter(
+        x=[row["delay_days"] for row in curve], y=[row["total_cost"] for row in curve],
+        mode="lines", name="시나리오 비용", line={"color": "#2563eb", "width": 3},
+        hovertemplate="%{x}일 후 발주<br>%{y:,.0f}원<extra></extra>",
+    ))
+    figure.add_trace(go.Scatter(
+        x=[optimum["delay_days"]], y=[optimum["total_cost"]], mode="markers+text",
+        text=["최소"], textposition="top center", name="비용 최소",
+        marker={"color": "#dc2626", "size": 11},
+    ))
+    figure.update_layout(margin={"l": 55, "r": 10, "t": 18, "b": 35},
+                         xaxis_title="기준일 이후 발주 지연(일)", yaxis_title="비용(원)",
+                         showlegend=False, paper_bgcolor="rgba(0,0,0,0)",
+                         plot_bgcolor="rgba(0,0,0,0)")
+    plan = result["plan"]
+    order_info = html.Dl([
+        html.Dt("비용 최소 발주"), html.Dd(f"기준일 +{optimum['delay_days']}일"),
+        html.Dt("계획 정비일"), html.Dd(str(pd.Timestamp(plan["target_maintenance_at"]).date())),
+        html.Dt("발주 마감일"), html.Dd(str(pd.Timestamp(plan["order_by_at"]).date())),
+        html.Dt("권장 수량"), html.Dd(f"{result['quantity']}개"),
+        html.Dt("현재 가용재고"), html.Dd(f"{int(plan['available_stock'])}개"),
+        html.Dt("대응 여유"), html.Dd(f"{int(plan['response_margin_days'])}일"),
+        html.Dt("판단"), html.Dd(plan["reason"]),
+    ], className="f07-order-list")
+    return (figure, order_info, _krw(result["scenarios"][0]["total_cost"]),
+            _krw(result["scenarios"][7]["total_cost"]), _krw(result["scenarios"][14]["total_cost"]))
+
+
+@callback(Output("f08-supplier-body", "children"), Input("store-selected-comp", "data"))
+def show_supplier(component):
+    if not component:
+        return html.Div("설비 이미지에서 부품을 선택하세요")
+    info = get_supplier(component, AS_OF)
+    return html.Div([
+        html.Div([html.Strong(info["supplier_name"]), html.Span(f"{info['component']} · {info['part_name']}")],
+                 className="f08-supplier-title"),
+        html.Table(html.Tbody([
+            html.Tr([html.Th("담당 부서"), html.Td(info["contact_department"])]),
+            html.Tr([html.Th("전화"), html.Td(info["contact_phone"])]),
+            html.Tr([html.Th("이메일"), html.Td(info["contact_email"])]),
+            html.Tr([html.Th("가용재고 / 목표"), html.Td(f"{info['available_stock']}개 / {info['target_stock']}개")]),
+            html.Tr([html.Th("표준 조달기간"), html.Td(f"{info['lead_time_days']}일")]),
+        ]), className="f08-info-table"),
+    ])
+
+
+def _history_table(machine_id, local_actions, page=0, page_size=10):
+    history = get_history(int(machine_id), AS_OF, limit=None)
+    entries = [{"date": item["recorded_at"], "component": item.get("component", "—"),
+                "result": item["status"], "detail": item.get("note") or "—", "user": True}
+               for item in reversed(local_actions or [])
+               if int(item.get("machineID", -1)) == int(machine_id)]
+    entries.extend({
+        "date": pd.Timestamp(row.planned_at).strftime("%Y-%m-%d"),
+        "component": row.component,
+        "result": "완료" if pd.notna(row.completed_at) else "대기",
+        "detail": "—" if pd.isna(row.delay_days) else f"처리 {row.delay_days:g}일",
+        "user": False,
+    } for row in history.itertuples(index=False))
+    total_pages = max(1, (len(entries) + page_size - 1) // page_size)
+    page = min(max(0, int(page)), total_pages - 1)
+    visible = entries[page * page_size:(page + 1) * page_size]
+    table = html.Table([
+        html.Thead(html.Tr([html.Th("일자"), html.Th("부품"), html.Th("결과/조치"),
+                            html.Th("처리기간/메모")])),
+        html.Tbody([html.Tr([
+            html.Td(item["date"]), html.Td(item["component"]), html.Td(item["result"]),
+            html.Td(item["detail"]),
+        ], className="f08-user-action" if item["user"] else "") for item in visible]),
+    ], className="f08-info-table")
+    return table, page, total_pages, len(entries)
+
+
+@callback(
+    Output("f08-history-table", "children"),
+    Output("store-action-log", "data"),
+    Output("store-history-page", "data"),
+    Output("f08-history-page-label", "children"),
+    Output("btn-history-prev", "disabled"),
+    Output("btn-history-next", "disabled"),
+    Input("store-selected-machine", "data"),
+    Input("btn-record-action", "n_clicks"),
+    Input("btn-history-prev", "n_clicks"),
+    Input("btn-history-next", "n_clicks"),
+    State("store-selected-comp", "data"),
+    State("f08-action-status", "value"),
+    State("f08-action-note", "value"),
+    State("store-action-log", "data"),
+    State("store-history-page", "data"),
+)
+def show_history(machine_id, record_clicks, prev_clicks, next_clicks,
+                 component, status, note, actions, page):
+    actions = list(actions or [])
+    page = int(page or 0)
+    if ctx.triggered_id == "btn-record-action" and record_clicks:
+        actions.append({"machineID": int(machine_id), "component": component,
+                        "status": status or "확인", "note": (note or "").strip(),
+                        "recorded_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")})
+        page = 0
+    elif ctx.triggered_id == "btn-history-prev":
+        page -= 1
+    elif ctx.triggered_id == "btn-history-next":
+        page += 1
+    elif ctx.triggered_id == "store-selected-machine":
+        page = 0
+    table, page, total_pages, total = _history_table(machine_id, actions, page)
+    return table, actions, page, f"{page + 1} / {total_pages} · 전체 {total}건", page == 0, page >= total_pages - 1

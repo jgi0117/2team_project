@@ -24,6 +24,8 @@ def selected_machine(search):
 def machine_from_click(click_data):
     try:
         machine_id = click_data["points"][0]["customdata"]
+        if isinstance(machine_id, (list, tuple)):
+            machine_id = machine_id[0]
         if isinstance(machine_id, bool):
             raise ValueError
         machine_id = int(machine_id)
@@ -78,12 +80,14 @@ def create_app():
     @app.callback(
         Output("ui-location", "pathname"),
         Output("ui-location", "search"),
-        Input("f09-heatmap", "clickData"),
-        Input("f10-heatmap", "clickData"),
+        Input("f09-heatmap", "clickData", allow_optional=True),
+        Input("f10-heatmap", "clickData", allow_optional=True),
+        Input("mn-surge-graph", "clickData", allow_optional=True),
         prevent_initial_call=True,
     )
-    def open_machine(f09_click, f10_click):
-        click_data = f09_click if ctx.triggered_id == "f09-heatmap" else f10_click
+    def open_machine(f09_click, f10_click, surge_click):
+        click_data = {"f09-heatmap": f09_click, "f10-heatmap": f10_click,
+                      "mn-surge-graph": surge_click}.get(ctx.triggered_id)
         machine_id = machine_from_click(click_data)
         return "/detail", f"?machine={machine_id}"
 

@@ -1,5 +1,0 @@
-component,part_name,lead_time_days,preparation_days,target_stock,shelf_life_days,shelf_life_policy,storage_constraint,value_source,supplier_id
-comp1,comp1 (가상 운영조건),7,1,19,180,days_after_receipt,밀봉 건조 보관 가정,assumption:synthetic_operations_v1,SUP-001
-comp2,comp2 (가상 운영조건),35,7,25,30,days_after_receipt,산화 민감 가정: 입고 후 30일 이내 공정 투입,assumption:synthetic_operations_v1,SUP-002
-comp3,comp3 (가상 운영조건),14,2,19,90,days_after_receipt,습기 민감 가정: 밀봉 보관,assumption:synthetic_operations_v1,SUP-001
-comp4,comp4 (가상 운영조건),21,3,22,120,days_after_receipt,방습 포장 및 충격 방지 가정,assumption:synthetic_operations_v1,SUP-002

@@ -1,3 +1,0 @@
-supplier_id,supplier_name,contact_department,contact_phone,contact_email,value_source
-SUP-001,가상협력사 A,영업지원팀,02-XXXX-0001,supplier-a@example.invalid,assumption:synthetic_supplier_v1
-SUP-002,가상협력사 B,영업지원팀,02-XXXX-0002,supplier-b@example.invalid,assumption:synthetic_supplier_v1

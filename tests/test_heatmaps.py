@@ -41,6 +41,13 @@ class HeatmapTests(unittest.TestCase):
         self.assertIsNone(figure.data[1].z[0][0])
         self.assertEqual(meta["cells"], 99)
 
+    def test_f10_predictions_start_on_shared_october_cutoff(self):
+        self.assertEqual(self.anomalies.as_of.min(), pd.Timestamp("2015-10-05"))
+        _, meta = build_anomaly(self.anomalies, "2015-10-05",
+                                machines=list(range(1, 101)))
+        self.assertEqual(meta["observed_at"], pd.Timestamp("2015-10-05"))
+        self.assertEqual(meta["cells"], 100)
+
     def test_integrated_statistics_page_contains_both_maps(self):
         from src.ui.pages.statistics.page import create_statistics_page
 
@@ -50,6 +57,22 @@ class HeatmapTests(unittest.TestCase):
                          ["stats-f10-content", "stats-f09-content"])
         self.assertIn("f10-heatmap", str(sections[0].to_plotly_json()))
         self.assertIn("f09-heatmap", str(sections[1].to_plotly_json()))
+        risk_panel = str(sections[1].to_plotly_json())
+        self.assertIn("f09-horizon", risk_panel)
+        self.assertIn("향후 7일 설비 위험 분포", risk_panel)
+        self.assertIn("즉시 대응용", risk_panel)
+        self.assertIn("7일", risk_panel)
+        self.assertIn("14일", risk_panel)
+        self.assertIn("42일", risk_panel)
+        self.assertNotIn("28일", risk_panel)
+
+    def test_statistics_horizon_can_change_to_long_term(self):
+        from src.F09.dashboard import update_horizon
+
+        figure, title, meaning = update_horizon(42)
+        self.assertTrue(figure.data)
+        self.assertEqual(title, "향후 42일 설비 위험 분포")
+        self.assertIn("장기 조달계획 참고용", meaning)
 
 
 if __name__ == "__main__":

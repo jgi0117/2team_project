@@ -99,7 +99,10 @@
 
 .mn-summary-card{
     display:flex;
-    align-items:center;
+    position:relative;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-start;
     min-height:58px;
     padding:7px 4px;
     border-bottom:1px solid #edf0f3;
@@ -169,6 +172,9 @@
 }
 
 .mn-calendar-cell:hover{ background:#f5f8ff; }
+.mn-calendar-today{ background:#e8f2ff; box-shadow:inset 0 0 0 2px #2563eb; }
+.mn-calendar-today:hover{ background:#dcecff; }
+.mn-calendar-cell .mn-today-label{ color:#1d4ed8; font-weight:800; }
 
 .mn-calendar-cell small{
     display:block;
@@ -269,6 +275,34 @@
     margin-top:12px;
     min-height:clamp(120px,12vw,170px);
 }
+.mn-summary-card-clickable{ cursor:pointer; }
+.mn-summary-card-clickable:hover,
+.mn-summary-card-clickable:focus-within{ background:#f8fbff; }
+.mn-card-hover{
+    display:none; position:absolute; top:calc(100% - 2px); left:0; z-index:30;
+    width:max-content; min-width:180px; max-width:280px; max-height:220px;
+    overflow-y:auto; padding:9px; border:1px solid #b9c7d8; border-radius:7px;
+    background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.18);
+}
+.mn-summary-card-clickable:hover .mn-card-hover,
+.mn-summary-card-clickable:focus-within .mn-card-hover{ display:flex; flex-direction:column; gap:5px; }
+.mn-card-hover strong{ margin-bottom:2px; color:#334155; font-size:11px; }
+.mn-card-hover a{ color:#1d4ed8; font-size:11px; font-weight:700; text-decoration:none; }
+.mn-card-hover a:hover{ text-decoration:underline; }
+.mn-surge-graph .nsewdrag,
+.mn-surge-graph .bars .point{ cursor:pointer !important; }
+
+.mn-page-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.mn-page-header h2{ margin:0; font-size:clamp(18px,2vw,25px); }
+.mn-page-header span{ color:#526579; font-size:12px; font-weight:700; white-space:nowrap; }
+
+.mn-caption{ display:block; margin-top:4px; color:#64748b; font-size:10px; }
+.mn-table-scroll{ width:100%; overflow-x:auto; }
+.mn-data-table{ width:100%; min-width:640px; margin-top:12px; border-collapse:collapse; font-size:11px; }
+.mn-data-table th,.mn-data-table td{ padding:8px 6px; border-bottom:1px solid #e5e9ef; text-align:left; }
+.mn-data-table th{ color:#526579; white-space:nowrap; }
+.mn-model-status{ display:flex; flex-wrap:wrap; gap:12px; color:#526579; font-size:11px; }
+.mn-top5-row{ color:inherit; text-decoration:none; }
 
 /* ============ 공통 ============ */
 

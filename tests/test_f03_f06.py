@@ -80,6 +80,23 @@ class F03Tests(unittest.TestCase):
         self.assertEqual(result["selected"]["priority_reason"], "negative_margin")
         self.assertIn("-2일", result["text"])
 
+    def test_covered_plan_never_becomes_order_due(self):
+        plan = pd.DataFrame([dict(
+            machineID=1, component="comp1", as_of="2015-10-01",
+            horizon_days=42, status="covered", reason="현재 가용재고로 대응 가능",
+            response_margin_days=42, available_stock=21, recommended_quantity=4,
+            supply_source="available_stock", order_by_at="2015-10-02",
+            ready_at="2015-10-02", target_maintenance_at="2015-11-13",
+        )])
+        result = self.run_summary(maintenance_plan=plan)
+        self.assertEqual(result["selected"]["plan_status"], "covered")
+        self.assertEqual(result["selected"]["action_id"], "inspect_equipment")
+        self.assertNotIn("발주 진행", result["text"])
+        self.assertIn("현재 가용재고 21개로 대응 가능", result["text"])
+        self.assertEqual(result["evidence_ids"], ["risk_score", "stock_covered"])
+        self.assertEqual(result["decision_context"]["risk"]["horizon_days"], 7)
+        self.assertEqual(result["decision_context"]["maintenance_plan"]["horizon_days"], 42)
+
     def test_latest_unknown_is_not_replaced_with_old_value(self):
         data = pd.concat([predictions(), predictions().assign(as_of="2015-10-02", failure_probability=np.nan)])
         result = self.run_summary(data)
