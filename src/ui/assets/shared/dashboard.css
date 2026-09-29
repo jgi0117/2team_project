@@ -11,7 +11,7 @@ button, input, select, textarea { font-family: inherit; }
 
 .ui-dashboard {
     display: grid;
-    grid-template-columns: clamp(150px, 11vw, 210px) minmax(0, 1fr);
+    grid-template-columns: clamp(190px, 11vw, 220px) minmax(0, 1fr);
     min-height: 100vh;
     background: var(--ui-bg);
 }
@@ -46,6 +46,84 @@ button, input, select, textarea { font-family: inherit; }
     color: var(--ui-ink);
     font-size: 15px;
 }
+
+/* 로그인 사용자 */
+.sb-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 4px 14px;
+    padding: 14px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .06);
+}
+.sb-avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 2px solid var(--ui-yellow);
+    border-radius: 50%;
+    background: var(--ui-navy-700);
+    color: var(--ui-yellow-400);
+    font-size: 19px;
+    font-weight: 800;
+    object-fit: cover;
+}
+.sb-profile-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.sb-name { font-size: 16px; font-weight: 800; }
+.sb-title { color: rgba(255, 255, 255, .7); font-size: 12px; }
+.sb-role {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--ui-yellow);
+    color: var(--ui-ink);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* 기준일 설정 */
+.sb-date-box { margin: 0 4px 18px; padding: 0 2px; }
+.sb-date-label {
+    display: block;
+    margin: 0 0 6px 2px;
+    color: rgba(255, 255, 255, .6);
+    font-size: 12px;
+    font-weight: 700;
+}
+.sb-date, .sb-date .SingleDatePicker, .sb-date .SingleDatePickerInput { display: block; width: 100%; }
+.sb-date .SingleDatePickerInput { border: 0; border-radius: 10px; overflow: hidden; background: var(--ui-navy-700); }
+.sb-date .DateInput { width: 100%; background: transparent; }
+.sb-date .DateInput_input {
+    padding: 9px 12px;
+    border: 0;
+    background: var(--ui-navy-700);
+    color: #fff;
+    font-family: var(--ui-font);
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.sb-date .DateInput_input__focused { border-bottom: 2px solid var(--ui-yellow); }
+.sb-date .SingleDatePicker_picker { z-index: 1000; }
+.sb-date .CalendarDay__selected, .sb-date .CalendarDay__selected:hover {
+    border-color: var(--ui-navy-700);
+    background: var(--ui-navy-700);
+}
+.sb-date-reset {
+    margin-top: 6px;
+    padding: 0 2px;
+    border: 0;
+    background: none;
+    color: rgba(255, 255, 255, .55);
+    font-size: 11px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.sb-date-reset:hover { color: var(--ui-yellow-400); }
 
 .ui-sidebar nav { display: flex; flex-direction: column; gap: 4px; }
 .ui-nav-item {
@@ -99,7 +177,9 @@ a.ui-nav-item:focus-visible { outline: 3px solid var(--ui-yellow); outline-offse
     .ui-dashboard { grid-template-columns: 72px minmax(0, 1fr); }
     .ui-sidebar { padding: 16px 8px; }
     .ui-brand { justify-content: center; padding: 0 0 16px; }
-    .ui-brand-text, .ui-nav-text { display: none; }
+    .ui-brand-text, .ui-nav-text, .sb-profile-text, .sb-date-box { display: none; }
+    .sb-profile { justify-content: center; padding: 8px 0; background: none; }
+    .sb-avatar { width: 40px; height: 40px; }
     .ui-nav-item { justify-content: center; padding: 12px 0; }
     .ui-statistics { padding: 10px; gap: 10px; }
 }

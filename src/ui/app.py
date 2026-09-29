@@ -11,6 +11,7 @@ from .pages.main import create_main_layout
 from .pages.detail.page import MACHINES, create_detail_layout
 from .pages.statistics.page import create_statistics_page
 from .shared.sidebar import create_sidebar
+from .config import UI_AS_OF, valid_as_of
 
 
 def selected_machine(search):
@@ -34,17 +35,17 @@ def machine_from_click(click_data):
     return machine_id
 
 
-def create_detail_page(machine_id=None):
+def create_detail_page(machine_id=None, as_of=UI_AS_OF):
     return html.Div(
-        [create_sidebar(active="equipment"),
-         create_detail_layout(machine_id)],
+        [create_sidebar(active="equipment", as_of=as_of),
+         create_detail_layout(machine_id, as_of)],
         className="ui-dashboard ui-dashboard--detail",
     )
 
 
-def create_main_page():
+def create_main_page(as_of=UI_AS_OF):
     return html.Div(
-        [create_sidebar(active="main"), create_main_layout()],
+        [create_sidebar(active="main", as_of=as_of), create_main_layout(as_of)],
         className="ui-dashboard ui-dashboard--main",
     )
 
@@ -60,6 +61,8 @@ def create_app():
     )
     app.layout = html.Div([
         dcc.Location(id="ui-location", refresh="callback-nav"),
+        # 사이드바에서 고른 기준일. 모든 화면이 이 날짜 기준으로 다시 그려진다.
+        dcc.Store(id="store-as-of", storage_type="session", data=UI_AS_OF),
         # 메인 To-Do/TOP5에서 처리 완료(삭제)한 항목 key 목록. 페이지를 옮겨도 유지된다.
         dcc.Store(id="store-todo-dismissed", storage_type="session", data=[]),
         # 설비 상세에서 넣은 발주 기록. 메인 '과거 대응률'이 이 목록만큼 누적된다.
@@ -71,13 +74,15 @@ def create_app():
         Output("ui-page", "children"),
         Input("ui-location", "pathname"),
         Input("ui-location", "search"),
+        Input("store-as-of", "data"),
     )
-    def display_page(pathname, search):
+    def display_page(pathname, search, as_of):
+        as_of = valid_as_of(as_of)
         if pathname == "/detail":
-            return create_detail_page(selected_machine(search))
+            return create_detail_page(selected_machine(search), as_of)
         if pathname == "/statistics":
-            return create_statistics_page()
-        return create_main_page()
+            return create_statistics_page(as_of)
+        return create_main_page(as_of)
 
     @app.callback(
         Output("ui-location", "pathname"),

@@ -8,13 +8,13 @@ from src.F10.dashboard import create_layout as create_anomaly_layout
 from src.ui.config import upto_as_of
 
 
-def create_statistics_layout(predictions=None):
-    predictions = upto_as_of(load_predictions() if predictions is None else predictions)
+def create_statistics_layout(predictions=None, as_of=None):
+    predictions = upto_as_of(load_predictions() if predictions is None else predictions, as_of)
     return html.Main(
         [
             html.H1("통계", className="ui-sr-only"),
             html.Section(
-                create_anomaly_layout(predictions.as_of.max()),
+                create_anomaly_layout(as_of or predictions.as_of.max()),
                 id="stats-f10-content", className="risk-panel",
                 **{"aria-labelledby": "stats-f10-title"},
             ),

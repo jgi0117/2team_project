@@ -36,10 +36,11 @@ class DetailPanelTests(unittest.TestCase):
         with patch.object(detail, "f05_diagnosis", return_value=diagnosis) as build:
             rendered = detail.show_machine(1)
         build.assert_called_once_with(1, detail.AS_OF)
-        self.assertEqual(rendered[-3], "최대 위험: comp2")
-        self.assertIn("미보정 위험 점수 0.523", rendered[-2])
+        # 요약 숫자는 채택 부품 중 위험이 가장 먼저 오르는 시점(D-day), 확률 표기 없음
+        self.assertTrue(rendered[-3].startswith("D-") or rendered[-3] == "안정")
+        self.assertNotIn("comp2", rendered[-2])
         self.assertEqual(rendered[-1], diagnosis["text"])
-        self.assertTrue(all("%" not in score for score in rendered[2:6]))
+        self.assertTrue(all("%" not in str(score) for score in rendered[2:6]))
 
     def test_f06_sensor_change_and_if_score_are_not_probabilities(self):
         sensor_rows = [
