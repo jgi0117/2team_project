@@ -12,6 +12,7 @@ from math import exp
 import pandas as pd
 
 from src.common.paths import OPS, RAW_PDM
+from src.database.readers import read_operation, read_table
 from src.ui.sample_data import F02_STOCK
 
 WON = 10_000  # 화면 단위: 만원
@@ -19,18 +20,22 @@ WON = 10_000  # 화면 단위: 만원
 
 @lru_cache(maxsize=1)
 def _costs():
-    table = pd.read_csv(OPS / "costs.csv")
+    table = read_operation("costs.csv")
+    if table is None:
+        table = pd.read_csv(OPS / "costs.csv")
     return {comp: dict(zip(rows.cost_type, rows.amount)) for comp, rows in table.groupby("component")}
 
 
 @lru_cache(maxsize=1)
 def _parts():
-    return pd.read_csv(OPS / "part_master.csv").set_index("component")
+    table = read_operation("part_master.csv")
+    return (table if table is not None else pd.read_csv(OPS / "part_master.csv")).set_index("component")
 
 
 @lru_cache(maxsize=1)
 def _suppliers():
-    return pd.read_csv(OPS / "suppliers.csv").set_index("supplier_id")
+    table = read_operation("suppliers.csv")
+    return (table if table is not None else pd.read_csv(OPS / "suppliers.csv")).set_index("supplier_id")
 
 
 def part_info(comp):
@@ -112,8 +117,12 @@ def suppliers_for(comp):
 
 @lru_cache(maxsize=1)
 def _maint():
-    maint = pd.read_csv(RAW_PDM / "PdM_maint.csv", parse_dates=["datetime"])
-    fails = pd.read_csv(RAW_PDM / "PdM_failures.csv", parse_dates=["datetime"])
+    maint = read_table("machine_maintenance_events")
+    fails = read_table("machine_failures")
+    if maint is None:
+        maint = pd.read_csv(RAW_PDM / "PdM_maint.csv", parse_dates=["datetime"])
+    if fails is None:
+        fails = pd.read_csv(RAW_PDM / "PdM_failures.csv", parse_dates=["datetime"])
     fails = fails.rename(columns={"failure": "comp"}).assign(failure=True)
     data = maint.merge(fails, on=["datetime", "machineID", "comp"], how="left")
     return data.assign(failure=data.failure.fillna(False).astype(bool))

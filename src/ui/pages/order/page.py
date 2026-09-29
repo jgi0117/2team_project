@@ -8,10 +8,16 @@ from collections import OrderedDict
 
 from dash import html, dcc, Input, Output, State, ALL, callback, ctx
 from dash.exceptions import PreventUpdate
+from flask import has_request_context, session
 
 from src.ui.config import UI_AS_OF, valid_as_of
 from src.ui.live_data import ranked_items
 from src.ui.shared.sidebar import create_sidebar
+from src.database.repository import (
+    create_procurement_request,
+    list_procurement_request_items,
+    ready as database_ready,
+)
 
 COMPS = ["comp1", "comp2", "comp3", "comp4"]
 
@@ -40,7 +46,7 @@ def create_order_layout(as_of=UI_AS_OF):
             html.Div(html.H2("발주 요청 내역"), className="od-section-head"),
             html.Div(id="od-history"),
         ], className="od-band"),
-        html.Small(f"기준일 {as_of} · 단가·납기는 가상 운영 데이터 기반 예시이며, 발주 요청은 이 브라우저 세션에만 기록됩니다.",
+        html.Small(f"기준일 {as_of} · 단가·납기는 가상 운영 데이터 기반 예시이며, 발주 요청과 상태 이력은 MySQL에 저장됩니다.",
                    className="od-note"),
     ])
 
@@ -149,7 +155,6 @@ def edit_basket(_inc, _dec, _remove, _clear, basket):
     return result
 
 
-# TODO(기능): 실제 발주 시스템과 연결. 지금은 세션의 발주 기록(store-order-log)에만 남긴다.
 @callback(
     Output("store-order-log", "data"),
     Output("store-order-basket", "data", allow_duplicate=True),
@@ -167,6 +172,10 @@ def submit(n_clicks, basket, log, as_of):
     orders = [{"machine": line["machine"], "component": line["comp"], "supplier": line["supplier"],
                "supplier_name": line["supplier_name"], "qty": line["qty"], "price": line["price"], "date": date}
               for line in basket]
+    if database_ready():
+        actor_user_id = session.get("user_id") if has_request_context() else None
+        create_procurement_request(list(basket), date, actor_user_id=actor_user_id)
+        return list_procurement_request_items(), [], orders
     return [*(log or []), *orders], [], orders
 
 
@@ -176,6 +185,8 @@ def submit(n_clicks, basket, log, as_of):
     Input("od-init", "data"),
 )
 def render_history(log, _init=None):
+    if database_ready():
+        log = list_procurement_request_items()
     log = [order for order in (log or []) if "qty" in order]
     if not log:
         return html.Div("아직 발주 요청한 내역이 없습니다.", className="od-empty-line")
@@ -185,7 +196,9 @@ def render_history(log, _init=None):
             html.Td(order["date"]), html.Td(f"M-{order['machine']:03d}"), html.Td(order["component"]),
             html.Td(order.get("supplier_name", order["supplier"])), html.Td(f"{order['qty']}개"),
             html.Td(won(order["qty"] * order["price"]), className="od-num"),
-            html.Td(html.Span("요청 완료", className="od-status")),
+            html.Td(html.Span({"requested": "요청 완료", "approved": "승인", "ordered": "발주 완료",
+                               "received": "입고 완료", "cancelled": "취소"}.get(order.get("status"), "요청 완료"),
+                              className="od-status")),
         ]) for order in reversed(log)]),
     ], className="od-table"), className="od-scroll od-history-table")
 
@@ -231,11 +244,15 @@ def dismiss(submitted, orders, dismissed, as_of):
     return list(dict.fromkeys([*(dismissed or []), *(item["key"] for item in matches)]))
 
 
-def basket_line(machine, comp, supplier, qty):
+def basket_line(machine, comp, supplier, qty, review=None):
     """설비 화면의 '발주 담기'가 만드는 한 줄."""
+    review = review or {}
     return {"key": f"{machine}-{comp}|{supplier['id']}", "machine": machine, "comp": comp,
             "supplier": supplier["id"], "supplier_name": supplier["name"], "lead": supplier["lead"],
-            "price": supplier["price"], "qty": qty}
+            "price": supplier["price"], "qty": qty,
+            "order_deadline": review.get("deadline"),
+            "target_maintenance_at": review.get("target"),
+            "reason": review.get("reason")}
 
 
 def add_line(basket, line):

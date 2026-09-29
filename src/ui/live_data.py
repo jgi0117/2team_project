@@ -248,10 +248,9 @@ def history(as_of, orders=(), start=None, end=None):
                      "saved": int(savings.get(month, 0)), "current": month == current})
     if rows and rows[-1]["current"]:
         for order in orders or ():
-            # 화면에서 넣은 발주는 이번 달 예방 대응 1건으로 더한다.
+            # A request is work due, not a completed preventive response. Completion is
+            # counted only after the corresponding maintenance record is closed.
             rows[-1]["due"] += 1
-            rows[-1]["on_time"] += 1
-            rows[-1]["saved"] += detail_data.saving(order.get("component") or "comp1")
     return rows
 
 

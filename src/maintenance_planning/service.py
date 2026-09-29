@@ -9,6 +9,7 @@ import pandas as pd
 
 from src.common.paths import OPS, PROCESSED, ROOT, WORK
 from src.common.labels import load_events
+from src.database.readers import read_operation, read_table
 from .operations_snapshot import snapshot
 
 
@@ -23,14 +24,16 @@ def _parquet(path: str) -> pd.DataFrame:
 
 
 def _predictions() -> pd.DataFrame:
-    data = _csv(str(PROCESSED / "predictions.csv")).copy()
+    stored = read_table("failure_predictions")
+    data = (stored if stored is not None else _csv(str(PROCESSED / "predictions.csv"))).copy()
     data["as_of"] = pd.to_datetime(data["as_of"])
     data["calibrated"] = data.get("calibrated", False).astype(str).str.lower().eq("true")
     return data
 
 
 def _ops(name: str) -> pd.DataFrame:
-    return _csv(str(OPS / name)).copy()
+    stored = read_operation(name)
+    return (stored if stored is not None else _csv(str(OPS / name))).copy()
 
 
 def _latest_predictions(as_of=None) -> tuple[pd.DataFrame, pd.Timestamp, str]:

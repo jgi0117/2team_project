@@ -866,17 +866,20 @@ def step_qty(_inc, _dec, qty):
     Input({"type": "f08-order", "key": ALL}, "n_clicks"),
     State({"type": "f08-qty", "key": ALL}, "children"),
     State("store-order-basket", "data"),
+    State("store-as-of", "data"),
     prevent_initial_call=True,
 )
-def add_to_basket(_clicks, quantities, basket):
+def add_to_basket(_clicks, quantities, basket, as_of):
     if not ctx.triggered or not ctx.triggered[0]["value"] or not isinstance(ctx.triggered_id, dict):
         raise PreventUpdate
     key = ctx.triggered_id["key"]
     qty = next((int(q or 1) for q, item in zip(quantities, ctx.states_list[0]) if item["id"]["key"] == key), 1)
     item_key, supplier_id = key.split("|")
     machine, comp = item_key.split("-", 1)
-    supplier = next(s for s in live_data.suppliers(comp, None) if s["id"] == supplier_id)
-    return add_line(basket, basket_line(int(machine), comp, supplier, qty))
+    as_of = resolve_as_of(as_of)
+    supplier = next(s for s in live_data.suppliers(comp, as_of) if s["id"] == supplier_id)
+    review = live_data.cost_review(int(machine), comp, as_of)
+    return add_line(basket, basket_line(int(machine), comp, supplier, qty, review))
 
 
 @callback(

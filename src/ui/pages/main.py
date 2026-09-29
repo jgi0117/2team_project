@@ -4,6 +4,8 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, State, ALL, callback, ctx, no_update
 from dash.exceptions import PreventUpdate
+from flask import has_request_context, session
+from src.database.repository import record_task_action, restore_tasks
 
 from src.ui.ai_data import f03_summary
 from src.ui.config import UI_AS_OF, valid_as_of
@@ -175,12 +177,11 @@ def make_top5(items, dismissed_count, as_of):
         cards = [html.Div([html.Span(className="mn-timeline-dot"), top5_card(item, rank, as_of)],
                           className="mn-timeline-row")
                  for rank, item in enumerate(items, 1)]
-    if dismissed_count:
-        footer = html.Div([html.Span(f"처리해서 지운 항목 {dismissed_count}건"),
-                           html.Button("모두 되돌리기", id="mn-top5-restore", className="mn-link-btn")],
-                          className="mn-top5-foot")
-    else:
-        footer = html.Button(id="mn-top5-restore", className="mn-hidden")
+    footer = html.Div([
+        html.Span(f"처리해서 지운 항목 {dismissed_count}건"),
+        html.Button("모두 되돌리기", id="mn-top5-restore",
+                    className="mn-link-btn" if dismissed_count else "mn-hidden"),
+    ], className="mn-top5-foot" if dismissed_count else "mn-hidden")
     return [html.Div(cards, className="mn-timeline"), footer]
 
 
@@ -402,7 +403,7 @@ def build_layout(as_of, f03=None):
                                     style={"width": "100%"},
                                 ), className="mn-sort"),
                             ], className="mn-sort-row"),
-                            html.Div(id="mn-top5-panel"),
+                            html.Div(make_top5([], 0, as_of), id="mn-top5-panel"),
                         ], id="mn-f02-slot", className=TOP5_CLOSED[0]),
                     ], className="mn-hero-body"),
                 ], className="mn-hero"),
@@ -592,13 +593,20 @@ def open_action(_cal, _cards, _cancel, _delete, as_of):
     Input("mn-top5-restore", "n_clicks"),
     State("mn-action-key", "data"),
     State("store-todo-dismissed", "data"),
+    State("store-as-of", "data"),
     prevent_initial_call=True,
 )
-def update_dismissed(_delete, restore, key, dismissed):
+def update_dismissed(_delete, restore, key, dismissed, as_of):
+    as_of = valid_as_of(as_of)
+    actor_user_id = session.get("user_id") if has_request_context() else None
     if ctx.triggered_id == "mn-top5-restore":
         if not restore:
             raise PreventUpdate
+        restore_tasks(list(dismissed or []), as_of, actor_user_id=actor_user_id)
         return []
     if not key:
         raise PreventUpdate
+    item = item_by_key(key, as_of)
+    if item is not None:
+        record_task_action(item, as_of, "dismissed", actor_user_id=actor_user_id)
     return list(dict.fromkeys([*(dismissed or []), key]))

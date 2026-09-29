@@ -158,6 +158,21 @@ button, input, select, textarea { font-family: inherit; }
 
 .ui-nav-item:disabled { color: #657489; cursor: default; }
 a.ui-nav-item:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.sb-logout {
+    position: absolute;
+    right: 18px;
+    bottom: 20px;
+    left: 18px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 9px;
+    color: rgba(255, 255, 255, .72);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+.sb-logout:hover { border-color: var(--ui-yellow); color: var(--ui-yellow); }
 a.ui-nav-item:focus-visible { outline: 3px solid var(--ui-yellow); outline-offset: -3px; }
 .ui-nav-item--active {
     background: var(--ui-navy-700);

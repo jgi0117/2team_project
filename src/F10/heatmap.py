@@ -6,13 +6,18 @@ import numpy as np
 import pandas as pd
 
 from src.common.machine_heatmap import ANOMALY_COLORS, machine_grid
+from src.database.readers import read_table
 
 
 DEFAULT_PREDICTIONS = Path(__file__).resolve().parents[2] / "outputs/model3/predictions.csv"
 
 
 def load_predictions(path=DEFAULT_PREDICTIONS):
-    data = pd.read_csv(path, usecols=["machineID", "as_of", "anomaly_score", "threshold", "is_anomaly"], parse_dates=["as_of"])
+    stored = read_table("anomaly_predictions") if Path(path) == DEFAULT_PREDICTIONS else None
+    data = (stored[["machineID", "as_of", "anomaly_score", "threshold", "is_anomaly"]].copy()
+            if stored is not None else
+            pd.read_csv(path, usecols=["machineID", "as_of", "anomaly_score", "threshold", "is_anomaly"], parse_dates=["as_of"]))
+    data["as_of"] = pd.to_datetime(data["as_of"])
     if data.empty or data.isna().any().any():
         raise ValueError("Missing IF results")
     if data.as_of.dt.tz is not None or data.duplicated(["machineID", "as_of"]).any():

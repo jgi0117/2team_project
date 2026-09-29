@@ -7,6 +7,7 @@ from functools import lru_cache
 import pandas as pd
 
 from src.common.paths import OPS
+from src.database.readers import read_operation
 
 
 START = pd.Timestamp("2015-04-01 06:00:00")
@@ -15,7 +16,8 @@ END = pd.Timestamp("2016-01-01 06:00:00")
 
 @lru_cache(maxsize=None)
 def _csv(name: str) -> pd.DataFrame:
-    return pd.read_csv(OPS / name)
+    stored = read_operation(name)
+    return stored if stored is not None else pd.read_csv(OPS / name)
 
 
 def _at(value) -> pd.Timestamp:

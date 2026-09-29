@@ -1,5 +1,7 @@
 """Run the combined dashboard with python -m src.ui.app."""
 
+import atexit
+import os
 from pathlib import Path
 from urllib.parse import parse_qs
 
@@ -13,6 +15,23 @@ from .pages.statistics.page import create_statistics_page
 from .pages.order.page import create_order_page
 from .shared.sidebar import create_sidebar
 from .config import UI_AS_OF, valid_as_of
+from .auth import configure_authentication
+from src.database.repository import list_dismissed_task_keys, list_procurement_request_items
+from src.database.runtime_reset import reset_on_exit_enabled, reset_runtime_data
+
+
+def initial_order_history():
+    try:
+        return list_procurement_request_items()
+    except Exception:
+        return []
+
+
+def initial_dismissed_tasks():
+    try:
+        return list_dismissed_task_keys(UI_AS_OF)
+    except Exception:
+        return []
 
 
 def selected_machine(search):
@@ -62,18 +81,19 @@ def create_app():
         suppress_callback_exceptions=True,
         meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
     )
+    configure_authentication(app.server)
     app.layout = html.Div([
         dcc.Location(id="ui-location", refresh="callback-nav"),
         # 사이드바에서 고른 기준일. 모든 화면이 이 날짜 기준으로 다시 그려진다.
         dcc.Store(id="store-as-of", storage_type="session", data=UI_AS_OF),
         # 메인 To-Do/TOP5에서 처리 완료(삭제)한 항목 key 목록. 페이지를 옮겨도 유지된다.
-        dcc.Store(id="store-todo-dismissed", storage_type="session", data=[]),
+        dcc.Store(id="store-todo-dismissed", storage_type="memory", data=initial_dismissed_tasks()),
         # 설비 상세에서 넣은 발주 기록. 메인 '과거 대응률'이 이 목록만큼 누적된다.
-        dcc.Store(id="store-order-log", storage_type="session", data=[]),
+        dcc.Store(id="store-order-log", storage_type="memory", data=initial_order_history()),
         # 설비 상세에서 '발주 정보 보기'로 쌓은 부품 목록 (장바구니). 발주 요청 전 단계.
-        dcc.Store(id="store-order-cart", storage_type="session", data=[]),
+        dcc.Store(id="store-order-cart", storage_type="memory", data=[]),
         # 발주 화면 장바구니: 설비·부품·협력사별 수량. 설비 화면 '발주 담기'로 쌓인다.
-        dcc.Store(id="store-order-basket", storage_type="session", data=[]),
+        dcc.Store(id="store-order-basket", storage_type="memory", data=[]),
         html.Div(id="ui-page"),
     ])
 
@@ -110,9 +130,24 @@ def create_app():
     return app
 
 
+_RESET_RUNTIME = __name__ == "__main__" and reset_on_exit_enabled()
+if _RESET_RUNTIME:
+    # Run before create_app() so its initial dcc.Store values are clean too.
+    reset_runtime_data()
+    atexit.register(reset_runtime_data)
+
+
 app = create_app()
 server = app.server
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="127.0.0.1", port=8050)
+    try:
+        app.run(
+            debug=os.getenv("DASH_DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"},
+            host=os.getenv("DASH_HOST", "127.0.0.1"),
+            port=int(os.getenv("DASH_PORT", "8050")),
+        )
+    finally:
+        if _RESET_RUNTIME:
+            reset_runtime_data()

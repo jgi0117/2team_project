@@ -14,6 +14,7 @@ from src.ai_summary import QwenSelector
 from src.common.paths import PROCESSED, RAW_PDM, ROOT
 from src.F02 import build_plan
 from src.ui.config import UI_AS_OF
+from src.database.readers import read_table
 
 
 _SELECTOR = QwenSelector()
@@ -23,17 +24,20 @@ _IF_RESULTS = ROOT / "outputs" / "model3" / "predictions.csv"
 
 @lru_cache(maxsize=1)
 def _failure_predictions():
-    return pd.read_csv(PROCESSED / "predictions.csv")
+    stored = read_table("failure_predictions")
+    return stored if stored is not None else pd.read_csv(PROCESSED / "predictions.csv")
 
 
 @lru_cache(maxsize=1)
 def _telemetry():
-    return pd.read_csv(RAW_PDM / "PdM_telemetry.csv", parse_dates=["datetime"])
+    stored = read_table("telemetry")
+    return stored if stored is not None else pd.read_csv(RAW_PDM / "PdM_telemetry.csv", parse_dates=["datetime"])
 
 
 @lru_cache(maxsize=1)
 def _if_predictions():
-    return pd.read_csv(_IF_RESULTS) if _IF_RESULTS.is_file() else None
+    stored = read_table("anomaly_predictions")
+    return stored if stored is not None else (pd.read_csv(_IF_RESULTS) if _IF_RESULTS.is_file() else None)
 
 
 @lru_cache(maxsize=16)

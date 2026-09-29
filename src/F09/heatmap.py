@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from src.common.machine_heatmap import machine_grid
+from src.database.readers import read_table
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -13,7 +14,8 @@ COMPONENTS = ["comp1", "comp2", "comp3", "comp4"]
 
 
 def load_predictions(path=DEFAULT_PREDICTIONS):
-    data = pd.read_csv(path)
+    stored = read_table("failure_predictions") if Path(path) == DEFAULT_PREDICTIONS else None
+    data = stored if stored is not None else pd.read_csv(path)
     keys = ["machineID", "component", "as_of", "horizon_days", "model_version"]
     required = set(keys + ["failure_probability"])
     if required - set(data):
@@ -48,7 +50,9 @@ def load_predictions(path=DEFAULT_PREDICTIONS):
 
 
 def machine_ids():
-    return sorted(pd.read_csv(ROOT / "data/raw/azure_pdm/PdM_machines.csv").machineID.astype(int).tolist())
+    stored = read_table("machines")
+    data = stored if stored is not None else pd.read_csv(ROOT / "data/raw/azure_pdm/PdM_machines.csv")
+    return sorted(data.machineID.astype(int).tolist())
 
 
 def build_heatmap(data, as_of, horizon_days, model_version, *, machines=None):

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from dash import Input, Output, State, callback, ctx, dcc, html
 from dash.exceptions import PreventUpdate
+from flask import has_request_context, session
 
 from src.ui.config import AS_OF_MAX, AS_OF_MIN, CURRENT_USER, UI_AS_OF, valid_as_of
 
@@ -11,13 +12,14 @@ _PROFILE_PHOTO = Path(__file__).resolve().parents[1] / "assets" / "profile.png"
 
 
 def profile():
+    username = session.get("username", CURRENT_USER["name"]) if has_request_context() else CURRENT_USER["name"]
     photo = (html.Img(src="/assets/profile.png", alt="", className="sb-avatar")
              if _PROFILE_PHOTO.is_file() else
-             html.Span(CURRENT_USER["name"][:1], className="sb-avatar", **{"aria-hidden": "true"}))
+             html.Span(username[:1].upper(), className="sb-avatar", **{"aria-hidden": "true"}))
     return html.Div([
         photo,
         html.Div([
-            html.Strong(CURRENT_USER["name"], className="sb-name"),
+            html.Strong(username, className="sb-name"),
             html.Span(CURRENT_USER["title"], className="sb-title"),
             html.Span(CURRENT_USER["role"], className="sb-role"),
         ], className="sb-profile-text"),
@@ -68,6 +70,7 @@ def create_sidebar(active="main", as_of=UI_AS_OF):
                 ],
                 **{"aria-label": "대시보드 메뉴"},
             ),
+            html.A("로그아웃", href="/logout", className="sb-logout"),
         ],
         className="ui-sidebar",
     )
