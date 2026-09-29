@@ -1,28 +1,32 @@
+import calendar
 from copy import deepcopy
 
 from dash import html, dcc, Input, Output, State, ALL, callback, ctx
 
 from src.ui.ai_data import f03_summary
+from src.ui.config import UI_AS_OF
+
+CAL_YEAR, CAL_MONTH = int(UI_AS_OF[:4]), int(UI_AS_OF[5:7])
 
 
 # UI Frame 확인용 임시 데이터
 # 실제 데이터 연결 시 이 부분을 예측/재고/발주 데이터로 교체
 TOP5_DATA = {
-    "2024-10-07": [
+    "2015-10-07": [
         ("M-071", 56, "재고 위험"),
         ("M-023", 52, "발주 긴급"),
         ("M-102", 48, "예상 손실"),
         ("M-055", 44, "대응 여유"),
         ("M-087", 36, "설비 위험도"),
     ],
-    "2024-10-18": [
+    "2015-10-18": [
         ("M-023", 85, "설비 위험도"),
         ("M-071", 56, "발주 긴급"),
         ("M-102", 48, "예상 손실"),
         ("M-055", 44, "재고 위험"),
         ("M-087", 36, "대응 여유"),
     ],
-    "2024-10-28": [
+    "2015-10-28": [
         ("M-023", 91, "설비 위험도"),
         ("M-071", 82, "재고 위험"),
         ("M-055", 67, "발주 긴급"),
@@ -31,7 +35,7 @@ TOP5_DATA = {
     ],
 }
 
-DEFAULT_TOP5 = TOP5_DATA["2024-10-18"]
+DEFAULT_TOP5 = TOP5_DATA["2015-10-18"]
 
 
 def make_calendar():
@@ -44,9 +48,14 @@ def make_calendar():
         28: "기한 초과",
     }
 
-    cells = []
+    first_weekday, days = calendar.monthrange(CAL_YEAR, CAL_MONTH)
+    # monthrange는 월요일=0 → 일요일 시작 달력의 앞쪽 빈 칸 수
+    cells = [html.Div(className="mn-calendar-cell mn-calendar-blank")
+             for _ in range((first_weekday + 1) % 7)]
 
-    for day in range(1, 32):
+    for day in range(1, days + 1):
+        date = f"{CAL_YEAR}-{CAL_MONTH:02d}-{day:02d}"
+        cell_class = "mn-calendar-cell" + (" mn-calendar-today" if date == UI_AS_OF else "")
         if day in events:
             cells.append(
                 html.Button(
@@ -54,23 +63,23 @@ def make_calendar():
                         html.Span(str(day)),
                         html.Small(events[day]),
                     ],
-                    id={"type": "mn-date", "date": f"2024-10-{day:02d}"},
-                    className="mn-calendar-cell",
+                    id={"type": "mn-date", "date": date},
+                    className=cell_class,
                 )
             )
         else:
             cells.append(
                 html.Button(
                     str(day),
-                    id={"type": "mn-date", "date": f"2024-10-{day:02d}"},
-                    className="mn-calendar-cell",
+                    id={"type": "mn-date", "date": date},
+                    className=cell_class,
                 )
             )
 
     return html.Div(
         [
             html.Div(
-                ["일", "월", "화", "수", "목", "금", "토"],
+                [html.Div(day) for day in ["일", "월", "화", "수", "목", "금", "토"]],
                 className="mn-week",
             ),
             html.Div(cells, className="mn-calendar"),
@@ -161,7 +170,7 @@ def make_summary_cards():
 
 def make_f03_panel():
     try:
-        result = f03_summary()
+        result = f03_summary(UI_AS_OF)
     except (OSError, ValueError, KeyError, IndexError):
         result = {"text": "고장 예측 결과를 불러오지 못했습니다.", "selected": None,
                   "prediction_as_of": None, "horizon_days": None}
@@ -169,9 +178,9 @@ def make_f03_panel():
     horizon = result.get("horizon_days")
     details = []
     if observed:
-        details.append(f"예측 기준 {observed[:10]}")
+        details.append(html.Span(f"예측 기준 {observed[:10]}"))
     if horizon:
-        details.append(f"향후 {horizon}일 고장 위험")
+        details.append(html.Span(f"향후 {horizon}일 고장 위험"))
     selected = result.get("selected")
     if selected:
         details.append(dcc.Link(
@@ -297,12 +306,12 @@ def toggle_top5(show_click, close_click, date_clicks):
     if triggered == "mn-close-top5":
         return [], "mn-f02-slot mn-f02-slot-closed", "mn-middle-grid mn-middle-closed"
 
-    selected_date = "2024-10-18"
+    selected_date = UI_AS_OF
     if date_clicks:
         counts = [value or 0 for value in date_clicks]
         if max(counts) > 0:
             selected_day = counts.index(max(counts)) + 1
-            selected_date = f"2024-10-{selected_day:02d}"
+            selected_date = f"{CAL_YEAR}-{CAL_MONTH:02d}-{selected_day:02d}"
 
     data = TOP5_DATA.get(selected_date, DEFAULT_TOP5)
     top5 = make_top5(data, selected_date)

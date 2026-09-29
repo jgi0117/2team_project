@@ -5,10 +5,11 @@ from dash import html
 from src.F09.dashboard import create_layout
 from src.F09.heatmap import load_predictions
 from src.F10.dashboard import create_layout as create_anomaly_layout
+from src.ui.config import upto_as_of
 
 
 def create_statistics_layout(predictions=None):
-    predictions = load_predictions() if predictions is None else predictions
+    predictions = upto_as_of(load_predictions() if predictions is None else predictions)
     return html.Main(
         [
             html.H1("통계", className="ui-sr-only"),

@@ -7,10 +7,11 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from src.F09.heatmap import load_predictions, machine_ids
 from src.ui.ai_data import f05_diagnosis, f06_analysis
+from src.ui.config import upto_as_of
 
 PREDICTIONS = load_predictions()
 MACHINES = machine_ids()
-AS_OF = PREDICTIONS.as_of.max()
+AS_OF = upto_as_of(PREDICTIONS).as_of.max()
 MODEL_VERSION = sorted(PREDICTIONS.loc[PREDICTIONS.as_of.eq(AS_OF), "model_version"].unique())[-1]
 
 COMPS    = ["comp1", "comp2", "comp3", "comp4"]
@@ -28,8 +29,8 @@ POS = {
 }
 
 
-def tag(code, color="#1f4e9c"):
-    return html.Span(code, className="ftag", style={"background": color})
+def tag(code):
+    return html.Span(code, className=f"ftag ftag--{code.lower()}")
 
 
 def ghost(text, min_h=80):
@@ -39,25 +40,21 @@ def ghost(text, min_h=80):
 # ---------------- F05 : 부품 말풍선 ----------------
 def hotspot(comp):
     on = ADOPTED[comp]
-    color = "#c62828" if on else "#9aa5b1"
+    state = "hotspot--on" if on else "hotspot--off"
 
-    dot = html.Div(className="hotspot-dot",
-                   style={**POS[comp], "background": color})
+    dot = html.Div(className=f"hotspot-dot {state}", style=POS[comp])
 
     bubble = html.Div(
-        id=f"hotspot-{comp}", n_clicks=0, className="hotspot",
-        style={**POS[comp], "border": f"1px solid {color}",
-               "borderLeft": f"4px solid {color}"},
+        id=f"hotspot-{comp}", n_clicks=0, className=f"hotspot {state}",
+        style=POS[comp],
         children=[
             html.Div([
-                html.Span(comp, id=f"hs-name-{comp}", style={"fontWeight": 700}),
+                html.Span(comp, id=f"hs-name-{comp}", className="hs-name"),
                 html.Span(f" | {DECISION[comp]}일", id=f"hs-horizon-{comp}",
-                          style={"color": "#667"}),
+                          className="hs-horizon"),
             ]),
-            html.Div("--", id=f"hs-prob-{comp}",
-                     className="hotspot-prob", style={"color": color}),
-            html.Div("" if on else "미채택(안전재고)", className="hs-note",
-                     style={"fontSize": "10px", "color": "#9aa5b1"}),
+            html.Div("--", id=f"hs-prob-{comp}", className="hotspot-prob"),
+            html.Div("" if on else "안전재고 대응", className="hs-note"),
         ],
     )
 
@@ -71,7 +68,7 @@ def hotspot(comp):
                                         [html.Th(f"{h}일") for h in HORIZONS])),
                      html.Tbody(html.Tr([html.Td("점수")] +
                                         [html.Td("--") for _ in HORIZONS])),
-                 ], style={"fontSize": "11px"}))))],
+                 ], className="hs-pop-table"))))],
         id=f"hs-pop-{comp}", target=f"hotspot-{comp}",
         trigger="hover", placement="auto",
     )
@@ -82,8 +79,8 @@ def hotspot(comp):
 f06_overlay = html.Div(
     id="f06-overlay", className="box f06-layer",
     children=[
-        html.Div([tag("F06", "#7b1fa2"),
-                  html.Span("시간별 센서 이상", style={"fontWeight": 700}),
+        html.Div([tag("F06"),
+                  html.Span("시간별 센서 이상", className="panel-title"),
                   dcc.Dropdown(
                       id="f06-sensor-select",
                       options=[{"label": f"{label} ({sensor})", "value": sensor}
@@ -113,9 +110,8 @@ f06_overlay = html.Div(
 f05_summary = html.Div(
     id="f05-summary", className="box summary-card",
     children=[
-        html.Div([tag("F05"), html.Span("설비 종합 진단",
-                                        style={"fontWeight": 700, "fontSize": "13px"})],
-                 style={"display": "flex", "gap": "6px", "alignItems": "center"}),
+        html.Div([tag("F05"), html.Span("설비 종합 진단", className="panel-title")],
+                 className="summary-hdr"),
         html.Div("진단 불러오는 중", id="f05-summary-days", className="summary-days"),
         html.Div("동일 기간 부품 위험 비교", id="f05-summary-note", className="summary-sub"),
         html.Div("Qwen 종합진단을 준비하고 있습니다", id="f05-summary-basis", className="summary-sub"),
@@ -143,14 +139,12 @@ f05_stage = html.Div(className="stage", children=[
 # ---------------- F07 ----------------
 f07_panel = dbc.Collapse(
     id="f07-collapse", is_open=False,
-    children=html.Div(className="box",
-                      style={"marginTop": "14px", "borderTop": "3px solid #ef6c00"},
+    children=html.Div(className="box panel-collapse panel-collapse--f07",
                       children=[
         html.Div(className="panel-hdr", children=[
-            tag("F07", "#ef6c00"),
-            html.Span("최적 발주 시점 및 비용 분석 —", style={"fontWeight": 700}),
-            html.Span("--", id="f07-part-label",
-                      style={"fontWeight": 700, "color": "#ef6c00"}),
+            tag("F07"),
+            html.Span("최적 발주 시점 및 비용 분석 —", className="panel-title"),
+            html.Span("--", id="f07-part-label", className="panel-title f07-part-label"),
             html.Div(className="btns", children=[
                 dbc.Button("담기", id="btn-add-cart", size="sm",
                            color="primary", n_clicks=0),
@@ -160,36 +154,25 @@ f07_panel = dbc.Collapse(
         ]),
         dbc.Row(className="g-2", children=[
             dbc.Col(md=12, lg=5, children=html.Div(className="box", children=[
-                html.Div("비용 최소 발주 시점",
-                         style={"fontWeight": 700, "fontSize": "13px"}),
+                html.Div("비용 최소 발주 시점", className="sub-title"),
                 dcc.Graph(id="f07-cost-curve", figure={}, responsive=True,
                           config={"displayModeBar": False},
                           style={"height": "clamp(140px,20vh,190px)"}),
             ])),
             dbc.Col(md=6, lg=3, children=html.Div(className="box", children=[
-                html.Div("발주 및 재고 정보",
-                         style={"fontWeight": 700, "fontSize": "13px",
-                                "marginBottom": "6px"}),
+                html.Div("발주 및 재고 정보", className="sub-title"),
                 html.Div(id="f07-order-info",
                          children=ghost("발주마감일 / 권장수량 / 조달기간 / 대응여유", 150)),
             ])),
             dbc.Col(md=6, lg=4, children=html.Div(className="box", children=[
-                html.Div("시나리오 비교",
-                         style={"fontWeight": 700, "fontSize": "13px",
-                                "marginBottom": "6px"}),
+                html.Div("시나리오 비교", className="sub-title"),
                 dbc.Row(className="g-2", children=[
-                    dbc.Col(xs=12, sm=4, children=html.Div(className="box",
-                        style={"textAlign": "center", "fontSize": "12px"},
-                        children=["오늘 발주", html.Div("--", id="f07-cost-d0",
-                                                     style={"fontWeight": 700})])),
-                    dbc.Col(xs=12, sm=4, children=html.Div(className="box",
-                        style={"textAlign": "center", "fontSize": "12px"},
-                        children=["1주 대기", html.Div("--", id="f07-cost-d7",
-                                                     style={"fontWeight": 700})])),
-                    dbc.Col(xs=12, sm=4, children=html.Div(className="box",
-                        style={"textAlign": "center", "fontSize": "12px"},
-                        children=["2주 대기", html.Div("--", id="f07-cost-d14",
-                                                      style={"fontWeight": 700})])),
+                    dbc.Col(xs=12, sm=4, children=html.Div(className="box f07-scenario",
+                        children=["오늘 발주", html.Div("--", id="f07-cost-d0", className="f07-scenario-value")])),
+                    dbc.Col(xs=12, sm=4, children=html.Div(className="box f07-scenario",
+                        children=["1주 대기", html.Div("--", id="f07-cost-d7", className="f07-scenario-value")])),
+                    dbc.Col(xs=12, sm=4, children=html.Div(className="box f07-scenario",
+                        children=["2주 대기", html.Div("--", id="f07-cost-d14", className="f07-scenario-value")])),
                 ]),
             ])),
         ]),
@@ -199,12 +182,11 @@ f07_panel = dbc.Collapse(
 # ---------------- F08-a : 협력사 ----------------
 f08_supplier = dbc.Collapse(
     id="f08-supplier-collapse", is_open=False,
-    children=html.Div(className="box",
-                      style={"marginTop": "12px", "borderTop": "3px solid #2e7d32"},
+    children=html.Div(className="box panel-collapse panel-collapse--f08",
                       children=[
         html.Div(className="panel-hdr", children=[
-            tag("F08", "#2e7d32"),
-            html.Span("협력사 정보", style={"fontWeight": 700}),
+            tag("F08"),
+            html.Span("협력사 정보", className="panel-title"),
             html.Div(className="btns", children=[
                 dbc.Button("닫기", id="btn-f08-supplier-close",
                            size="sm", color="light", n_clicks=0)]),
@@ -217,17 +199,16 @@ f08_supplier = dbc.Collapse(
 # ---------------- F08-b : 교체 이력 ----------------
 f08_history = dbc.Collapse(
     id="f08-history-collapse", is_open=False,
-    children=html.Div(className="box",
-                      style={"marginTop": "12px", "borderTop": "3px solid #2e7d32"},
+    children=html.Div(className="box panel-collapse panel-collapse--f08",
                       children=[
         html.Div(className="panel-hdr", children=[
-            tag("F08", "#2e7d32"),
-            html.Span("교체 이력", style={"fontWeight": 700}),
+            tag("F08"),
+            html.Span("교체 이력", className="panel-title"),
             html.Div(className="btns", children=[
                 dbc.Button("닫기", id="btn-f08-history-close",
                            size="sm", color="light", n_clicks=0)]),
         ]),
-        html.Div(id="f08-history-table", style={"overflowX": "auto"},
+        html.Div(id="f08-history-table", className="table-scroll",
                  children=ghost("교체일 / 부품 / 담당자 / 비용 / 비고", 130)),
     ]),
 )
@@ -240,18 +221,16 @@ def create_detail_layout(machine_id=None):
         dcc.Store(id="store-selected-comp", data=None),
 
         html.Div(className="hdr", children=[
-            html.Span("설비 상세 —", style={"fontSize": "clamp(15px,1.6vw,18px)",
-                                           "fontWeight": 700}),
+            html.Span("설비 상세 —", className="hdr-title"),
             html.Span(f"M-{selected:03d}", id="detail-machine-name",
-                      style={"fontSize": "clamp(15px,1.6vw,18px)", "fontWeight": 800}),
+                      className="hdr-title hdr-machine"),
             dcc.Dropdown(
                 id="detail-machine-select",
                 options=[{"label": f"M-{machine:03d}", "value": machine} for machine in MACHINES],
                 value=selected, clearable=False,
                 className="detail-machine-select",
             ),
-            html.Span(f"기준일 {AS_OF}", id="detail-asof", className="hdr-right",
-                      style={"fontSize": "12px", "color": "#667"}),
+            html.Span(f"기준일 {AS_OF}", id="detail-asof", className="hdr-right hdr-asof"),
         ]),
         html.P(
             "부품별 고장 예측과 센서 이상은 서로 다른 결과입니다. 센서 분석은 현재 설비의 저장된 관측과 IF 결과를 사용하며, 발주·이력은 UI 프레임입니다.",
@@ -429,7 +408,7 @@ def f06_alert_summary(result, sensor):
              "판정 가능 시점에서 이상 없음" if not total else "이상 신호 있음")
     label = (f"최근 {result.get('window_hours', 72)}시간 · 선택 센서 IQR {counts['iqr']}건, "
              f"3σ {counts['three_sigma']}건 · 설비 IF {counts['if']}건 · {state}")
-    return html.Span(label, style={"color": "#b42318" if total else "#526579"})
+    return html.Span(label, className="f06-summary-alert" if total else "f06-summary-ok")
 
 
 @callback(

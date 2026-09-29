@@ -21,6 +21,10 @@ F03 또는 F05를 처음 요청할 때 공개 Qwen3-1.7B의 가중치·토크나
 | `/detail` | 설비별 상세 | `pages/detail/page.py` |
 | `/statistics` | 통계 | `pages/statistics/` |
 
+화면 기준일은 `config.py`의 `UI_AS_OF`(현재 2015-10-05) 한 곳에서 정합니다. 고장 예측은 2015-10-05부터 주 1회 결과가 있고, 센서 IF 결과는 2015-10-20부터 있어 그 이전 기준일에는 IF 점수·이상 히트맵이 '결과 없음'으로 표시됩니다.
+
+색·모서리 등 공통 디자인 값은 `assets/00_tokens.css`의 CSS 변수로 관리합니다. 페이지별 CSS는 페이지 클래스(`.page-detail`, `.mn-` 등) 안으로 한정하고, 콜백이 쓰는 컴포넌트 id는 바꾸지 않습니다.
+
 `app.py`가 세 화면의 경로와 통계 히트맵에서 설비 상세로 가는 동작을 연결합니다. `shared/sidebar.py`는 세 화면의 공통 메뉴입니다.
 
 메인의 F03은 `data/processed/predictions.csv`의 최신 고장 위험과, 파일이 있으면 `data/processed/maintenance_plan.csv`의 재고·조달 정보를 요약합니다. 설비 상세의 F05는 동일한 예측 기간으로 부품 위험을 비교하고, 선택 설비의 센서 이상 신호를 별도 근거로 Qwen 종합진단을 표시합니다. F06은 `data/raw/azure_pdm/PdM_telemetry.csv`와 `outputs/model3/predictions.csv`를 사용해 최근 72시간의 선택 센서값·IQR·3-Sigma 경계와 설비 전체의 IF(AI) 점수·기준을 두 개의 시계열 선그래프로 보여줍니다. F06은 LLM을 호출하지 않습니다. `src/ui/ai_data.py`에서 F03과 F05가 Qwen 모델을 재사용합니다. IF 점수는 고장 확률이 아니며 미보정 고장 위험 점수도 확률로 표시하지 않습니다.

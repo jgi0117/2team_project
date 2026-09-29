@@ -2,13 +2,13 @@
 
 .mn-page{
     padding:clamp(10px,1.5vw,20px);
-    background:#eef2f6;
+    background:var(--ui-bg);
     min-height:calc(100vh - 32px);
     min-width:0;
 }
 
 .mn-page .box{
-    border:1px solid #d9dee5;
+    border:1px solid var(--ui-border);
     border-radius:10px;
     background:#fff;
     padding:14px;
@@ -22,7 +22,7 @@
     margin-bottom:12px;
     padding:12px;
     background:#fff;
-    border:1px solid #d9dee5;
+    border:1px solid var(--ui-border);
     border-radius:8px;
 }
 .mn-f03-meta{
@@ -31,10 +31,10 @@
     flex-wrap:wrap;
     gap:10px;
     width:100%;
-    color:#64748b;
+    color:var(--ui-text-muted);
     font-size:11px;
 }
-.mn-f03-link{ color:#1f4e9c; font-weight:700; text-decoration:none; }
+.mn-f03-link{ color:var(--ui-link); font-weight:700; text-decoration:none; }
 .mn-f03-link:hover{ text-decoration:underline; }
 
 /* ============ 가운데 영역 ============ */
@@ -99,10 +99,11 @@
 
 .mn-summary-card{
     display:flex;
-    align-items:center;
+    flex-direction:column;
+    justify-content:center;
     min-height:58px;
     padding:7px 4px;
-    border-bottom:1px solid #edf0f3;
+    border-bottom:1px solid var(--ui-border-soft);
 }
 
 .mn-summary-title{
@@ -127,9 +128,9 @@
     font-size:9px;
 }
 
-.mn-summary-green .mn-summary-value strong{ color:#2f9e44; }
+.mn-summary-green .mn-summary-value strong{ color:var(--ui-success); }
 .mn-summary-red .mn-summary-value strong{ color:#d94841; }
-.mn-summary-blue .mn-summary-value strong{ color:#1971c2; }
+.mn-summary-blue .mn-summary-value strong{ color:var(--ui-info); }
 
 /* ============ To-Do ============ */
 
@@ -137,23 +138,23 @@
     display:grid;
     grid-template-columns:repeat(7,minmax(0,1fr));
     margin-top:12px;
-    border-top:1px solid #d9dee5;
-    border-left:1px solid #d9dee5;
+    border-top:1px solid var(--ui-border);
+    border-left:1px solid var(--ui-border);
 }
 
 .mn-week div{
     min-width:0;
     padding:6px 2px;
     text-align:center;
-    border-right:1px solid #d9dee5;
-    border-bottom:1px solid #d9dee5;
+    border-right:1px solid var(--ui-border);
+    border-bottom:1px solid var(--ui-border);
     font-size:10px;
 }
 
 .mn-calendar{
     display:grid;
     grid-template-columns:repeat(7,minmax(0,1fr));
-    border-left:1px solid #d9dee5;
+    border-left:1px solid var(--ui-border);
 }
 
 .mn-calendar-cell{
@@ -162,13 +163,16 @@
     padding:5px;
     background:#fff;
     border:0;
-    border-right:1px solid #d9dee5;
-    border-bottom:1px solid #d9dee5;
+    border-right:1px solid var(--ui-border);
+    border-bottom:1px solid var(--ui-border);
     text-align:left;
     cursor:pointer;
 }
 
 .mn-calendar-cell:hover{ background:#f5f8ff; }
+.mn-calendar-blank,
+.mn-calendar-blank:hover{ background:var(--ui-bg); cursor:default; }
+.mn-calendar-today{ box-shadow:inset 0 0 0 2px var(--ui-link); font-weight:700; }
 
 .mn-calendar-cell small{
     display:block;
@@ -212,7 +216,7 @@
     gap:8px;
     align-items:center;
     padding:9px 4px;
-    border-bottom:1px solid #edf0f3;
+    border-bottom:1px solid var(--ui-border-soft);
     font-size:11px;
 }
 
@@ -223,7 +227,7 @@
     align-items:center;
     justify-content:center;
     border-radius:50%;
-    background:#64748b;
+    background:var(--ui-text-muted);
     color:#fff;
     font-size:9px;
 }

@@ -18,7 +18,7 @@ class MainPanelTests(unittest.TestCase):
         self.assertEqual(panel.id, "mn-f03")
         self.assertEqual(panel.children[1].children, summary["text"])
         self.assertEqual(panel.children[2].children[-1].href, "/detail?machine=13")
-        self.assertIn("2015-12-21", panel.children[2].children[0])
+        self.assertIn("2015-12-21", panel.children[2].children[0].children)
         self.assertEqual(main.layout.children[0].children, None)
 
     def test_f03_error_is_explicit(self):

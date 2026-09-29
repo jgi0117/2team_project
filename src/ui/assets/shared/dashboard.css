@@ -1,6 +1,6 @@
 :root {
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    color: #0b1733;
+    color: var(--ui-text);
     background: #f4f7fa;
 }
 
@@ -12,12 +12,12 @@ body { margin: 0; }
     grid-template-columns: 148px minmax(0, 1fr);
     min-height: calc(100vh - 32px);
     margin: 16px;
-    border: 3px solid #123a5c;
+    border: 3px solid var(--ui-navy);
     background: #fff;
 }
 
 .ui-sidebar {
-    border-right: 3px solid #123a5c;
+    border-right: 3px solid var(--ui-navy);
     padding-top: 20px;
 }
 
@@ -41,7 +41,7 @@ body { margin: 0; }
 .ui-nav-item:disabled { color: #657489; cursor: default; }
 a.ui-nav-item:hover { background: #edf5fc; }
 a.ui-nav-item:focus-visible { outline: 3px solid #237cbe; outline-offset: -4px; }
-.ui-nav-item--active { background: #cbe6fa; color: #123a5c; }
+.ui-nav-item--active { background: var(--ui-navy-soft); color: var(--ui-navy); }
 
 .ui-statistics {
     display: grid;
@@ -57,7 +57,7 @@ a.ui-nav-item:focus-visible { outline: 3px solid #237cbe; outline-offset: -4px; 
     justify-content: center;
     min-width: 0;
     padding: 32px;
-    border: 3px solid #123a5c;
+    border: 3px solid var(--ui-navy);
     background: #fff;
 }
 

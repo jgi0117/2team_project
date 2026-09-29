@@ -1,0 +1,35 @@
+/* ============ 디자인 토큰 ============
+   색·모서리 등 화면 공통 값. 디자인을 바꿀 때는 여기부터 수정한다.
+   (파일명 00_ 은 assets 중 가장 먼저 로드되도록 붙인 것) */
+:root{
+    /* 기본 */
+    --ui-navy:#123a5c;          /* 앱 테두리, 사이드바 */
+    --ui-navy-soft:#cbe6fa;     /* 사이드바 선택 */
+    --ui-bg:#eef2f6;            /* 페이지 배경 */
+    --ui-surface:#fff;          /* 카드 배경 */
+    --ui-surface-muted:#f5f7fb; /* 카드 안 보조 영역 */
+    --ui-border:#d9dee5;
+    --ui-border-soft:#edf0f3;
+    --ui-text:#0b1733;
+    --ui-text-muted:#64748b;
+    --ui-text-subtle:#9aa5b1;
+    --ui-link:#1f4e9c;
+
+    /* 상태 */
+    --ui-danger:#c62828;        /* 위험 부품, 최대 위험 */
+    --ui-alert:#b42318;         /* 이상 신호 문구 */
+    --ui-success:#2f9e44;
+    --ui-info:#1971c2;
+    --ui-off:#9aa5b1;           /* 미채택 부품(안전재고 대응) */
+
+    /* 기능 태그 */
+    --ui-f05:#1f4e9c;
+    --ui-f06:#7b1fa2;
+    --ui-f07:#ef6c00;
+    --ui-f08:#2e7d32;
+
+    /* 모양 */
+    --ui-radius:10px;
+    --ui-radius-sm:6px;
+    --ui-shadow:0 2px 8px rgba(0,0,0,.15);
+}

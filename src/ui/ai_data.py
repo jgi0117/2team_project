@@ -35,8 +35,10 @@ def _if_predictions():
 
 
 @lru_cache(maxsize=1)
-def f03_summary():
+def f03_summary(as_of: str | None = None):
     predictions = _failure_predictions()
+    if as_of is not None:
+        predictions = predictions.loc[predictions.as_of.le(as_of)]
     latest = predictions.as_of.max()
     current = predictions.loc[predictions.as_of.eq(latest)]
     version = sorted(current.model_version.dropna().unique())[-1]
