@@ -27,3 +27,7 @@ tzdata==2026.4
 # 대시보드 UI
 dash>=3.0,<4.0
 dash-bootstrap-components
+
+# F03/F05 로컬 Qwen3-1.7B
+transformers==4.57.6
+huggingface-hub==0.36.2

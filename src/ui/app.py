@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from dash import Dash, Input, Output, ctx, dcc, html
 from dash.exceptions import PreventUpdate
 
-from .pages.main import layout as main_layout
+from .pages.main import create_main_layout
 from .pages.detail.page import MACHINES, create_detail_layout
 from .pages.statistics.page import create_statistics_page
 from .shared.sidebar import create_sidebar
@@ -44,7 +44,7 @@ def create_detail_page(machine_id=None):
 
 def create_main_page():
     return html.Div(
-        [create_sidebar(active="main"), main_layout],
+        [create_sidebar(active="main"), create_main_layout()],
         className="ui-dashboard ui-dashboard--main",
     )
 

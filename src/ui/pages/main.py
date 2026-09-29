@@ -1,4 +1,8 @@
+from copy import deepcopy
+
 from dash import html, dcc, Input, Output, State, ALL, callback, ctx
+
+from src.ui.ai_data import f03_summary
 
 
 # UI Frame 확인용 임시 데이터
@@ -155,20 +159,38 @@ def make_summary_cards():
     )
 
 
+def make_f03_panel():
+    try:
+        result = f03_summary()
+    except (OSError, ValueError, KeyError, IndexError):
+        result = {"text": "고장 예측 결과를 불러오지 못했습니다.", "selected": None,
+                  "prediction_as_of": None, "horizon_days": None}
+    observed = result.get("prediction_as_of")
+    horizon = result.get("horizon_days")
+    details = []
+    if observed:
+        details.append(f"예측 기준 {observed[:10]}")
+    if horizon:
+        details.append(f"향후 {horizon}일 고장 위험")
+    selected = result.get("selected")
+    if selected:
+        details.append(dcc.Link(
+            f"설비 M-{selected['machineID']:03d} 상세 보기",
+            href=f"/detail?machine={selected['machineID']}",
+            className="mn-f03-link",
+        ))
+    return html.Div(
+        [html.Strong("F03  AI 한 줄 대응 요약"),
+         html.Span(result["text"], id="mn-summary"),
+         html.Div(details, className="mn-f03-meta")],
+        className="mn-f03", id="mn-f03",
+    )
+
+
 layout = html.Div(
     [
-        # ① F03 — TOP5가 열리고 닫혀도 유지
-        html.Div(
-            [
-                html.Strong("F03  AI 한 줄 대응 요약"),
-                html.Span(
-                    "이번 주 발주 필요 3건 · 미조치 시 예상손실 2,400만원 · 지금 조치 시 1,850만원 절감",
-                    id="mn-summary",
-                ),
-            ],
-            className="mn-f03",
-            id="mn-f03",
-        ),
+        # F03은 페이지를 열 때 저장된 예측 결과로 채운다.
+        html.Div(className="mn-f03", id="mn-f03"),
 
         # 가운데 영역: TOP5는 닫혀 있을 때 화면에 보이지 않음
         html.Div(
@@ -251,6 +273,12 @@ layout = html.Div(
     ],
     className="mn-page",
 )
+
+
+def create_main_layout():
+    page = deepcopy(layout)
+    page.children[0] = make_f03_panel()
+    return page
 
 
 @callback(
