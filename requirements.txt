@@ -1,4 +1,4 @@
-# GE 설비 고장 예측과 GJ 이상 예측 모델의 통합 의존성입니다.
+# 통합 대시보드·예측 모델 의존성 (Windows 64비트 Python 3.12 검증 환경).
 # 설치: python -m pip install -r requirements.txt
 
 # 공통 데이터 처리 및 모델링 (GJ 검증 환경 기준)
@@ -8,12 +8,12 @@ scikit-learn==1.9.1
 joblib==1.6.0
 
 # GE 설비 고장 예측 모델
-lightgbm
-pyarrow
-torch
+lightgbm==4.7.0
+pyarrow==25.0.1
+torch==2.14.0
 
 # GJ 이상 예측 평가 및 시각화
-matplotlib
+matplotlib==3.11.2
 
 # GJ 검증 환경 재현을 위한 간접 의존성
 cloudpickle==3.1.2
@@ -25,9 +25,11 @@ threadpoolctl==3.7.0
 tzdata==2026.4
 
 # 대시보드 UI
-dash>=3.0,<4.0
-dash-bootstrap-components
+dash==3.4.0
+dash-bootstrap-components==2.0.4
+plotly==7.1.0
 
 # F03/F05 로컬 Qwen3-1.7B
 transformers==4.57.6
 huggingface-hub==0.36.2
+safetensors==0.8.0
