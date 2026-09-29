@@ -658,3 +658,10 @@
 .hs-pop-table .is-decision{ background:var(--ui-yellow-tint); color:var(--ui-ink); font-weight:800; }
 .hs-pop-safety{ margin:0 0 8px; color:var(--ui-text); font-size:12px; line-height:1.5; }
 .hs-pop-note{ display:block; margin-top:8px; color:var(--ui-text-muted); font-size:11px; }
+
+/* 센서 이상 근거: 범례를 그래프 ①·②로 나눠 표시 */
+.page-detail .dt-legend{ gap:6px 20px; }
+.page-detail .dt-legend-group{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; padding:4px 10px; border-radius:8px; background:rgba(0,53,102,.05); }
+.page-detail .dt-legend-group--if{ background:rgba(255,195,0,.12); }
+.page-detail .dt-legend-tag{ color:var(--ui-navy-700); font-size:13px; }
+.page-detail .dt-legend-tag--if{ color:#8a6a00; }

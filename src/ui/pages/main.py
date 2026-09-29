@@ -52,11 +52,11 @@ def status_badge(status):
     return html.Span(STATUS_LABEL[status], className=f"mn-status mn-status--{status}")
 
 
-# ---------------- 현재 상황 ----------------
+# ---------------- 오늘 요약 ----------------
 def make_kpis(as_of=UI_AS_OF):
     tiles = []
     for key, title, icon, value, unit, change, state in kpis(as_of):
-        delta = []
+        delta = html.Span("", className="mn-kpi-delta is-empty", **{"aria-hidden": "true"})
         if change:
             arrow = "▲" if change.startswith("+") else ("▼" if change.startswith("-") else "–")
             delta = html.Span(f"지난주 대비 {arrow} {change.lstrip('+-')}{unit}",
@@ -347,33 +347,15 @@ def money(manwon):
     return f"{manwon / 10_000:,.1f}억원" if manwon >= 10_000 else f"{manwon:,.0f}만원"
 
 
-def saving_figure(rows):
-    """월별 절감액(억원). 이번 달은 노랑(진행 중)."""
-    values = [row["saved"] / 10_000 for row in rows]
-    figure = base_figure()
-    figure.add_trace(go.Bar(
-        x=[row["month"] for row in rows], y=values, width=0.45,
-        marker_color=[YELLOW if row["current"] else NAVY for row in rows],
-        text=[money(row["saved"]) for row in rows], textposition="outside", cliponaxis=False,
-        textfont={"size": 12, "color": INK},
-        hovertemplate="%{x}<br>절감액 %{y:,.1f}억원<extra></extra>",
-    ))
-    figure.update_yaxes(range=[0, max(values or [1]) * 1.25], showgrid=True, gridcolor=GRID,
-                        zeroline=False, tickfont={"color": MUTED},
-                        title={"text": "억원", "font": {"size": 12, "color": MUTED}})
-    figure.update_xaxes(type="category", tickfont={"size": 13})
-    return figure
-
-
 def history_summary(rows):
     due = sum(row["due"] for row in rows)
     rate = round(100 * sum(row["on_time"] for row in rows) / due) if due else 0
-    saved = sum(row["saved"] for row in rows)
+    responded = sum(row["on_time"] for row in rows)
     period = f"{rows[0]['key']} ~ {rows[-1]['key']}" if rows else ""
     return [
-        html.Div([html.Span(f"예방 대응률 · {period}"), html.Strong(f"{rate}%")], className="mn-hist-kpi"),
-        html.Div([html.Span(f"누적 절감액 · {period}"), html.Strong(money(saved))],
-                 className="mn-hist-kpi is-accent"),
+        html.Div([html.Span(f"예방 대응률 · {period}"), html.Strong(f"{rate}%")], className="mn-hist-kpi is-accent"),
+        html.Div([html.Span("미리 대응"), html.Strong(f"{responded}건"), html.Span(f"/ 대응 필요 {due}건")],
+                 className="mn-hist-kpi"),
     ]
 
 
@@ -432,9 +414,9 @@ def build_layout(as_of, f03=None, settings=None):
             # AI 한 줄 요약은 페이지를 열 때 저장된 예측 결과로 채운다.
             f03 if f03 is not None else html.Div(className="mn-f03", id="mn-f03"),
 
-            # 현재 상황 | [달력 | (토글) TOP5] — 달력 쪽이 화면의 중심(흰 판)
+            # 오늘 요약(카드 4장 세로) | [달력 | (토글) TOP5] — 달력 쪽이 화면의 중심(흰 판)
             html.Div([
-                html.Section([section_head("현재 상황", html.Span("카드를 누르면 상세", className="mn-head-hint")),
+                html.Section([section_head("오늘 요약", html.Span("카드를 누르면 상세", className="mn-head-hint")),
                               make_kpis(as_of)],
                              className="mn-block mn-current-summary"),
 
@@ -477,10 +459,10 @@ def build_layout(as_of, f03=None, settings=None):
                    style={"--cal-rows": weeks, "--cal-chips": settings["main_chips_per_day"]}),
             ], id="mn-middle", className=TOP5_CLOSED[1]),
 
-            # 확률 급상승 | 재고 × 위험 (첫 화면에서 여기까지)
+            # 고장 확률 급상승 | 재고 × 위험 (첫 화면에서 여기까지)
             html.Div([
                 html.Section([
-                    section_head("확률 급상승 알림",
+                    section_head("고장 확률 급상승 알림",
                                  html.Button("전체보기 →", id="mn-f01-more", className="mn-more-btn")),
                     html.P("전일 대비 7일 고장 위험 점수가 크게 오른 위험 설비 TOP 3 · 막대를 누르면 설비 상세",
                            className="mn-section-sub"),
@@ -517,13 +499,7 @@ def build_layout(as_of, f03=None, settings=None):
                                      "(기준일이 속한 해 1월부터)", className="mn-chart-note"),
                               graph("mn-history-graph", rate_figure(history(as_of)), "clamp(240px,28vh,320px)")],
                              className="mn-hist-chart"),
-                    html.Div([html.H3("월별 절감액"),
-                              html.P("예방 교체 1건당 절감액 = 고장 후 대응 비용(부품가 + 긴급 할증 + 긴급 정비 인건비 + 설비 정지 손실) "
-                                     "− 계획 대응 비용(부품가 + 발주 행정비 + 예방 정비 인건비 + 보관비)",
-                                     className="mn-chart-note"),
-                              graph("mn-saving-graph", saving_figure(history(as_of)), "clamp(240px,28vh,320px)")],
-                             className="mn-hist-chart"),
-                ], className="mn-hist-grid"),
+                ], className="mn-hist-grid mn-hist-grid--single"),
             ], className="mn-block mn-history mn-band", id="mn-history"),
             html.Small("위험 점수는 미보정 상대 점수(확률 아님)이며, 재고·조달·비용은 가상 운영 데이터 기반입니다.",
                        className="mn-sample-note"),
@@ -541,7 +517,7 @@ def build_layout(as_of, f03=None, settings=None):
                 ]),
             ], id="mn-action-modal", is_open=False, centered=True, size="sm", className="mn-modal"),
 
-            # 현재 상황 카드 상세 / 급상승 전체보기
+            # 오늘 요약 카드 상세 / 급상승 전체보기
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle(id="mn-more-title")),
                 dbc.ModalBody(id="mn-more-body"),
@@ -595,7 +571,6 @@ def render_todo(dismissed, sort, as_of, settings):
 
 @callback(
     Output("mn-history-graph", "figure"),
-    Output("mn-saving-graph", "figure"),
     Output("mn-history-rate", "children"),
     Output("mn-hist-custom", "className"),
     Input("store-order-log", "data"),
@@ -609,7 +584,7 @@ def render_history(orders, as_of, choice, start, end):
     start, end = hist_bounds(as_of, choice, start, end)
     rows = history(as_of, orders, start, end)
     custom = "mn-hist-custom" + ("" if choice == "custom" else " is-hidden")
-    return rate_figure(rows), saving_figure(rows), history_summary(rows), custom
+    return rate_figure(rows), history_summary(rows), custom
 
 
 @callback(
@@ -631,7 +606,7 @@ def show_more(_kpis, _f01, _days, _safety, as_of, dismissed, sort, settings):
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
     if trigger == "mn-f01-more":
-        return True, "확률 급상승 알림 · 전체", f01_full_table(f01_rise(valid_as_of(as_of)))
+        return True, "고장 확률 급상승 알림 · 전체", f01_full_table(f01_rise(valid_as_of(as_of)))
     if trigger["type"] == "mn-safety":
         comp = trigger["comp"]
         return True, f"{comp} · 안전재고로 대응하는 이유", safety_explain(safety_stock_info(comp, valid_as_of(as_of)))

@@ -27,12 +27,12 @@ def _view(data, as_of, horizon_days=None):
     if horizon not in horizons:
         horizon = default
     figure, meta = build_heatmap(data, as_of, horizon, version, machines=machine_ids())
-    score_name = "고장 확률" if meta["calibrated"] else "미보정 위험 점수"
+    score_name = "고장 확률" if meta["calibrated"] else "상대 위험 점수"
     purpose = ("즉시 대응용" if horizon == 7 else
                "단기 정비계획 참고용" if horizon == 14 else
                "장기 조달계획 참고용")
     title = f"향후 {horizon}일 설비 위험 분포"
-    meaning = f"{purpose} {score_name} · 부품별 점수 중 최댓값"
+    meaning = f"일 단위 · 기준일부터 {horizon}일 안 {score_name} · {purpose} · 부품 4개 중 가장 높은 점수"
     return figure, title, meaning, horizons, horizon
 
 
@@ -51,7 +51,7 @@ def create_layout(data=None, as_of=None, horizon_days=None):
     )
     return panel_contents(
         title=title, title_id="stats-f09-title", meaning=meaning,
-        meaning_id="stats-f09-meaning", controls=controls, date=as_of,
+        meaning_id="stats-f09-meaning", controls=controls, date=f"{as_of} 예측",
         graph_id="f09-heatmap", figure=figure,
     )
 

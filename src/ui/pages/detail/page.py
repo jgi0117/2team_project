@@ -236,12 +236,17 @@ f06_overlay = html.Section(
         html.Div(className="dt-f06-grid", children=[
             html.Div(className="dt-f06-main", children=[
                 html.Div(id="f06-alert-summary", className="f06-alert-summary"),
-                html.Div([legend_item("value", "관측값"), legend_item("iqr", "IQR 탐지 상·하한"),
-                          legend_item("sigma", "3σ 관리 상·하한"), legend_item("alert", "이상"),
-                          legend_item("if", "IF 점수 / 기준")], className="dt-legend"),
+                html.Div([
+                    html.Div([html.B("①", className="dt-legend-tag"), legend_item("value", "관측값"),
+                              legend_item("iqr", "IQR 탐지 상·하한"), legend_item("sigma", "3σ 관리 상·하한"),
+                              legend_item("alert", "이상")], className="dt-legend-group"),
+                    html.Div([html.B("②", className="dt-legend-tag dt-legend-tag--if"),
+                              legend_item("value", "IF 점수"), legend_item("sigma", "경고 기준"),
+                              legend_item("alert", "경고")], className="dt-legend-group dt-legend-group--if"),
+                ], className="dt-legend"),
                 dcc.Graph(id="f06-sensor-graph", figure={}, responsive=True,
                           config={"displayModeBar": False},
-                          style={"height": "clamp(300px,40vh,440px)"}),
+                          style={"height": "clamp(340px,44vh,480px)"}),
                 html.Small(id="f06-observed", className="f06-observed"),
             ]),
             html.Div(className="dt-f06-side", children=[
@@ -467,10 +472,15 @@ def switch_view(view):
 def f06_sensor_figure(result, sensor):
     if sensor not in SENSOR_NAMES:
         sensor = "vibration"
-    figure = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[.62, .38], vertical_spacing=.14,
-                           subplot_titles=(f"{SENSOR_NAMES[sensor]} 센서값과 기준 범위",
-                                           "설비 전체 IF 이상 점수 (센서 4종 종합)"))
-    figure.update_annotations(font={"size": 12, "color": INK}, x=0, xanchor="left")
+    figure = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[.58, .42], vertical_spacing=.2,
+                           subplot_titles=(f"<b>① {SENSOR_NAMES[sensor]} 센서값</b>  · 이 센서만, 기준 범위와 비교",
+                                           "<b>② IF 이상 점수</b>  · 센서 4종을 한꺼번에 본 설비 전체 점수"))
+    figure.update_annotations(font={"size": 13, "color": INK}, x=0, xanchor="left", yshift=4)
+    # 그래프마다 옅은 판을 깔아 서로 다른 그래프임이 보이게 (①은 남색 톤, ②는 노랑 톤)
+    for axis, fill, edge in (("", "rgba(0,53,102,.035)", "rgba(0,53,102,.18)"),
+                             ("2", "rgba(255,195,0,.07)", "rgba(201,154,0,.35)")):
+        figure.add_shape(type="rect", xref=f"x{axis} domain", yref=f"y{axis} domain", x0=0, x1=1, y0=0, y1=1,
+                         fillcolor=fill, line={"color": edge, "width": 1}, layer="below")
     points = result.get("timeline", [])
     if not points:
         figure.add_annotation(text="시간별 관측 없음", x=0.5, y=0.5, xref="paper", yref="paper",
@@ -525,14 +535,15 @@ def f06_sensor_figure(result, sensor):
             marker={"color": DANGER, "size": 10, "line": {"color": "white", "width": 1.5}},
         ), row=2, col=1)
     figure.update_layout(
-        margin={"l": 48, "r": 12, "t": 28, "b": 30}, showlegend=False, hovermode="x unified",
+        margin={"l": 52, "r": 12, "t": 30, "b": 30}, showlegend=False, hovermode="x unified",
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font={"family": FONT, "size": 12, "color": MUTED},
         hoverlabel={"font": {"family": FONT}},
     )
-    figure.update_xaxes(showgrid=False, tickformat="%m-%d %H시", nticks=6, linecolor=GRID)
+    figure.update_xaxes(showgrid=False, tickformat="%m-%d %H시", nticks=6, linecolor=GRID,
+                        showticklabels=True)   # 두 그래프 모두 시간축 표시
     figure.update_yaxes(gridcolor=GRID, zeroline=False, title_text=SENSOR_NAMES[sensor], row=1, col=1)
-    figure.update_yaxes(gridcolor=GRID, zeroline=False, title_text="IF", row=2, col=1)
+    figure.update_yaxes(gridcolor=GRID, zeroline=False, title_text="IF 점수", row=2, col=1)
     return figure
 
 

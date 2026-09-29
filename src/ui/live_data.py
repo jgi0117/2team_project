@@ -77,7 +77,7 @@ def _candidates(as_of):
     return pd.concat(groups, ignore_index=True)
 
 
-# ---------------- 현재 상황 KPI ----------------
+# ---------------- 오늘 요약 KPI ----------------
 def _kpi_numbers(as_of):
     kpis = procurement(as_of)["kpis"]
     return {"warning": kpis["warning_machines"], "replace": kpis["replacement_due"],
@@ -90,8 +90,6 @@ KPI_META = [
     ("replace", "교체기한 임박", "⏰", "건", "warn"),
     ("overdue", "기한 초과", "⛔", "건", "danger"),
     ("order", "이번 주 발주 필요", "📦", "건", "neutral"),
-    ("loss", "미조치 시 예상 손실", "💸", "만원", "danger"),
-    ("saving", "지금 조치 시 절감 효과", "💰", "만원", "good"),
 ]
 
 

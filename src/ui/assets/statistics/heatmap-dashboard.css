@@ -6,8 +6,8 @@
 
 .ui-dashboard--statistics .ui-statistics {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 20px;
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
     min-width: 0;
     min-height: 0;
     padding: 16px 18px;
@@ -36,18 +36,25 @@
 }
 .risk-horizon-control { display: flex; align-items: center; gap: 3px; }
 .risk-horizon-button {
-    margin: 0; padding: 4px 7px; border: 1px solid #b9c7d8; border-radius: 5px;
-    background: #fff; color: #526579; font-size: 11px; line-height: 1;
+    margin: 0; padding: 5px 10px; border: 1px solid var(--ui-border); border-radius: 999px;
+    background: var(--ui-surface); color: var(--ui-text-muted); font-size: 12px; font-weight: 700; line-height: 1;
     cursor: pointer;
 }
 .risk-horizon-button:has(.risk-horizon-input:checked) {
-    border-color: #2563eb; background: #e8f2ff; color: #1d4ed8; font-weight: 800;
+    border-color: var(--ui-navy-700); background: var(--ui-navy-700); color: #fff; font-weight: 800;
 }
 .risk-horizon-input { position: absolute; opacity: 0; pointer-events: none; }
-.risk-heading h2 { margin: 0; font-size: 21px; line-height: 1.3; }
-.risk-meaning { color: #63758a; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
-.risk-date { color: #63758a; font-size: 13px; font-variant-numeric: tabular-nums; }
-.risk-legend { display: flex; align-items: center; gap: 7px; color: #63758a; font-size: 12px; }
+.risk-heading h2 {
+    display: flex; align-items: center; gap: 8px; margin: 0;
+    color: var(--ui-ink); font-size: clamp(17px, 1.15vw, 21px); font-weight: 800; line-height: 1.3; letter-spacing: -.02em;
+}
+.risk-heading h2::before { content: ""; width: 4px; height: 1em; border-radius: 2px; background: var(--ui-navy-700); }
+.risk-meaning { color: var(--ui-text-muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.risk-date {
+    padding: 3px 9px; border-radius: 999px; background: var(--ui-navy-tint);
+    color: var(--ui-navy-700); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.risk-legend { display: flex; align-items: center; gap: 7px; color: var(--ui-text-muted); font-size: 12px; font-weight: 700; }
 .risk-gradient {
     display: block;
     width: 100px;
@@ -75,4 +82,14 @@
         height: 100vh;
         height: 100dvh;
     }
+}
+
+
+/* 맨 위 안내: 이 화면이 무엇을 보는지 한 줄로 */
+.st-intro { display: flex; align-items: baseline; gap: 14px; min-width: 0; padding: 2px 3px 10px; border-bottom: 1px solid var(--ui-border); }
+.st-intro h1 { flex: none; margin: 0; color: var(--ui-ink); font-size: clamp(20px, 1.4vw, 24px); font-weight: 800; }
+.st-intro-text { margin: 0; color: var(--ui-text-muted); font-size: 13px; line-height: 1.5; }
+.st-intro-text b { color: var(--ui-navy-700); }
+@media (max-width: 991.98px) {
+    .st-intro { flex-direction: column; gap: 4px; }
 }
