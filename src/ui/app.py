@@ -62,6 +62,8 @@ def create_app():
         dcc.Location(id="ui-location", refresh="callback-nav"),
         # 메인 To-Do/TOP5에서 처리 완료(삭제)한 항목 key 목록. 페이지를 옮겨도 유지된다.
         dcc.Store(id="store-todo-dismissed", storage_type="session", data=[]),
+        # 설비 상세에서 넣은 발주 기록. 메인 '과거 대응률'이 이 목록만큼 누적된다.
+        dcc.Store(id="store-order-log", storage_type="session", data=[]),
         html.Div(id="ui-page"),
     ])
 

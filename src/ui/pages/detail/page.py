@@ -486,7 +486,22 @@ def top5_matches(machine_id, comp, dismissed):
             and (comp is None or item.get("component") in (None, comp))]
 
 
-# TODO(기능): 실제 '발주' 버튼이 생기면 Input을 그 버튼으로 바꾼다. 지금은 F07 '담기'.
+# TODO(기능): 실제 '발주' 버튼이 생기면 아래 두 콜백의 Input을 그 버튼으로 바꾼다. 지금은 F07 '담기'.
+@callback(
+    Output("store-order-log", "data"),
+    Input("btn-add-cart", "n_clicks"),
+    State("store-selected-machine", "data"),
+    State("store-selected-comp", "data"),
+    State("store-order-log", "data"),
+    prevent_initial_call=True,
+)
+def log_order(n_clicks, machine_id, comp, orders):
+    if not n_clicks:
+        raise PreventUpdate
+    return [*(orders or []), {"machine": machine_id, "component": comp, "date": AS_OF}]
+
+
+# 발주한 설비가 메인 TOP5에 있으면 삭제할지 묻는다.
 @callback(
     Output("f07-confirm-dismiss", "displayed"),
     Output("f07-confirm-dismiss", "message"),

@@ -79,28 +79,33 @@ def item_by_key(key):
 
 
 # ---------------- 하단 차트 ----------------
-# F01: 지난주 대비 설비 위험도 급상승 TOP3 (0~100 상대 점수)
+# F01 확률 급상승 알림: 지난주 대비 설비 위험도 상승폭(점) 큰 순. 화면에는 상위 3개, '전체보기'에 전부.
 F01_RISE = [
-    {"label": "M-071 comp1", "before": 38, "after": 86},
-    {"label": "M-023 comp4", "before": 55, "after": 91},
-    {"label": "M-087 comp3", "before": 41, "after": 69},
+    {"machine": 23, "component": "comp4", "before": 64, "after": 91},
+    {"machine": 71, "component": "comp1", "before": 68, "after": 86},
+    {"machine": 55, "component": "comp1", "before": 66, "after": 78},
+    {"machine": 13, "component": "comp3", "before": 65, "after": 74},
+    {"machine": 42, "component": "comp4", "before": 57, "after": 63},
 ]
+F01_IS_NEW = True  # 이번 주 새로 들어온 알림이 있으면 NEW 배지
 
-# F02: 부품별 필요 예상 수량(위험 설비 수) vs 보유 재고 (개)
+# F02 재고 × 위험 교차: 재고가 적은데 위험 설비가 많은 부품 순.
+# status: "now"(즉시) / "watch"(주의) / "ok"(관찰) — 판정 기준은 기능 담당이 확정
 F02_STOCK = [
-    {"component": "comp1", "need": 5, "stock": 4, "adopted": True},
-    {"component": "comp2", "need": 2, "stock": 6, "adopted": False},
-    {"component": "comp3", "need": 4, "stock": 5, "adopted": True},
-    {"component": "comp4", "need": 6, "stock": 2, "adopted": True},
+    {"component": "comp4", "stock": 0, "risky": 3, "status": "now", "adopted": True},
+    {"component": "comp1", "stock": 2, "risky": 2, "status": "watch", "adopted": True},
+    {"component": "comp3", "stock": 5, "risky": 1, "status": "ok", "adopted": True},
+    {"component": "comp2", "stock": 6, "risky": 0, "status": "ok", "adopted": False},
 ]
+F02_IS_NEW = True
+STATUS_LABEL = {"now": "즉시", "watch": "주의", "ok": "관찰"}
 
-# F04 위험 대응률: 주차별 위험 설비 중 대응 완료 / 미대응 (대)
-F04_RESPONSE = [
-    {"week": "08-24", "done": 5, "open": 3},
-    {"week": "08-31", "done": 6, "open": 2},
-    {"week": "09-07", "done": 4, "open": 4},
-    {"week": "09-14", "done": 7, "open": 2},
-    {"week": "09-21", "done": 6, "open": 1},
-    {"week": "09-28", "done": 8, "open": 2},
-    {"week": "10-05", "done": 6, "open": 2},
+# 과거 대응률: 월별 누적 (대). 발주를 넣을 때마다 '대응 완료'가 기준월(마지막 달)에 더해진다.
+HISTORY = [
+    {"month": "5월", "risky": 15, "handled": 14},
+    {"month": "6월", "risky": 40, "handled": 28},
+    {"month": "7월", "risky": 46, "handled": 30},
+    {"month": "8월", "risky": 53, "handled": 35},
+    {"month": "9월", "risky": 79, "handled": 57},
+    {"month": "10월", "risky": 88, "handled": 65},
 ]

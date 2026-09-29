@@ -9,19 +9,22 @@ from dash.exceptions import PreventUpdate
 from src.ui.ai_data import f03_summary
 from src.ui.config import UI_AS_OF
 from src.ui.sample_data import (
-    DEFAULT_SORT, F01_RISE, F02_STOCK, F04_RESPONSE, ISSUE_LABEL, KPIS, SORTS,
-    item_by_key, ranked_items,
+    DEFAULT_SORT, F01_IS_NEW, F01_RISE, F02_IS_NEW, F02_STOCK, HISTORY, ISSUE_LABEL, KPIS,
+    SORTS, STATUS_LABEL, item_by_key, ranked_items,
 )
 
 CAL_YEAR, CAL_MONTH = int(UI_AS_OF[:4]), int(UI_AS_OF[5:7])
 TOP_N = 5
 CHIPS_PER_DAY = 3
+F03_MAX_LINKS = 3
 
 # 차트 색: 00_tokens.css와 같은 값 (Plotly는 CSS 변수를 읽지 못함)
-NAVY, NAVY_DARK, YELLOW = "#003566", "#001d3d", "#ffc300"
+NAVY, YELLOW, ORANGE, DANGER = "#003566", "#ffc300", "#f77f00", "#d62839"
 MUTED, GRID, INK = "#8a94a6", "#e3e7ed", "#1b2638"
-DANGER = "#d62839"
 FONT = "NanumSquare Neo, Malgun Gothic, sans-serif"
+
+TOP5_CLOSED = ("mn-f02-slot mn-f02-slot-closed", "mn-middle-grid mn-middle-closed")
+TOP5_OPEN = ("mn-f02-slot mn-f02-slot-open", "mn-middle-grid mn-middle-open")
 
 
 def machine_label(machine):
@@ -37,10 +40,19 @@ def item_title(item):
 
 
 def d_day(date):
-    days = (int(date[8:10]) - int(UI_AS_OF[8:10])) if date[:7] == UI_AS_OF[:7] else None
-    if days is None:
+    if date[:7] != UI_AS_OF[:7]:
         return date[5:]
+    days = int(date[8:10]) - int(UI_AS_OF[8:10])
     return "D-day" if days == 0 else (f"D-{days}" if days > 0 else f"D+{-days}")
+
+
+def section_head(title, *extra, tag=None, icon=None, new=False):
+    heading = [html.Span(icon, className="mn-head-icon", **{"aria-hidden": "true"}) if icon else None,
+               html.Span(tag, className="mn-tag") if tag else None,
+               title,
+               html.Span("NEW", className="mn-new") if new else None]
+    return html.Div([html.H2([part for part in heading if part is not None]), *extra],
+                    className="mn-section-head")
 
 
 # ---------------- 현재 상황 ----------------
@@ -142,7 +154,6 @@ def make_top5(items, dismissed_count):
         cards = [html.Div([html.Span(className="mn-timeline-dot"), top5_card(item, rank)],
                           className="mn-timeline-row")
                  for rank, item in enumerate(items, 1)]
-    footer = []
     if dismissed_count:
         footer = html.Div([html.Span(f"처리해서 지운 항목 {dismissed_count}건"),
                            html.Button("모두 되돌리기", id="mn-top5-restore", className="mn-link-btn")],
@@ -152,102 +163,93 @@ def make_top5(items, dismissed_count):
     return [html.Div(cards, className="mn-timeline"), footer]
 
 
-# ---------------- 하단 차트 ----------------
+# ---------------- F01 / F02 / 과거 대응률 ----------------
 def base_figure():
     figure = go.Figure()
     figure.update_layout(
-        margin={"l": 8, "r": 16, "t": 8, "b": 8},
+        margin={"l": 8, "r": 16, "t": 16, "b": 8},
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font={"family": FONT, "size": 13, "color": INK},
-        hoverlabel={"font": {"family": FONT}}, barcornerradius=4,
-        legend={"orientation": "h", "x": 0, "y": 1.12, "font": {"size": 12, "color": MUTED}},
+        hoverlabel={"font": {"family": FONT}}, barcornerradius=6,
     )
     return figure
 
 
 def f01_figure():
-    rows = list(reversed(F01_RISE))
-    labels = [row["label"] for row in rows]
+    rows = F01_RISE[:3]
+    labels = [f"{machine_label(row['machine'])}<br><span style='font-size:11px'>{row['component']}</span>"
+              for row in rows]
+    rises = [row["after"] - row["before"] for row in rows]
     figure = base_figure()
-    for row in rows:
-        figure.add_trace(go.Scatter(x=[row["before"], row["after"]], y=[row["label"]] * 2,
-                                    mode="lines", line={"color": GRID, "width": 6},
-                                    hoverinfo="skip", showlegend=False))
-    figure.add_trace(go.Scatter(
-        x=[row["before"] for row in rows], y=labels, mode="markers", name="지난주",
-        marker={"size": 12, "color": MUTED, "line": {"color": "white", "width": 2}},
-        hovertemplate="%{y}<br>지난주 %{x}<extra></extra>"))
-    figure.add_trace(go.Scatter(
-        x=[row["after"] for row in rows], y=labels, mode="markers+text", name="이번 주",
-        marker={"size": 14, "color": NAVY, "line": {"color": "white", "width": 2}},
-        text=[f"+{row['after'] - row['before']}" for row in rows], textposition="middle right",
-        textfont={"color": INK, "size": 13},
-        hovertemplate="%{y}<br>이번 주 %{x}<extra></extra>"))
-    figure.update_xaxes(range=[0, 108], showgrid=True, gridcolor=GRID, zeroline=False,
-                        tickfont={"color": MUTED}, title=None)
-    figure.update_yaxes(showgrid=False, tickfont={"size": 13})
+    figure.add_trace(go.Bar(
+        x=labels, y=rises, width=0.42, marker_color=[DANGER, ORANGE, YELLOW][:len(rows)],
+        text=[f"+{rise}" for rise in rises], textposition="outside",
+        textfont={"size": 16, "color": INK, "family": FONT},
+        customdata=[[row["before"], row["after"]] for row in rows],
+        hovertemplate="%{x}<br>지난주 %{customdata[0]} → 이번 주 %{customdata[1]}<extra></extra>",
+    ))
+    figure.update_yaxes(range=[0, max(rises) * 1.3], showgrid=True, gridcolor=GRID, zeroline=False,
+                        tickfont={"color": MUTED}, title={"text": "상승(점)", "font": {"size": 12, "color": MUTED}})
+    figure.update_xaxes(tickfont={"size": 14})
+    figure.update_layout(showlegend=False)
     return figure
 
 
-def f02_figure():
-    comps = [row["component"] + ("" if row["adopted"] else "<br><sub>안전재고</sub>") for row in F02_STOCK]
+def f02_table(rows):
+    head = html.Thead(html.Tr([html.Th(name) for name in ("순위", "부품", "재고", "위험 설비", "판정")]))
+    body = html.Tbody([
+        html.Tr([
+            html.Td(str(rank)),
+            html.Td([row["component"]] + ([html.Small(" 안전재고", className="mn-table-note")]
+                                          if not row["adopted"] else [])),
+            html.Td(f"{row['stock']}개"),
+            html.Td(f"{row['risky']}대"),
+            html.Td(html.Span(STATUS_LABEL[row["status"]], className=f"mn-status mn-status--{row['status']}")),
+        ], className=f"mn-row--{row['status']}")
+        for rank, row in enumerate(rows, 1)
+    ])
+    return html.Div(html.Table([head, body], className="mn-table"), className="mn-table-wrap")
+
+
+def f01_full_table():
+    head = html.Thead(html.Tr([html.Th(name) for name in ("순위", "설비", "부품", "지난주", "이번 주", "상승")]))
+    body = html.Tbody([
+        html.Tr([html.Td(str(rank)), html.Td(machine_label(row["machine"])), html.Td(row["component"]),
+                 html.Td(row["before"]), html.Td(row["after"]), html.Td(f"+{row['after'] - row['before']}")])
+        for rank, row in enumerate(F01_RISE, 1)
+    ])
+    return html.Div(html.Table([head, body], className="mn-table"), className="mn-table-wrap")
+
+
+def history_figure(extra_handled=0):
+    months = [row["month"] for row in HISTORY]
+    handled = [row["handled"] for row in HISTORY]
+    handled[-1] += extra_handled
     figure = base_figure()
-    figure.add_trace(go.Bar(x=comps, y=[row["need"] for row in F02_STOCK], name="필요 예상",
-                            marker_color=NAVY, width=0.3, offset=-0.32,
-                            text=[row["need"] for row in F02_STOCK], textposition="outside",
-                            textfont={"color": INK},
-                            hovertemplate="%{x}<br>필요 예상 %{y}개<extra></extra>"))
-    figure.add_trace(go.Bar(x=comps, y=[row["stock"] for row in F02_STOCK], name="보유 재고",
-                            marker_color=YELLOW, width=0.3, offset=0.02,
-                            text=[row["stock"] for row in F02_STOCK], textposition="outside",
-                            textfont={"color": INK},
-                            hovertemplate="%{x}<br>보유 재고 %{y}개<extra></extra>"))
-    for comp, row in zip(comps, F02_STOCK):
-        short = row["need"] - row["stock"]
-        if row["adopted"] and short > 0:
-            figure.add_annotation(x=comp, y=max(row["need"], row["stock"]) + 1.6,
-                                  text=f"⚠ {short}개 부족", showarrow=False,
-                                  font={"color": DANGER, "size": 12})
-    top = max(max(row["need"], row["stock"]) for row in F02_STOCK)
-    figure.update_yaxes(range=[0, top + 2.6], showgrid=True, gridcolor=GRID, zeroline=False,
-                        tickfont={"color": MUTED}, title=None)
+    for name, values, color in (("예측 위험 설비", [row["risky"] for row in HISTORY], NAVY),
+                                ("대응 완료(발주)", handled, YELLOW)):
+        figure.add_trace(go.Scatter(
+            x=months, y=values, name=name, mode="lines+markers",
+            line={"color": color, "width": 3, "shape": "spline", "smoothing": .6},
+            marker={"size": 10, "color": color, "line": {"color": "white", "width": 2}},
+            hovertemplate=f"%{{x}}<br>{name} %{{y}}대 (누적)<extra></extra>",
+        ))
+    figure.update_layout(legend={"orientation": "h", "x": 1, "xanchor": "right", "y": 1.15,
+                                 "font": {"size": 13, "color": INK}})
+    figure.update_yaxes(rangemode="tozero", showgrid=True, gridcolor=GRID, zeroline=False,
+                        tickfont={"color": MUTED}, title={"text": "누적 설비 수(대)", "font": {"size": 12, "color": MUTED}})
     figure.update_xaxes(tickfont={"size": 13})
-    figure.update_layout(bargap=0.3)
     return figure
 
 
-def f04_figure():
-    weeks = [row["week"] for row in F04_RESPONSE]
-    figure = base_figure()
-    figure.add_trace(go.Bar(x=weeks, y=[row["done"] for row in F04_RESPONSE], name="대응 완료",
-                            marker_color=NAVY, width=0.5,
-                            hovertemplate="%{x} 주<br>대응 완료 %{y}대<extra></extra>"))
-    figure.add_trace(go.Bar(x=weeks, y=[row["open"] for row in F04_RESPONSE], name="미대응",
-                            marker_color=YELLOW, width=0.5,
-                            hovertemplate="%{x} 주<br>미대응 %{y}대<extra></extra>"))
-    figure.update_layout(barmode="stack", legend_traceorder="normal")
-    figure.update_traces(marker_line={"color": "white", "width": 2})
-    figure.update_yaxes(showgrid=True, gridcolor=GRID, zeroline=False, tickfont={"color": MUTED}, title=None)
-    figure.update_xaxes(type="category", tickfont={"color": MUTED})
-    return figure
+def history_rate(extra_handled=0):
+    last = HISTORY[-1]
+    return round(100 * min(last["handled"] + extra_handled, last["risky"]) / last["risky"])
 
 
-def response_rate():
-    last = F04_RESPONSE[-1]
-    return round(100 * last["done"] / (last["done"] + last["open"]))
-
-
-def insight(title, subtitle, figure, graph_id, extra=None, section_id=None):
-    head = [html.Div([html.H3(title), html.Span(subtitle)], className="mn-insight-title")]
-    if extra:
-        head.append(extra)
-    return html.Section(
-        [html.Div(head, className="mn-insight-head"),
-         dcc.Graph(id=graph_id, figure=figure, config={"displayModeBar": False},
-                   responsive=True, className="mn-graph",
-                   style={"height": "clamp(210px,23vh,270px)"})],
-        className="mn-insight", **({"id": section_id} if section_id else {}),
-    )
+def graph(graph_id, figure, height):
+    return dcc.Graph(id=graph_id, figure=figure, config={"displayModeBar": False},
+                     responsive=True, className="mn-graph", style={"height": height})
 
 
 # ---------------- F03 ----------------
@@ -264,25 +266,17 @@ def make_f03_panel():
         details.append(html.Span(f"예측 기준 {observed[:10]}"))
     if horizon:
         details.append(html.Span(f"향후 {horizon}일 고장 위험"))
-    selected = result.get("selected")
-    if selected:
-        details.append(dcc.Link(
-            f"설비 M-{selected['machineID']:03d} 상세 보기 →",
-            href=f"/detail?machine={selected['machineID']}",
-            className="mn-f03-link",
-        ))
+    # 요약이 여러 설비를 가리키면(targets) 설비마다 바로가기, 하나면 selected 하나
+    targets = result.get("targets") or ([result["selected"]] if result.get("selected") else [])
+    details += [dcc.Link(f"{machine_label(target['machineID'])} 상세 →",
+                         href=f"/detail?machine={target['machineID']}", className="mn-f03-link")
+                for target in targets[:F03_MAX_LINKS]]
     return html.Div(
         [html.Strong("AI 한 줄 요약", className="mn-f03-badge"),
          html.Span(result["text"], id="mn-summary", className="mn-f03-text"),
-         html.Div(details, className="mn-f03-meta")],
+         html.Div(details, className="mn-f03-meta"),
+         html.Button("오늘 할 일 TOP5 보기", id="mn-f03-top5", className="mn-f03-btn")],
         className="mn-f03", id="mn-f03",
-    )
-
-
-def section_head(title, *extra, tag=None):
-    return html.Div(
-        [html.H2([html.Span(tag, className="mn-tag"), title] if tag else title), *extra],
-        className="mn-section-head",
     )
 
 
@@ -291,11 +285,11 @@ layout = html.Div(
         # F03은 페이지를 열 때 저장된 예측 결과로 채운다.
         html.Div(className="mn-f03", id="mn-f03"),
 
-        html.Section([section_head("현재 상황", html.Span(f"기준일 {UI_AS_OF}", className="mn-asof")),
-                      make_kpis()],
-                     className="mn-block mn-current-summary"),
-
+        # 현재 상황 | 달력 | (토글) TOP5
         html.Div([
+            html.Section([section_head("현재 상황"), make_kpis()],
+                         className="mn-block mn-current-summary"),
+
             html.Section([
                 section_head(
                     "To-Do 달력",
@@ -303,13 +297,17 @@ layout = html.Div(
                               html.Span([html.I(className="mn-legend-swatch mn-chip--anomaly"), "이상 신호"]),
                               html.Span([html.I(className="mn-legend-rank"), "TOP5 순위"])],
                              className="mn-legend"),
+                    html.Button("우선 확인 TOP5 보기", id="mn-show-top5", className="mn-toggle"),
                     tag="F04"),
                 html.Div(id="mn-calendar-body", className="mn-calendar-wrap"),
-                html.Small("항목을 누르면 상세 보기 · 처리 완료(삭제)를 선택할 수 있어요", className="mn-hint"),
+                html.Small(f"기준일 {UI_AS_OF} · 항목을 누르면 상세 보기 · 처리 완료(삭제)를 선택할 수 있어요",
+                           className="mn-hint"),
             ], className="mn-block mn-todo"),
 
             html.Section([
-                section_head("우선 확인 설비 TOP5"),
+                section_head("우선 확인 설비 TOP5",
+                             html.Button("✕", id="mn-close-top5", className="mn-close-btn",
+                                         title="TOP5 닫기", **{"aria-label": "TOP5 닫기"})),
                 html.Div([
                     html.Label("정렬 기준", htmlFor="mn-top5-sort", className="mn-sort-label"),
                     html.Div(dcc.Dropdown(
@@ -320,20 +318,37 @@ layout = html.Div(
                     ), className="mn-sort"),
                 ], className="mn-sort-row"),
                 html.Div(id="mn-top5-panel"),
-            ], className="mn-block mn-f02"),
-        ], className="mn-work"),
+            ], id="mn-f02-slot", className=TOP5_CLOSED[0]),
+        ], id="mn-middle", className=TOP5_CLOSED[1]),
 
+        # F01 | F02 (첫 화면에서 여기까지 보이도록)
         html.Div([
-            insight("확률 급상승 알림", "지난주 대비 위험도가 크게 오른 설비 TOP3",
-                    f01_figure(), "mn-f01-graph"),
-            insight("재고 × 위험 교차", "부품별 필요 예상 수량과 보유 재고",
-                    f02_figure(), "mn-f02-graph"),
-            insight("위험 대응률", "주차별 위험 설비 대응 현황",
-                    f04_figure(), "mn-f04-graph",
-                    extra=html.Div([html.Strong(f"{response_rate()}%"), html.Span("이번 주")],
-                                   className="mn-insight-kpi"),
-                    section_id="mn-history"),
+            html.Section([
+                section_head("확률 급상승 알림",
+                             html.Button("전체보기 →", id="mn-f01-more", className="mn-more-btn"),
+                             icon="⚡", new=F01_IS_NEW),
+                html.P("지난주 대비 고장 위험도가 크게 오른 설비 TOP 3", className="mn-section-sub"),
+                graph("mn-f01-graph", f01_figure(), "clamp(200px,22vh,250px)"),
+            ], className="mn-block mn-insight"),
+            html.Section([
+                section_head("재고 × 위험 교차",
+                             html.Button("전체보기 →", id="mn-f02-more", className="mn-more-btn"),
+                             icon="📦", new=F02_IS_NEW),
+                html.P("재고는 적은데 위험 설비가 많은 부품입니다", className="mn-section-sub"),
+                f02_table(F02_STOCK[:3]),
+            ], className="mn-block mn-insight"),
         ], className="mn-insights"),
+
+        # 과거 대응률 (스크롤해서 보는 영역)
+        html.Section([
+            section_head("과거 대응률",
+                         html.Div([html.Strong(f"{history_rate()}%", id="mn-history-rate"),
+                                   html.Span("누적 대응률")], className="mn-insight-kpi"),
+                         icon="📈"),
+            html.P("예측 위험 설비 중 발주로 대응한 설비의 누적 추이 · 발주를 넣을 때마다 더해집니다",
+                   className="mn-section-sub"),
+            graph("mn-history-graph", history_figure(), "clamp(260px,32vh,360px)"),
+        ], className="mn-block mn-history", id="mn-history"),
         html.Small("달력·TOP5·하단 그래프는 UI 확인용 예시 데이터입니다.", className="mn-sample-note"),
 
         # 항목 클릭 시 뜨는 작은 선택 창
@@ -348,6 +363,12 @@ layout = html.Div(
                 ], className="mn-action-btns"),
             ]),
         ], id="mn-action-modal", is_open=False, centered=True, size="sm", className="mn-action-modal"),
+
+        # F01/F02 전체보기
+        dbc.Modal([
+            dbc.ModalHeader(dbc.ModalTitle(id="mn-more-title")),
+            dbc.ModalBody(id="mn-more-body"),
+        ], id="mn-more-modal", is_open=False, centered=True, className="mn-action-modal"),
     ],
     className="mn-page",
 )
@@ -357,6 +378,25 @@ def create_main_layout():
     page = deepcopy(layout)
     page.children[0] = make_f03_panel()
     return page
+
+
+@callback(
+    Output("mn-f02-slot", "className"),
+    Output("mn-middle", "className"),
+    Output("mn-show-top5", "children"),
+    Input("mn-show-top5", "n_clicks"),
+    Input("mn-close-top5", "n_clicks"),
+    Input("mn-f03-top5", "n_clicks"),
+    State("mn-middle", "className"),
+    prevent_initial_call=True,
+)
+def toggle_top5(_show, _close, _f03, middle_class):
+    is_open = "mn-middle-open" in (middle_class or "")
+    trigger = ctx.triggered_id
+    opened = (False if trigger == "mn-close-top5" else
+              True if trigger == "mn-f03-top5" else not is_open)
+    slot, middle = TOP5_OPEN if opened else TOP5_CLOSED
+    return slot, middle, "우선 확인 TOP5 닫기" if opened else "우선 확인 TOP5 보기"
 
 
 @callback(
@@ -370,6 +410,30 @@ def render_todo(dismissed, sort):
     top = items[:TOP_N]
     ranks = {item["key"]: rank for rank, item in enumerate(top, 1)}
     return make_calendar(items, ranks), make_top5(top, len(dismissed or []))
+
+
+@callback(
+    Output("mn-history-graph", "figure"),
+    Output("mn-history-rate", "children"),
+    Input("store-order-log", "data"),
+)
+def render_history(orders):
+    count = len(orders or [])
+    return history_figure(count), f"{history_rate(count)}%"
+
+
+@callback(
+    Output("mn-more-modal", "is_open"),
+    Output("mn-more-title", "children"),
+    Output("mn-more-body", "children"),
+    Input("mn-f01-more", "n_clicks"),
+    Input("mn-f02-more", "n_clicks"),
+    prevent_initial_call=True,
+)
+def show_more(_f01, _f02):
+    if ctx.triggered_id == "mn-f01-more":
+        return True, "확률 급상승 알림 · 전체", f01_full_table()
+    return True, "재고 × 위험 교차 · 전체", f02_table(F02_STOCK)
 
 
 @callback(
