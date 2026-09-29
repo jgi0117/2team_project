@@ -1,5 +1,5 @@
 """F08: 담당자 및 조치 이력 관리."""
 
-from .management import get_history, get_supplier
+from .management import get_history, get_supplier, get_supplier_options
 
-__all__ = ["get_supplier", "get_history"]
+__all__ = ["get_supplier", "get_supplier_options", "get_history"]

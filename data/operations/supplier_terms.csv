@@ -1,0 +1,9 @@
+component,supplier_id,role,lead_time_days,unit_price_krw,surcharge_krw,value_source
+comp1,SUP-001,primary,7,180000,0,"part_master.lead_time_days, costs.purchase"
+comp1,SUP-003,emergency,4,225000,45000,"assumption:synthetic_supplier_v2_emergency; lead=ceil(표준 납기/2), price=purchase+expedite_surcharge(구매단가 25%)"
+comp2,SUP-002,primary,35,2500000,0,"part_master.lead_time_days, costs.purchase"
+comp2,SUP-003,emergency,18,3125000,625000,"assumption:synthetic_supplier_v2_emergency; lead=ceil(표준 납기/2), price=purchase+expedite_surcharge(구매단가 25%)"
+comp3,SUP-001,primary,14,650000,0,"part_master.lead_time_days, costs.purchase"
+comp3,SUP-003,emergency,7,812500,162500,"assumption:synthetic_supplier_v2_emergency; lead=ceil(표준 납기/2), price=purchase+expedite_surcharge(구매단가 25%)"
+comp4,SUP-002,primary,21,1200000,0,"part_master.lead_time_days, costs.purchase"
+comp4,SUP-003,emergency,11,1500000,300000,"assumption:synthetic_supplier_v2_emergency; lead=ceil(표준 납기/2), price=purchase+expedite_surcharge(구매단가 25%)"

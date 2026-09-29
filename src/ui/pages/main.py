@@ -20,7 +20,6 @@ F03_MAX_LINKS = 3
 NAVY, NAVY_DARK, YELLOW = "#003566", "#001d3d", "#ffc300"
 NAVY_SOFT, MUTED, GRID, INK = "#9fb3cc", "#8a94a6", "#e3e7ed", "#0f1a2b"
 FONT = "NanumSquare Neo, Malgun Gothic, sans-serif"
-TARGET_RATE = 80  # 적시 대응률 목표선 (%)
 
 TOP5_CLOSED = ("mn-f02-slot mn-f02-slot-closed", "mn-middle-grid mn-middle-closed")
 TOP5_OPEN = ("mn-f02-slot mn-f02-slot-open", "mn-middle-grid mn-middle-open")
@@ -125,7 +124,8 @@ def make_calendar(items, ranks, as_of):
         day_items = by_date.get(date, [])
         chips = [cal_chip(item, ranks.get(item["key"])) for item in day_items[:CHIPS_PER_DAY]]
         if len(day_items) > CHIPS_PER_DAY:
-            chips.append(html.Span(f"+{len(day_items) - CHIPS_PER_DAY}건 더", className="mn-chip-more"))
+            chips.append(html.Button(f"+{len(day_items) - CHIPS_PER_DAY}건 더 보기",
+                                     id={"type": "mn-day-more", "date": date}, className="mn-chip-more"))
         state = ("mn-day--today" if date == as_of else
                  "mn-day--past" if date < as_of else "")
         cells.append(html.Div(
@@ -175,13 +175,26 @@ def make_top5(items, dismissed_count, as_of):
         cards = [html.Div([html.Span(className="mn-timeline-dot"), top5_card(item, rank, as_of)],
                           className="mn-timeline-row")
                  for rank, item in enumerate(items, 1)]
-    if dismissed_count:
-        footer = html.Div([html.Span(f"처리해서 지운 항목 {dismissed_count}건"),
-                           html.Button("모두 되돌리기", id="mn-top5-restore", className="mn-link-btn")],
-                          className="mn-top5-foot")
-    else:
-        footer = html.Button(id="mn-top5-restore", className="mn-hidden")
-    return [html.Div(cards, className="mn-timeline"), footer]
+    return html.Div(cards, className="mn-timeline")
+
+
+def day_list(items, ranks):
+    """달력 하루의 할 일 전체 (+N건 더 보기)."""
+    rows = []
+    for item in items:
+        rank = ranks.get(item["key"])
+        rows.append(html.Div([
+            html.Span(str(rank) if rank else "", className="mn-chip-rank" + ("" if rank else " is-empty")),
+            html.Div([
+                html.Div([html.B(item_title(item)),
+                          html.Span(ISSUE_LABEL[item["issue"]], className=f"mn-issue mn-issue--{item['issue']}")],
+                         className="mn-day-row-head"),
+                html.Span(item["note"], className="mn-day-row-note"),
+            ], className="mn-day-row-main"),
+            dcc.Link("상세 보기 →", href=f"/detail?machine={item['machine']}", className="mn-row-link"),
+        ], className=f"mn-day-row mn-day-row--{item['issue']}"))
+    return html.Div([html.Div(rows, className="mn-day-list"),
+                     html.Small("숫자는 우선 확인 TOP5 순위입니다.", className="mn-modal-hint")])
 
 
 # ---------------- F01 / F02 / 과거 대응률 ----------------
@@ -212,7 +225,9 @@ def f01_figure(rows):
     ))
     figure.update_yaxes(range=[0, max(rises or [1]) * 1.3], showgrid=True, gridcolor=GRID, zeroline=False,
                         tickfont={"color": MUTED}, title={"text": "상승(점)", "font": {"size": 12, "color": MUTED}})
-    figure.update_xaxes(tickfont={"size": 14})
+    figure.update_xaxes(tickfont={"size": 14}, fixedrange=True)
+    figure.update_yaxes(fixedrange=True)
+    figure.update_layout(dragmode=False, hovermode="closest")
     return figure
 
 
@@ -233,16 +248,24 @@ def f02_table(rows):
 
 
 def f01_full_table(rows):
+    top = max([row["after"] - row["before"] for row in rows] or [1])
     head = html.Thead(html.Tr([html.Th(name) for name in ("순위", "설비", "전일", "오늘", "상승")]))
     body = html.Tbody([
-        html.Tr([html.Td(str(rank)),
+        html.Tr([html.Td(html.Span(str(rank), className="mn-chip-rank")),
                  html.Td(dcc.Link(f"{machine_label(row['machine'])} →", href=f"/detail?machine={row['machine']}",
                                   className="mn-row-link")),
-                 html.Td(row["before"]), html.Td(row["after"]),
-                 html.Td(f"+{row['after'] - row['before']}")])
+                 html.Td(row["before"], className="mn-num-muted"), html.Td(html.B(row["after"])),
+                 html.Td(html.Div([
+                     html.Div(className="mn-rise-bar", style={"width": f"{100 * (row['after'] - row['before']) / top:.0f}%"}),
+                     html.Span(f"▲ {row['after'] - row['before']}", className="mn-rise-value"),
+                 ], className="mn-rise"))],
+                className="is-first" if rank == 1 else "")
         for rank, row in enumerate(rows, 1)
     ])
-    return html.Div(html.Table([head, body], className="mn-table"), className="mn-table-wrap")
+    return html.Div([
+        html.P("전일 대비 7일 고장 위험 점수(×100) 상승폭 · 위험 상위 5% 설비만", className="mn-modal-desc"),
+        html.Div(html.Table([head, body], className="mn-table mn-rise-table"), className="mn-table-wrap"),
+    ])
 
 
 def rate_figure(rows):
@@ -253,9 +276,6 @@ def rate_figure(rows):
     done = len(rows) - 1 if live else len(rows)
     hover = "%{x}<br>교체 %{customdata[1]}건 중 예방 교체 %{customdata[0]}건 · %{y}%<extra></extra>"
     figure = base_figure()
-    figure.add_hline(y=TARGET_RATE, line={"color": NAVY_SOFT, "width": 1, "dash": "dot"},
-                     annotation={"text": f"목표 {TARGET_RATE}%", "font": {"size": 11, "color": MUTED}},
-                     annotation_position="top left")
     figure.add_trace(go.Scatter(
         x=months[:done], y=rates[:done], mode="lines+markers+text", name="적시 대응률",
         line={"color": NAVY, "width": 2}, text=[f"{rate}%" for rate in rates[:done]],
@@ -403,6 +423,9 @@ def build_layout(as_of, f03=None):
                                 ), className="mn-sort"),
                             ], className="mn-sort-row"),
                             html.Div(id="mn-top5-panel"),
+                            html.Div([html.Span(id="mn-top5-foot-text"),
+                                      html.Button("모두 되돌리기", id="mn-top5-restore", className="mn-link-btn")],
+                                     id="mn-top5-foot", className="mn-top5-foot mn-hidden"),
                         ], id="mn-f02-slot", className=TOP5_CLOSED[0]),
                     ], className="mn-hero-body"),
                 ], className="mn-hero"),
@@ -506,6 +529,8 @@ def toggle_top5(_show, _close, middle_class):
 @callback(
     Output("mn-calendar-body", "children"),
     Output("mn-top5-panel", "children"),
+    Output("mn-top5-foot-text", "children"),
+    Output("mn-top5-foot", "className"),
     Input("store-todo-dismissed", "data"),
     Input("mn-top5-sort", "value"),
     Input("store-as-of", "data"),
@@ -515,7 +540,9 @@ def render_todo(dismissed, sort, as_of):
     items = ranked_items(dismissed, sort, as_of)
     top = items[:TOP_N]
     ranks = {item["key"]: rank for rank, item in enumerate(top, 1)}
-    return make_calendar(items, ranks, as_of), make_top5(top, len(dismissed or []), as_of)
+    count = len(dismissed or [])
+    return (make_calendar(items, ranks, as_of), make_top5(top, count, as_of),
+            f"처리해서 지운 항목 {count}건", "mn-top5-foot" + ("" if count else " mn-hidden"))
 
 
 @callback(
@@ -543,15 +570,25 @@ def render_history(orders, as_of, choice, start, end):
     Output("mn-more-body", "children"),
     Input({"type": "mn-kpi", "key": ALL}, "n_clicks"),
     Input("mn-f01-more", "n_clicks"),
+    Input({"type": "mn-day-more", "date": ALL}, "n_clicks"),
     State("store-as-of", "data"),
+    State("store-todo-dismissed", "data"),
+    State("mn-top5-sort", "value"),
     prevent_initial_call=True,
 )
-def show_more(_kpis, _f01, as_of):
+def show_more(_kpis, _f01, _days, as_of, dismissed, sort):
     trigger = ctx.triggered_id
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
     if trigger == "mn-f01-more":
         return True, "확률 급상승 알림 · 전체", f01_full_table(f01_rise(valid_as_of(as_of)))
+    if trigger["type"] == "mn-day-more":
+        date = trigger["date"]
+        items = ranked_items(dismissed, sort, valid_as_of(as_of))
+        ranks = {item["key"]: rank for rank, item in enumerate(items[:TOP_N], 1)}
+        day_items = sorted((item for item in items if item["date"] == date),
+                           key=lambda item: ranks.get(item["key"], 99))
+        return True, f"{int(date[5:7])}월 {int(date[8:])}일 할 일 {len(day_items)}건", day_list(day_items, ranks)
     key = trigger["key"]
     as_of = valid_as_of(as_of)
     title, value, unit = next((t, v, u) for k, t, _, v, u, _, _ in kpis(as_of) if k == key)

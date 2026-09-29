@@ -530,6 +530,10 @@
 .page-detail .dt-qty{ min-width:34px; font-weight:800; text-align:center; font-variant-numeric:tabular-nums; }
 .page-detail .dt-added{ margin-left:8px; color:var(--ui-navy-700); font-size:12px; font-weight:800; }
 
+/* 교체 이력 페이지 넘기기 */
+.page-detail .dt-pager{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:10px; }
+.page-detail .dt-pager-text{ color:var(--ui-text-muted); font-size:13px; font-weight:800; }
+
 /* ============ 반응형 ============ */
 @media (max-width:1199.98px){
     /* 캔버스를 세로 흐름으로: 상태 → 버튼 → 보기 전환 → 도면 → AI → 센서 미리보기 */

@@ -598,3 +598,45 @@
     .mn-f03{ grid-template-columns:minmax(0,1fr); }
     .mn-f03-text, .mn-f03-meta{ grid-column:1; grid-row:auto; }
 }
+
+/* ============ 급상승: 막대를 누르면 설비 상세 ============ */
+#mn-f01-graph .nsewdrag, #mn-f01-graph .plot-container .cursor-crosshair{ cursor:pointer !important; }
+
+/* 급상승 전체 표 */
+.mn-rise-table td{ vertical-align:middle; }
+.mn-rise-table tr.is-first td{ background:var(--ui-yellow-tint); }
+.mn-num-muted{ color:var(--ui-text-subtle); }
+.mn-rise{ position:relative; display:flex; align-items:center; min-width:150px; height:26px; }
+.mn-rise-bar{ position:absolute; left:0; top:3px; bottom:3px; border-radius:6px; background:var(--ui-navy-tint); }
+.mn-rise-table tr.is-first .mn-rise-bar{ background:var(--ui-yellow); }
+.mn-rise-value{ position:relative; padding-left:8px; color:var(--ui-danger); font-weight:800; }
+
+/* 달력 '+N건 더 보기' 와 그날 전체 목록 */
+button.mn-chip-more{
+    padding:1px 4px;
+    border:0;
+    border-radius:4px;
+    background:none;
+    color:var(--ui-navy-700);
+    font-size:11px;
+    font-weight:800;
+    text-align:left;
+    text-decoration:underline;
+    cursor:pointer;
+}
+button.mn-chip-more:hover{ background:var(--ui-navy-tint); }
+.mn-day-list{ display:flex; flex-direction:column; gap:8px; }
+.mn-day-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px;
+    border-left:4px solid var(--ui-navy-soft);
+    border-radius:10px;
+    background:var(--ui-navy-tint);
+}
+.mn-day-row--anomaly{ border-left-color:var(--ui-yellow); background:var(--ui-yellow-tint); }
+.mn-day-row-main{ display:flex; flex:1; flex-direction:column; gap:2px; min-width:0; }
+.mn-day-row-head{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.mn-day-row-note{ color:var(--ui-text-muted); font-size:13px; }
+.mn-chip-rank.is-empty{ visibility:hidden; }

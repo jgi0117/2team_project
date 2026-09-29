@@ -1,6 +1,6 @@
 """GJ 기능(F01·F02·F04·F07·F08, maintenance_planning)을 UI 형식으로 바꾸는 연결부.
 
-화면 코드는 sample_data와 같은 모양의 값을 받는다. 계산은 모두 기능 모듈이 하고,
+화면에 나오는 값은 모두 원본(Azure PdM)·모델 산출물·가상 운영 데이터를 기능 모듈이 계산한 결과다.
 여기서는 단위 변환(원→만원, 점수→상대 위험도), 문구, 미채택 부품(comp2) 제외만 한다.
 """
 
@@ -17,10 +17,22 @@ from src.F01 import build_detection
 from src.F02 import build_procurement
 from src.F04 import build_tracking
 from src.F07 import analyze_order
-from src.F08 import get_history, get_supplier
-from src.maintenance_planning.service import build_maintenance_plan
-from src.ui import detail_data
-from src.ui.sample_data import DEFAULT_SORT, ISSUE_LABEL, SORTS, STATUS_LABEL  # noqa: F401 (화면에서 재사용)
+from src.F08 import get_history, get_supplier_options
+from src.maintenance_planning.service import build_maintenance_plan, response_unit_costs
+
+ISSUE_LABEL = {"part": "부품 교체", "anomaly": "이상 신호"}
+STATUS_LABEL = {"now": "즉시", "watch": "주의", "ok": "관찰"}
+
+# 우선순위 정렬 기준: (라벨, 정렬 키). 값이 없는 항목(이상 신호 등)은 뒤로.
+_LAST = float("inf")
+SORTS = {
+    "risk": ("설비 위험도 높은 순", lambda item: -item["risk"]),
+    "stock": ("재고 적은 순", lambda item: item.get("stock", _LAST)),
+    "deadline": ("발주 마감 빠른 순", lambda item: item.get("deadline", "9999")),
+    "loss": ("예상 손실 큰 순", lambda item: -item.get("loss", -_LAST)),
+    "slack": ("대응 여유 적은 순", lambda item: item.get("slack", _LAST)),
+}
+DEFAULT_SORT = "risk"
 
 WON = 10_000
 ADOPTED = {"comp1": True, "comp2": False, "comp3": True, "comp4": True}   # comp2는 예측 미채택 → 우선순위 제외
@@ -215,6 +227,11 @@ def available_months(as_of):
     return [p.strftime("%Y-%m") for p in pd.period_range(start, pd.Timestamp(as_of), freq="M")]
 
 
+def saving(comp):
+    """예방 교체 1건의 절감액(만원) = 고장 후 대응 비용 − 계획 대응 비용 (response_unit_costs)."""
+    return _manwon(response_unit_costs(comp)["saving"])
+
+
 @lru_cache(maxsize=1)
 def _events():
     return load_events()
@@ -226,7 +243,7 @@ def _monthly_savings(as_of):
     cutoff = pd.Timestamp(as_of).normalize()
     events = _events()
     events = events.loc[events.date.between(cutoff.replace(month=1, day=1), cutoff) & events.is_emergency.eq(0)]
-    per_comp = {comp: detail_data.saving(comp) for comp in ADOPTED}
+    per_comp = {comp: saving(comp) for comp in ADOPTED}
     saved = events.assign(saved=events.component.map(per_comp), period=events.date.dt.strftime("%Y-%m"))
     return saved.groupby("period").saved.sum().to_dict()
 
@@ -251,44 +268,49 @@ def history(as_of, orders=(), start=None, end=None):
             # 화면에서 넣은 발주는 이번 달 예방 대응 1건으로 더한다.
             rows[-1]["due"] += 1
             rows[-1]["on_time"] += 1
-            rows[-1]["saved"] += detail_data.saving(order.get("component") or "comp1")
+            rows[-1]["saved"] += saving(order.get("component") or "comp1") * int(order.get("qty", 1))
     return rows
 
 
 # ---------------- 설비 상세: 발주 검토 · 협력사 · 조치 이력 ----------------
 def cost_review(machine_id, comp, as_of, rise=None):
-    """F07 비용 곡선을 detail 화면 형식(만원, 날짜)으로."""
+    """F07 비용 곡선을 detail 화면 형식(만원, 날짜)으로. 목표일 = 위험 상승 시점."""
     result = analyze_order(int(machine_id), comp, as_of)
     plan = result["plan"]
-    start = pd.Timestamp(plan["as_of"])
-    info = detail_data.part_info(comp)
+    start = pd.Timestamp(plan["as_of"]).normalize()
     totals = [round(item["total_cost"] / WON, 1) for item in result["curve"]]
     days = [item["delay_days"] for item in result["curve"]]
-    order_by = pd.Timestamp(plan["order_by_at"])
-    deadline_day = int((order_by.normalize() - start.normalize()).days)
+    order_by = pd.Timestamp(result["order_by_at"]).normalize()
+    target = pd.Timestamp(result["target_at"]).normalize()
+    deadline_day = int((order_by - start).days)
+    too_late = deadline_day < 0
+    if too_late:
+        reason = f"오늘 발주해도 필요 시점({_day(target)})보다 {-deadline_day}일 늦게 준비됩니다"
+    elif deadline_day <= 7:
+        reason = f"발주 마감까지 {deadline_day}일 남았습니다"
+    else:
+        reason = f"발주 마감까지 여유가 있습니다 ({deadline_day}일)"
     return {
         "days": days, "dates": [_day(start + timedelta(days=d)) for d in days], "totals": totals,
         "best_day": int(result["optimum"]["delay_days"]),
         "deadline": _day(order_by), "deadline_day": deadline_day,
         "scenario": {d: round(result["scenarios"][d]["total_cost"] / WON, 1) for d in (0, 7, 14)},
-        "lead": info["lead"] + info["prep"], "rise": rise, "stock": int(plan["available_stock"]),
-        "too_late": plan["status"] == "late", "quantity": int(result["quantity"]),
-        "slack": int(plan["response_margin_days"]), "reason": plan["reason"],
-        "status": plan["status"], "target": _day(plan["target_maintenance_at"]),
+        "lead": int(result["lead_days"]), "rise": rise, "stock": int(plan["available_stock"]),
+        "too_late": too_late, "quantity": int(result["quantity"]),
+        "slack": max(deadline_day, 0), "reason": reason,
+        "status": "late" if too_late else ("order_due" if deadline_day <= 7 else "watch"),
+        "target": _day(target),
     }
 
 
 def suppliers(comp, as_of):
-    """주 거래처(F08) + 긴급 대체 업체(예시, F08 범위 밖)."""
-    main = get_supplier(comp, as_of)
-    alt = detail_data.suppliers_for(comp)[1]
-    price = detail_data.part_info(comp)["costs"]["purchase"]
-    return [
-        {"id": detail_data.part_info(comp)["supplier_id"], "name": main["supplier_name"], "tag": "주 거래처",
-         "lead": main["lead_time_days"], "price": _manwon(price), "surcharge": 0,
-         "contact": f"{main['contact_department']} {main['contact_phone']}"},
-        {**alt, "tag": "긴급 대체(예시)"},
-    ]
+    """주 거래처 + 긴급 대체 업체 (F08, data/operations/supplier_terms.csv)."""
+    return [{"id": row["supplier_id"], "name": row["supplier_name"],
+             "tag": "주 거래처" if row["role"] == "primary" else "긴급 대체",
+             "lead": row["lead_time_days"], "price": _manwon(row["unit_price"]),
+             "surcharge": _manwon(row["surcharge"]),
+             "contact": f"{row['contact_department']} {row['contact_phone']}"}
+            for row in get_supplier_options(comp, as_of)]
 
 
 def replacement_history(machine_id, as_of, months=12):
@@ -298,10 +320,9 @@ def replacement_history(machine_id, as_of, months=12):
     events = _events()
     events = events.loc[events.machineID.eq(machine_id) & events.date.between(start, cutoff)]
     timeline = [{"date": _day(r.date), "comp": r.component, "failure": bool(r.is_emergency),
-                 "cost": _manwon(detail_data.emergency_cost(r.component) if r.is_emergency
-                                 else detail_data.planned_cost(r.component))}
+                 "cost": _manwon(response_unit_costs(r.component)["emergency" if r.is_emergency else "planned"])}
                 for r in events.sort_values("date", ascending=False).itertuples()]
-    records = get_history(int(machine_id), as_of, limit=10)
+    records = get_history(int(machine_id), as_of, limit=None)
     table = [{"planned": _day(r.planned_at),
               "completed": "" if pd.isna(r.completed_at) else _day(r.completed_at),
               "comp": r.component, "result": r.result, "qty": int(r.quantity_used or 0),

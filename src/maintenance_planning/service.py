@@ -325,7 +325,8 @@ def _response_metrics(as_of) -> pd.DataFrame:
             .reset_index())
 
 
-def cost_analysis(machine_id: int, component: str, as_of=None) -> dict:
+def cost_analysis(machine_id: int, component: str, as_of=None, target_at=None) -> dict:
+    """발주 지연일별 총비용. target_at이 없으면 F02 계획의 목표 정비일을 쓴다."""
     plan = build_maintenance_plan(as_of)
     selected = plan.loc[plan.machineID.eq(int(machine_id)) & plan.component.eq(component)]
     if selected.empty:
@@ -336,11 +337,13 @@ def cost_analysis(machine_id: int, component: str, as_of=None) -> dict:
     unit = costs.loc[costs.component.eq(component)].set_index("cost_type").amount.astype(float).to_dict()
     meta = parts.loc[component]
     quantity = max(1, int(row.recommended_quantity))
+    target = row.target_maintenance_at if target_at is None else pd.Timestamp(target_at)
+    lead = int(meta.lead_time_days + meta.preparation_days)
     curve = []
-    max_delay = max(42, int(row.horizon_days) + 14)
+    max_delay = max(42, int((target.normalize() - row.as_of.normalize()).days) + 14)
     for delay in range(max_delay + 1):
-        ready = row.as_of + pd.Timedelta(days=delay + int(meta.lead_time_days + meta.preparation_days))
-        gap = int((row.target_maintenance_at.normalize() - ready.normalize()).days)
+        ready = row.as_of + pd.Timedelta(days=delay + lead)
+        gap = int((target.normalize() - ready.normalize()).days)
         holding = max(0, gap) * unit["holding"] * quantity
         late = max(0, -gap)
         disruption = 0 if not late else unit["emergency_labor"] + unit["expedite_surcharge"] * quantity + unit["downtime"] * late
@@ -349,7 +352,46 @@ def cost_analysis(machine_id: int, component: str, as_of=None) -> dict:
     optimum = min(curve, key=lambda item: item["total_cost"])
     scenarios = {day: next(item for item in curve if item["delay_days"] == day) for day in (0, 7, 14)}
     return {"plan": row.to_dict(), "curve": curve, "optimum": optimum,
-            "scenarios": scenarios, "currency": "KRW", "quantity": quantity}
+            "scenarios": scenarios, "currency": "KRW", "quantity": quantity,
+            "target_at": target, "order_by_at": target - pd.Timedelta(days=lead), "lead_days": lead}
+
+
+def supplier_options(component: str, as_of=None) -> list[dict]:
+    """부품별 주 거래처와 긴급 대체 업체 (supplier_terms.csv)."""
+    _, observed, _ = _latest_predictions(as_of)
+    stock, _ = _inventory(observed)
+    suppliers = _ops("suppliers.csv").set_index("supplier_id")
+    terms = _ops("supplier_terms.csv")
+    rows = []
+    for term in terms.loc[terms.component.eq(component)].sort_values("role", key=lambda r: r.ne("primary")).itertuples():
+        supplier = suppliers.loc[term.supplier_id]
+        rows.append({"supplier_id": term.supplier_id, "supplier_name": supplier.supplier_name,
+                     "role": term.role, "lead_time_days": int(term.lead_time_days),
+                     "unit_price": int(term.unit_price_krw), "surcharge": int(term.surcharge_krw),
+                     "contact_department": supplier.contact_department,
+                     "contact_phone": supplier.contact_phone, "contact_email": supplier.contact_email,
+                     "available_stock": int(stock.get(component, 0))})
+    return rows
+
+
+def response_unit_costs(component: str) -> dict:
+    """부품 1개 교체의 계획 대응 비용과 고장 후(긴급) 대응 비용 (KRW).
+
+    계획 = 구매 + 발주 행정 + 예방 작업 + 보유비 × 점검주기(review_days)
+    긴급 = 구매 + 긴급 운송 할증 + 긴급 작업 + 정지 손실 × (긴급 업체 납기 + 준비일)
+    """
+    unit = (_ops("costs.csv").loc[lambda x: x.component.eq(component)]
+            .set_index("cost_type").amount.astype(float).to_dict())
+    meta = _ops("part_master.csv").set_index("component").loc[component]
+    terms = _ops("supplier_terms.csv")
+    emergency = terms.loc[terms.component.eq(component) & terms.role.eq("emergency")]
+    emergency_lead = int(emergency.lead_time_days.iloc[0]) if not emergency.empty else int(meta.lead_time_days)
+    import json
+    review_days = json.loads((OPS / "scenario_config.json").read_text(encoding="utf-8"))["review_days"]
+    planned = unit["purchase"] + unit["order_admin"] + unit["preventive_labor"] + unit["holding"] * review_days
+    stop_days = emergency_lead + int(meta.preparation_days)
+    urgent = unit["purchase"] + unit["expedite_surcharge"] + unit["emergency_labor"] + unit["downtime"] * stop_days
+    return {"planned": planned, "emergency": urgent, "saving": urgent - planned, "stop_days": stop_days}
 
 
 def supplier_detail(component: str, as_of=None) -> dict:
