@@ -74,6 +74,14 @@
     font-weight:800;
     letter-spacing:-.02em;
 }
+.mn-band .mn-section-head h2::before,
+.mn-current-summary .mn-section-head h2::before{
+    content:"";
+    width:4px;
+    height:1em;
+    border-radius:2px;
+    background:var(--ui-navy-700);
+}
 .mn-section-sub{ margin:-6px 0 8px; color:var(--ui-text-muted); font-size:13px; }
 .mn-head-hint{ margin-left:auto; color:var(--ui-text-subtle); font-size:12px; font-weight:700; }
 .mn-tag{
@@ -111,10 +119,34 @@
     align-items:start;
     min-width:0;
 }
-/* TOP5 닫힘: 현재 상황(2열 카드) + 넓은 달력 */
+/* TOP5 닫힘: 현재 상황(2열 카드) + 달력 판 */
 .mn-middle-closed{ grid-template-columns:clamp(320px,21vw,420px) minmax(0,1fr); }
-/* TOP5 열림: 현재 상황(1열 카드) + 달력 + TOP5 */
-.mn-middle-open{ grid-template-columns:clamp(200px,13vw,250px) minmax(0,1fr) clamp(360px,25vw,470px); }
+/* TOP5 열림: 현재 상황(1열 카드) + 달력 판(달력 | TOP5) */
+.mn-middle-open{ grid-template-columns:clamp(200px,13vw,250px) minmax(0,1fr); }
+
+/* 달력 판: 화면에서 유일하게 떠 있는 흰 판 — 가장 먼저 눈이 가도록 */
+.mn-hero{
+    min-width:0;
+    overflow:hidden;
+    border:1px solid var(--ui-border);
+    border-radius:18px;
+    background:var(--ui-surface);
+    box-shadow:0 14px 34px rgba(0,29,61,.12);
+}
+.mn-hero-head{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px 16px;
+    padding:14px clamp(16px,1.3vw,22px);
+    background:var(--ui-navy);
+    color:#fff;
+}
+.mn-hero-head h2{ display:flex; align-items:baseline; gap:10px; margin:0; font-size:clamp(18px,1.25vw,22px); font-weight:800; }
+.mn-hero-head .mn-legend{ color:rgba(255,255,255,.75); }
+.mn-hero-body{ display:grid; grid-template-columns:minmax(0,1fr); gap:20px; padding:12px clamp(14px,1.2vw,20px) 12px; }
+.mn-middle-open .mn-hero-body{ grid-template-columns:minmax(0,1fr) clamp(340px,26vw,450px); }
+.mn-middle-open .mn-f02-slot{ padding-left:20px; border-left:1px solid var(--ui-border); }
 .mn-f02-slot-closed{ display:none; }
 .mn-block{ min-width:0; }
 
@@ -222,7 +254,7 @@
     box-shadow:0 2px 6px rgba(255,195,0,.35);
 }
 .mn-toggle:hover{ background:var(--ui-yellow-400); }
-.mn-middle-open .mn-toggle{ background:var(--ui-navy-700); color:#fff; box-shadow:none; }
+.mn-middle-open .mn-toggle{ background:transparent; color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.55); }
 .mn-close-btn{
     margin-left:auto;
     width:30px;
@@ -239,16 +271,16 @@
 /* 달력 */
 .mn-calendar-wrap{
     overflow:hidden;
-    border:1px solid var(--ui-border);
-    border-radius:var(--ui-radius-lg);
+    border:1px solid var(--ui-border-soft);
+    border-radius:var(--ui-radius);
     background:var(--ui-surface);
 }
-.mn-cal-month{ color:var(--ui-navy-700); font-size:15px; font-weight:800; }
+.mn-cal-month{ color:var(--ui-yellow-400); font-size:15px; font-weight:800; }
 .mn-week, .mn-calendar{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }
-.mn-week{ background:var(--ui-navy); }
-.mn-week-day{ padding:8px 4px; color:#fff; font-size:13px; font-weight:800; text-align:center; }
-.mn-week-day.is-weekend{ color:var(--ui-yellow-400); }
-.mn-calendar{ grid-auto-rows:minmax(clamp(64px,7.8vh,100px),auto); }
+.mn-week{ background:var(--ui-navy-tint); }
+.mn-week-day{ padding:8px 4px; color:var(--ui-navy); font-size:13px; font-weight:800; text-align:center; }
+.mn-week-day.is-weekend{ color:var(--ui-danger); }
+.mn-calendar{ grid-auto-rows:minmax(clamp(58px,6.8vh,96px),auto); }
 .mn-day{
     display:flex;
     flex-direction:column;
@@ -468,7 +500,16 @@
 
 /* ============ 과거 대응률 ============ */
 .mn-history{ padding-top:clamp(12px,1vw,18px); border-top:1px solid var(--ui-border); }
-.mn-hist-kpis{ display:flex; flex-wrap:wrap; gap:10px; margin-left:auto; }
+.mn-hist-controls{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-left:auto; }
+.mn-seg{ display:inline-flex; padding:3px; border-radius:999px; background:var(--ui-surface); box-shadow:inset 0 0 0 1px var(--ui-border); }
+.mn-seg label{ margin:0; padding:6px 14px; border-radius:999px; color:var(--ui-text-muted); font-size:13px; font-weight:800; cursor:pointer; }
+.mn-seg input{ display:none; }
+.mn-seg label:has(input:checked){ background:var(--ui-navy-700); color:#fff; }
+.mn-hist-custom{ display:flex; align-items:center; gap:6px; color:var(--ui-text-muted); }
+.mn-hist-custom.is-hidden{ display:none; }
+.mn-month-select{ width:140px; font-size:13px; }
+.mn-chart-note{ margin:0 0 4px; color:var(--ui-text-subtle); font-size:12px; line-height:1.45; }
+.mn-hist-kpis{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
 .mn-hist-kpi{
     display:flex;
     align-items:baseline;
@@ -518,8 +559,7 @@
 
 /* ============ 반응형 ============ */
 @media (max-width:1500px){
-    .mn-middle-open{ grid-template-columns:minmax(0,1fr) clamp(340px,30vw,430px); }
-    .mn-middle-open .mn-current-summary{ grid-column:1 / -1; }
+    .mn-middle-open{ grid-template-columns:minmax(0,1fr); }
     .mn-middle-open .mn-kpis{ grid-template-columns:repeat(6,minmax(0,1fr)); }
     .mn-middle-open .mn-kpi{ display:flex; align-items:stretch; }
     .mn-middle-open .mn-kpi-delta{ align-self:flex-start; }
@@ -528,6 +568,8 @@
 @media (max-width:1199.98px){
     /* 세로 배치: 현재 상황(3×2) → 달력 → TOP5 */
     .mn-middle-closed, .mn-middle-open{ grid-template-columns:minmax(0,1fr); }
+    .mn-middle-open .mn-hero-body{ grid-template-columns:minmax(0,1fr); }
+    .mn-middle-open .mn-f02-slot{ padding-left:0; border-left:0; padding-top:16px; border-top:1px solid var(--ui-border); }
     .mn-kpis, .mn-middle-open .mn-kpis{ grid-template-columns:repeat(3,minmax(0,1fr)); }
     .mn-middle-open .mn-kpi{ display:flex; align-items:stretch; }
     .mn-middle-open .mn-kpi-value strong{ font-size:clamp(22px,2.4vw,30px); }
@@ -536,7 +578,7 @@
 @media (max-width:991.98px){
     .mn-legend{ width:100%; margin-left:0; order:3; }
     .mn-insights, .mn-hist-grid{ grid-template-columns:minmax(0,1fr); }
-    .mn-hist-kpis{ margin-left:0; }
+    .mn-hist-controls{ margin-left:0; }
     .mn-chip-text{ font-size:11px; }
 }
 

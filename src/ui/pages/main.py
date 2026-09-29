@@ -8,8 +8,8 @@ from dash.exceptions import PreventUpdate
 from src.ui.ai_data import f03_summary
 from src.ui.config import UI_AS_OF, valid_as_of
 from src.ui.sample_data import (
-    DEFAULT_SORT, F01_IS_NEW, F01_RISE, F02_IS_NEW, F02_STOCK, ISSUE_LABEL, KPIS, SORTS,
-    STATUS_LABEL, history, item_by_key, kpi_detail, ranked_items,
+    DEFAULT_SORT, F01_RISE, F02_STOCK, ISSUE_LABEL, KPIS, SORTS, STATUS_LABEL,
+    available_months, history, item_by_key, kpi_detail, ranked_items,
 )
 
 TOP_N = 5
@@ -44,12 +44,8 @@ def d_day(date, as_of):
     return "D-day" if days == 0 else (f"D-{days}" if days > 0 else f"D+{-days}")
 
 
-def section_head(title, *extra, tag=None, new=False):
-    heading = [html.Span(tag, className="mn-tag") if tag else None,
-               title,
-               html.Span("NEW", className="mn-new") if new else None]
-    return html.Div([html.H2([part for part in heading if part is not None]), *extra],
-                    className="mn-section-head")
+def section_head(title, *extra):
+    return html.Div([html.H2(title), *extra], className="mn-section-head")
 
 
 def status_badge(status):
@@ -249,33 +245,37 @@ def f01_full_table():
 
 
 def rate_figure(rows):
-    """월별 적시 대응률(%). 이번 달은 진행 중이라 속이 빈 점과 점선으로 구분."""
+    """월별 적시 대응률(%). 진행 중인 달은 점선과 속이 빈 점으로 구분."""
     months = [row["month"] for row in rows]
     rates = [round(100 * row["on_time"] / row["due"]) if row["due"] else None for row in rows]
+    live = bool(rows) and rows[-1]["current"]
+    done = len(rows) - 1 if live else len(rows)
+    hover = "%{x}<br>마감 %{customdata[1]}건 중 제때 발주 %{customdata[0]}건 · %{y}%<extra></extra>"
     figure = base_figure()
     figure.add_hline(y=TARGET_RATE, line={"color": NAVY_SOFT, "width": 1, "dash": "dot"},
                      annotation={"text": f"목표 {TARGET_RATE}%", "font": {"size": 11, "color": MUTED}},
                      annotation_position="top left")
     figure.add_trace(go.Scatter(
-        x=months[:-1], y=rates[:-1], mode="lines+markers+text", name="적시 대응률",
-        line={"color": NAVY, "width": 2}, text=[f"{rate}%" for rate in rates[:-1]],
+        x=months[:done], y=rates[:done], mode="lines+markers+text", name="적시 대응률",
+        line={"color": NAVY, "width": 2}, text=[f"{rate}%" for rate in rates[:done]],
         textposition="top center", textfont={"size": 12, "color": INK},
         marker={"size": 9, "color": NAVY, "line": {"color": "white", "width": 2}},
-        customdata=[[row["on_time"], row["due"]] for row in rows[:-1]],
-        hovertemplate="%{x}<br>마감 %{customdata[1]}건 중 제때 발주 %{customdata[0]}건 · %{y}%<extra></extra>",
+        customdata=[[row["on_time"], row["due"]] for row in rows[:done]], hovertemplate=hover,
     ))
-    figure.add_trace(go.Scatter(
-        x=months[-2:], y=rates[-2:], mode="lines+markers+text", name="이번 달(진행 중)",
-        line={"color": NAVY, "width": 2, "dash": "dot"},
-        text=["", f"{rates[-1]}% (진행 중)"], textposition="top center",
-        textfont={"size": 12, "color": INK},
-        marker={"size": [0, 11], "color": "white", "line": {"color": YELLOW, "width": 3}},
-        customdata=[[row["on_time"], row["due"]] for row in rows[-2:]],
-        hovertemplate="%{x}<br>마감 %{customdata[1]}건 중 제때 발주 %{customdata[0]}건 · %{y}%<extra></extra>",
-    ))
+    if live:
+        tail = slice(max(done - 1, 0), len(rows))
+        figure.add_trace(go.Scatter(
+            x=months[tail], y=rates[tail], mode="lines+markers+text", name="진행 중",
+            line={"color": NAVY, "width": 2, "dash": "dot"},
+            text=[""] * (len(months[tail]) - 1) + [f"{rates[-1]}% (진행 중)"], textposition="top center",
+            textfont={"size": 12, "color": INK},
+            marker={"size": [0] * (len(months[tail]) - 1) + [11], "color": "white",
+                    "line": {"color": YELLOW, "width": 3}},
+            customdata=[[row["on_time"], row["due"]] for row in rows[tail]], hovertemplate=hover,
+        ))
     figure.update_yaxes(range=[0, 108], ticksuffix="%", showgrid=True, gridcolor=GRID, zeroline=False,
                         tickfont={"color": MUTED})
-    figure.update_xaxes(tickfont={"size": 13})
+    figure.update_xaxes(type="category", tickfont={"size": 13})
     return figure
 
 
@@ -289,22 +289,35 @@ def saving_figure(rows):
         textfont={"size": 12, "color": INK},
         hovertemplate="%{x}<br>절감액 %{y:,}만원<extra></extra>",
     ))
-    figure.update_yaxes(range=[0, max(row["saved"] for row in rows) * 1.25], showgrid=True, gridcolor=GRID,
+    figure.update_yaxes(range=[0, max([row["saved"] for row in rows] or [1]) * 1.25], showgrid=True, gridcolor=GRID,
                         zeroline=False, tickfont={"color": MUTED},
                         title={"text": "만원", "font": {"size": 12, "color": MUTED}})
-    figure.update_xaxes(tickfont={"size": 13})
+    figure.update_xaxes(type="category", tickfont={"size": 13})
     return figure
 
 
 def history_summary(rows):
-    done = [row for row in rows if not row["current"]]
-    due = sum(row["due"] for row in done)
-    rate = round(100 * sum(row["on_time"] for row in done) / due) if due else 0
+    due = sum(row["due"] for row in rows)
+    rate = round(100 * sum(row["on_time"] for row in rows) / due) if due else 0
     saved = sum(row["saved"] for row in rows)
+    period = f"{rows[0]['key']} ~ {rows[-1]['key']}" if rows else ""
     return [
-        html.Div([html.Span("지난 5개월 적시 대응률"), html.Strong(f"{rate}%")], className="mn-hist-kpi"),
-        html.Div([html.Span("6개월 누적 절감액"), html.Strong(f"{saved:,}만원")], className="mn-hist-kpi is-accent"),
+        html.Div([html.Span(f"적시 대응률 · {period}"), html.Strong(f"{rate}%")], className="mn-hist-kpi"),
+        html.Div([html.Span(f"누적 절감액 · {period}"), html.Strong(f"{saved:,}만원")],
+                 className="mn-hist-kpi is-accent"),
     ]
+
+
+HIST_RANGES = [("3", "최근 3개월"), ("6", "최근 6개월"), ("all", "전체"), ("custom", "직접 설정")]
+
+
+def hist_bounds(as_of, choice, start, end):
+    months = available_months(as_of)
+    if choice == "custom":
+        return start, end
+    if choice == "all":
+        return months[0], months[-1]
+    return months[max(0, len(months) - int(choice or 6))], months[-1]
 
 
 def graph(graph_id, figure, height):
@@ -340,82 +353,102 @@ def make_f03_panel(as_of=UI_AS_OF):
 
 
 def build_layout(as_of, f03=None):
+    months = available_months(as_of)
+    month_options = [{"label": f"{m[:4]}년 {int(m[5:])}월", "value": m} for m in months]
     return html.Div(
         [
-            # F03은 페이지를 열 때 저장된 예측 결과로 채운다.
+            # AI 한 줄 요약은 페이지를 열 때 저장된 예측 결과로 채운다.
             f03 if f03 is not None else html.Div(className="mn-f03", id="mn-f03"),
 
-            # 현재 상황 | 달력 | (토글) TOP5
+            # 현재 상황 | [달력 | (토글) TOP5] — 달력 쪽이 화면의 중심(흰 판)
             html.Div([
                 html.Section([section_head("현재 상황", html.Span("카드를 누르면 상세", className="mn-head-hint")),
                               make_kpis()],
                              className="mn-block mn-current-summary"),
 
-                html.Section([
-                    section_head(
-                        "To-Do 달력",
-                        html.Span(f"{int(as_of[:4])}년 {int(as_of[5:7])}월", className="mn-cal-month"),
+                html.Div([
+                    html.Div([
+                        html.H2(["To-Do 달력", html.Span(f"{int(as_of[:4])}년 {int(as_of[5:7])}월",
+                                                        className="mn-cal-month")]),
                         html.Div([html.Span([html.I(className="mn-legend-swatch mn-chip--part"), "부품 교체"]),
                                   html.Span([html.I(className="mn-legend-swatch mn-chip--anomaly"), "이상 신호"]),
-                                  html.Span([html.I(className="mn-legend-rank"), "TOP5 순위"])],
+                                  html.Span([html.I(className="mn-legend-rank"), "우선순위"])],
                                  className="mn-legend"),
                         html.Button("우선 확인 TOP5 보기", id="mn-show-top5", className="mn-toggle"),
-                        tag="F04"),
-                    html.Div(id="mn-calendar-body", className="mn-calendar-wrap"),
-                    html.Small(f"기준일 {as_of} · 항목을 누르면 상세 보기 · 처리 완료(삭제)를 선택할 수 있어요",
-                               className="mn-hint"),
-                ], className="mn-block mn-todo"),
-
-                html.Section([
-                    section_head("우선 확인 설비 TOP5",
-                                 html.Button("✕", id="mn-close-top5", className="mn-close-btn",
-                                             title="TOP5 닫기", **{"aria-label": "TOP5 닫기"})),
+                    ], className="mn-hero-head"),
                     html.Div([
-                        html.Label("정렬 기준", htmlFor="mn-top5-sort", className="mn-sort-label"),
-                        html.Div(dcc.Dropdown(
-                            id="mn-top5-sort",
-                            options=[{"label": label, "value": value} for value, (label, _) in SORTS.items()],
-                            value=DEFAULT_SORT, clearable=False, searchable=False,
-                            style={"width": "100%"},
-                        ), className="mn-sort"),
-                    ], className="mn-sort-row"),
-                    html.Div(id="mn-top5-panel"),
-                ], id="mn-f02-slot", className=TOP5_CLOSED[0]),
+                        html.Section([
+                            html.Div(id="mn-calendar-body", className="mn-calendar-wrap"),
+                            html.Small(f"기준일 {as_of} · 항목을 누르면 상세 보기 · 처리 완료(삭제)를 선택할 수 있어요",
+                                       className="mn-hint"),
+                        ], className="mn-block mn-todo"),
+                        html.Section([
+                            section_head("우선 확인 설비 TOP5",
+                                         html.Button("✕", id="mn-close-top5", className="mn-close-btn",
+                                                     title="TOP5 닫기", **{"aria-label": "TOP5 닫기"})),
+                            html.Div([
+                                html.Label("정렬 기준", htmlFor="mn-top5-sort", className="mn-sort-label"),
+                                html.Div(dcc.Dropdown(
+                                    id="mn-top5-sort",
+                                    options=[{"label": label, "value": value} for value, (label, _) in SORTS.items()],
+                                    value=DEFAULT_SORT, clearable=False, searchable=False,
+                                    style={"width": "100%"},
+                                ), className="mn-sort"),
+                            ], className="mn-sort-row"),
+                            html.Div(id="mn-top5-panel"),
+                        ], id="mn-f02-slot", className=TOP5_CLOSED[0]),
+                    ], className="mn-hero-body"),
+                ], className="mn-hero"),
             ], id="mn-middle", className=TOP5_CLOSED[1]),
 
-            # F01 | F02 (첫 화면에서 여기까지 보이도록)
+            # 확률 급상승 | 재고 × 위험 (첫 화면에서 여기까지)
             html.Div([
                 html.Section([
                     section_head("확률 급상승 알림",
-                                 html.Button("전체보기 →", id="mn-f01-more", className="mn-more-btn"),
-                                 new=F01_IS_NEW),
+                                 html.Button("전체보기 →", id="mn-f01-more", className="mn-more-btn")),
                     html.P("지난주 대비 고장 위험도가 크게 오른 설비 TOP 3", className="mn-section-sub"),
                     graph("mn-f01-graph", f01_figure(F01_RISE[:3]), "clamp(190px,20vh,230px)"),
                 ], className="mn-block mn-insight"),
                 html.Section([
-                    section_head("재고 × 위험 교차", new=F02_IS_NEW),
+                    section_head("재고 × 위험 교차"),
                     html.P("재고는 적은데 위험 설비가 많은 부품 순서입니다", className="mn-section-sub"),
                     f02_table(F02_STOCK),
                 ], className="mn-block mn-insight"),
-            ], className="mn-insights"),
+            ], className="mn-insights mn-band"),
 
             # 과거 대응률 (스크롤해서 보는 영역)
             html.Section([
                 section_head("과거 대응률",
-                             html.Div(history_summary(history(as_of)), id="mn-history-rate",
-                                      className="mn-hist-kpis")),
-                html.P("위험 건은 발주 마감일이 속한 달로 묶어, 그 달 마감 건 중 마감 전에 발주한 비율과 "
-                       "그 덕분에 아낀 비용을 봅니다. 발주를 넣으면 이번 달에 바로 반영됩니다.",
-                       className="mn-section-sub"),
+                             html.Div([
+                                 dcc.RadioItems(id="mn-hist-range",
+                                                options=[{"label": label, "value": value}
+                                                         for value, label in HIST_RANGES],
+                                                value="6", className="mn-seg", inline=True),
+                                 html.Div([
+                                     dcc.Dropdown(id="mn-hist-start", options=month_options,
+                                                  value=months[max(0, len(months) - 6)], clearable=False,
+                                                  searchable=False, className="mn-month-select"),
+                                     html.Span("~"),
+                                     dcc.Dropdown(id="mn-hist-end", options=month_options, value=months[-1],
+                                                  clearable=False, searchable=False, className="mn-month-select"),
+                                 ], id="mn-hist-custom", className="mn-hist-custom is-hidden"),
+                             ], className="mn-hist-controls")),
+                html.Div(history_summary(history(as_of)), id="mn-history-rate", className="mn-hist-kpis"),
                 html.Div([
                     html.Div([html.H3("월별 적시 대응률"),
+                              html.P("그 달에 발주 마감이 온 위험 건 중 마감 전에 발주한 비율 "
+                                     "(마감월 기준이라 다음 달에 처리해도 원래 달의 성적으로 계산)",
+                                     className="mn-chart-note"),
                               graph("mn-history-graph", rate_figure(history(as_of)), "clamp(240px,28vh,320px)")],
                              className="mn-hist-chart"),
                     html.Div([html.H3("월별 절감액"),
+                              html.P("절감액 = 고장 후 대응 비용(부품가 + 긴급 할증 + 긴급 정비 인건비 + 설비 정지 손실) "
+                                     "− 계획 대응 비용(부품가 + 발주 행정비 + 예방 정비 인건비 + 보관비)",
+                                     className="mn-chart-note"),
                               graph("mn-saving-graph", saving_figure(history(as_of)), "clamp(240px,28vh,320px)")],
                              className="mn-hist-chart"),
                 ], className="mn-hist-grid"),
-            ], className="mn-block mn-history", id="mn-history"),
+            ], className="mn-block mn-history mn-band", id="mn-history"),
             html.Small("현재 상황·달력·TOP5·하단 그래프는 UI 확인용 예시 데이터입니다.", className="mn-sample-note"),
 
             # 항목 클릭 시 뜨는 작은 선택 창
@@ -431,7 +464,7 @@ def build_layout(as_of, f03=None):
                 ]),
             ], id="mn-action-modal", is_open=False, centered=True, size="sm", className="mn-modal"),
 
-            # 현재 상황 카드 상세 / F01 전체보기
+            # 현재 상황 카드 상세 / 급상승 전체보기
             dbc.Modal([
                 dbc.ModalHeader(dbc.ModalTitle(id="mn-more-title")),
                 dbc.ModalBody(id="mn-more-body"),
@@ -439,7 +472,6 @@ def build_layout(as_of, f03=None):
         ],
         className="mn-page",
     )
-
 
 layout = build_layout(UI_AS_OF)
 
@@ -482,12 +514,19 @@ def render_todo(dismissed, sort, as_of):
     Output("mn-history-graph", "figure"),
     Output("mn-saving-graph", "figure"),
     Output("mn-history-rate", "children"),
+    Output("mn-hist-custom", "className"),
     Input("store-order-log", "data"),
     Input("store-as-of", "data"),
+    Input("mn-hist-range", "value"),
+    Input("mn-hist-start", "value"),
+    Input("mn-hist-end", "value"),
 )
-def render_history(orders, as_of):
-    rows = history(valid_as_of(as_of), orders)
-    return rate_figure(rows), saving_figure(rows), history_summary(rows)
+def render_history(orders, as_of, choice, start, end):
+    as_of = valid_as_of(as_of)
+    start, end = hist_bounds(as_of, choice, start, end)
+    rows = history(as_of, orders, start, end)
+    custom = "mn-hist-custom" + ("" if choice == "custom" else " is-hidden")
+    return rate_figure(rows), saving_figure(rows), history_summary(rows), custom
 
 
 @callback(

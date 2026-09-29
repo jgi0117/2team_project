@@ -1,5 +1,6 @@
 # src/ui/pages/detail/page.py
-# 설비 상세 페이지: 종합 진단 → 설비 도면(부품) | 시간별 센서 이상 → 발주 검토 → 협력사 → 교체 이력
+# 설비 상세. 시선 흐름: ① 설비 상태(좌상단) → ② 부품 위치·위험(도면 위 말풍선) → ③ 이유(AI 진단)
+#                     → ④ 근거(센서 이상) → ⑤ 행동(발주 검토 → 발주 정보 → 교체 이력)
 from functools import lru_cache
 
 import dash_bootstrap_components as dbc
@@ -11,6 +12,7 @@ from plotly.subplots import make_subplots
 
 from src.common.paths import PROCESSED
 from src.F09.heatmap import load_predictions, machine_ids
+from src.ui import detail_data
 from src.ui.ai_data import f05_diagnosis, f06_analysis
 from src.ui.config import UI_AS_OF, upto_as_of, valid_as_of
 from src.ui.sample_data import ranked_items
@@ -29,11 +31,11 @@ SENSOR_NAMES = {"volt": "전압", "rotate": "회전속도", "pressure": "압력"
 STATUS_CLASS = {"즉시": "now", "주의": "watch", "관찰": "ok", "정상": "calm"}
 
 # 차트 색: 00_tokens.css와 같은 값 (Plotly는 CSS 변수를 읽지 못함)
-NAVY, NAVY_SOFT, YELLOW_DARK, DANGER = "#003566", "#7f9bbd", "#c99a00", "#d62839"
+NAVY, NAVY_SOFT, YELLOW, YELLOW_DARK, DANGER = "#003566", "#7f9bbd", "#ffc300", "#c99a00", "#d62839"
 MUTED, GRID, INK = "#8a94a6", "#e3e7ed", "#0f1a2b"
 FONT = "NanumSquare Neo, Malgun Gothic, sans-serif"
 
-# 설비 이미지 위 부품 좌표(%) — 이미지 바뀌면 이 숫자만 수정
+# 설비 그림 위 부품 좌표(%) — 그림 기준. 그림이 바뀌면 이 숫자만 수정
 POS = {
     "comp1": {"top": "16%", "left": "22%"},
     "comp2": {"top": "26%", "left": "62%"},
@@ -69,10 +71,12 @@ def d_label(days):
     return "—" if days is None else ("D-day" if days <= 0 else f"D-{days}")
 
 
-def section_head(title, *extra, tag=None):
-    heading = [html.Span(tag, className="dt-tag") if tag else None, title]
-    return html.Div([html.H2([part for part in heading if part is not None]), *extra],
-                    className="dt-section-head")
+def won(value):
+    return f"{value:,.0f}만원"
+
+
+def section_head(title, *extra):
+    return html.Div([html.H2(title), *extra], className="dt-section-head")
 
 
 def status_badge(status):
@@ -83,15 +87,23 @@ def ghost(text, min_h=80):
     return html.Div(text, className="ghost", style={"minHeight": f"{min_h}px"})
 
 
-# ---------------- F05 : 부품 말풍선 ----------------
+def figure_base():
+    figure = go.Figure()
+    figure.update_layout(margin={"l": 8, "r": 12, "t": 12, "b": 8}, showlegend=False,
+                         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                         font={"family": FONT, "size": 12, "color": MUTED},
+                         hoverlabel={"font": {"family": FONT}})
+    return figure
+
+
+# ---------------- ② 도면 위 부품 말풍선 ----------------
 def hotspot(comp):
     on = ADOPTED[comp]
-    state = "hotspot--on" if on else "hotspot--off"
-    state += f" hotspot--{PLACE.get(comp, 'above')}"
+    state = ("hotspot--on" if on else "hotspot--off") + f" hotspot--{PLACE.get(comp, 'above')}"
 
     dot = html.Div(className=f"hotspot-dot {state}", style=POS[comp])
 
-    # 말풍선 전체가 hotspot-{comp} 클릭 영역. 안의 '발주 검토' 버튼은 그 사실을 알려주는 표시.
+    # 말풍선 전체가 hotspot-{comp} 클릭 영역. 안의 '발주 검토' 표시는 누를 수 있다는 안내.
     bubble = html.Div(
         id=f"hotspot-{comp}", n_clicks=0, className=f"hotspot {state}",
         style=POS[comp], role="button", tabIndex="0",
@@ -115,7 +127,7 @@ def hotspot(comp):
                      html.Thead(html.Tr([html.Th("기간")] + [html.Th(f"{h}일") for h in HORIZONS])),
                      html.Tbody(html.Tr([html.Td("점수")] + [html.Td("--") for _ in HORIZONS])),
                  ], className="hs-pop-table"))),
-             html.Small("다른 설비와 비교한 상대 점수입니다(확률 아님). 말풍선을 누르면 발주 검토가 열립니다.",
+             html.Small("다른 설비와 비교한 상대 점수입니다(확률 아님). 누르면 발주 검토가 열립니다.",
                         className="hs-pop-note"),
          ])],
         id=f"hs-pop-{comp}", target=f"hotspot-{comp}",
@@ -124,49 +136,85 @@ def hotspot(comp):
     return [dot, bubble, pop]
 
 
-# ---------------- F05 : 종합 진단 (화면 상단 띠) ----------------
-f05_summary = html.Section(
-    id="f05-summary", className="dt-diagnosis",
-    children=[
-        html.Div([
-            html.Span("위험 상승 예상", className="dt-diag-label"),
-            html.Div("진단 불러오는 중", id="f05-summary-days", className="summary-days"),
+# ---------------- 캔버스: 은은한 설비 그림 + 떠 있는 정보 ----------------
+def canvas(selected, as_of):
+    return html.Section(className="dt-canvas", children=[
+        # 배경: 설비 그림 + 부품 말풍선
+        html.Div(id="dt-drawing", className="dt-drawing", children=[
+            html.Div(id="f05-equip-img", className="stage-bg",
+                     children=html.Img(src="/assets/equipment-comp-layout.png",
+                                       alt="4개 부품 위치가 표시된 산업용 설비")),
+            *[el for c in COMPS for el in hotspot(c)],
+        ]),
+        # 보기 전환: 도면 / 4개 부품 기간별 전체
+        html.Div(dcc.RadioItems(
+            id="dt-view", value="drawing", inline=True, className="dt-seg",
+            options=[{"label": "부품 위치", "value": "drawing"},
+                     {"label": "4개 부품 기간별 위험", "value": "table"}],
+        ), className="dt-view-switch"),
+        html.Div(id="dt-horizon-panel", className="dt-horizon-panel is-hidden", children=[
+            html.Div([html.H3("부품별 · 기간별 고장 위험 점수"),
+                      html.Span("노란 테두리 = 부품별 발주 결정 시한 · 진할수록 위험 · 상대 점수(확률 아님)",
+                                className="dt-panel-hint")],
+                     className="dt-horizon-head"),
+            html.Div(id="dt-horizon-table", className="table-scroll"),
+        ]),
+
+        # ① 좌상단: 설비와 상태
+        html.Div(id="f05-summary", className="dt-head", children=[
+            html.Div([
+                html.Span("설비 상세", className="hdr-title"),
+                dcc.Dropdown(
+                    id="detail-machine-select",
+                    options=[{"label": f"M-{machine:03d}", "value": machine} for machine in MACHINES],
+                    value=selected, clearable=False, searchable=True,
+                    className="detail-machine-select",
+                ),
+            ], className="dt-head-top"),
+            html.H1(f"M-{selected:03d}", id="detail-machine-name", className="hdr-machine"),
+            html.Span("위험 상승 예상", className="dt-kicker"),
+            html.Div("--", id="f05-summary-days", className="summary-days"),
             html.Div("부품별 위험 비교", id="f05-summary-note", className="summary-sub"),
-        ], className="dt-diag-main"),
-        html.Div([
-            html.Span("센서 이상 신호 (최근 72시간)", className="dt-diag-label"),
-            html.Div("--", id="dt-sensor-count", className="dt-diag-value"),
-            html.Div("IQR · 3σ · IF 판정 합계", className="summary-sub"),
-        ], className="dt-diag-side"),
-        html.Div([
-            html.Span([html.Span("AI 종합 진단", className="dt-ai-badge")], className="dt-diag-label"),
-            html.Div("Qwen 종합진단을 준비하고 있습니다", id="f05-summary-basis", className="dt-diag-text"),
-        ], className="dt-diag-ai"),
-    ],
-)
+            html.Div([
+                html.Div([html.Span("센서 이상 신호 · 72시간"),
+                          html.Div("--", id="dt-sensor-count", className="dt-mini-value")], className="dt-mini"),
+                html.Div([html.Span("기준일"),
+                          html.Div(as_of, id="detail-asof", className="dt-mini-value")], className="dt-mini"),
+            ], className="dt-mini-row"),
+        ]),
 
-# ---------------- F05 : 설비 도면 + 부품 현황 ----------------
-f05_stage = html.Section(className="dt-stage-panel", children=[
-    section_head("부품 위치와 위험",
-                 html.Span("부품을 누르면 발주 검토가 열려요", className="dt-head-hint"), tag="F05"),
-    html.Div(className="stage-canvas", children=[
-        html.Div(id="f05-equip-img", className="stage-bg",
-                 children=html.Img(src="/assets/equipment-comp-layout.png",
-                                   alt="4개 부품 위치가 표시된 산업용 설비")),
-        *[el for c in COMPS for el in hotspot(c)],
-    ]),
-    html.Div(id="dt-part-table", className="dt-part-table"),
-])
+        # 우상단: 행동 버튼
+        html.Div(className="dt-actions", children=[
+            html.Button("발주 정보 0건", id="dt-cart-btn", n_clicks=0, className="dt-btn"),
+            html.Button("교체 이력", id="btn-open-history", n_clicks=0, className="dt-btn"),
+        ]),
 
-# ---------------- F06 : 시간별 센서 이상 ----------------
+        # ③ 좌하단: AI 종합 진단
+        html.Div(className="dt-ai", children=[
+            html.Span("AI 종합 진단", className="dt-ai-badge"),
+            html.Div("종합진단을 준비하고 있습니다", id="f05-summary-basis", className="dt-ai-text"),
+        ]),
+
+        # ④로 이어지는 우하단: 센서 이상 추이 미리보기
+        html.A(href="#dt-sensor", className="dt-trend", children=[
+            html.Div([html.Span("센서 이상 · 시간별 건수"), html.Span("자세히 ↓", className="dt-trend-link")],
+                     className="dt-trend-head"),
+            dcc.Graph(id="dt-sensor-spark", figure=figure_base(),
+                      config={"displayModeBar": False, "staticPlot": True}, style={"height": "78px"}),
+        ]),
+    ])
+
+
+# ---------------- ④ 센서 이상 근거 ----------------
 def legend_item(kind, label):
     return html.Span([html.I(className=f"dt-lg dt-lg--{kind}"), label], className="dt-legend-item")
 
 
 f06_overlay = html.Section(
-    id="f06-overlay", className="dt-f06",
+    id="f06-overlay", className="dt-band dt-f06",
     children=[
-        section_head("시간별 센서 이상",
+        html.Span(id="dt-sensor", className="dt-anchor"),
+        section_head("센서 이상 근거",
                      html.Div([html.Label("센서", htmlFor="f06-sensor-select", className="dt-select-label"),
                                dcc.Dropdown(
                                    id="f06-sensor-select",
@@ -174,100 +222,88 @@ f06_overlay = html.Section(
                                             for sensor, label in SENSOR_NAMES.items()],
                                    value="vibration", clearable=False, searchable=False,
                                    className="f06-sensor-select",
-                               )], className="dt-select-row"),
-                     tag="F06"),
-        html.Div(id="f06-alert-summary", className="f06-alert-summary"),
-
-        html.Div(className="dt-f06-block", children=[
-            html.Div([
-                html.H3("센서값과 기준 범위"),
-                html.Div([legend_item("value", "관측값"),
-                          legend_item("iqr", "IQR 탐지 상·하한"),
-                          legend_item("sigma", "3σ 관리 상·하한"),
-                          legend_item("alert", "이상"),
+                               )], className="dt-select-row")),
+        html.Div(className="dt-f06-grid", children=[
+            html.Div(className="dt-f06-main", children=[
+                html.Div(id="f06-alert-summary", className="f06-alert-summary"),
+                html.Div([legend_item("value", "관측값"), legend_item("iqr", "IQR 탐지 상·하한"),
+                          legend_item("sigma", "3σ 관리 상·하한"), legend_item("alert", "이상"),
                           legend_item("if", "IF 점수 / 기준")], className="dt-legend"),
-            ], className="dt-f06-block-head"),
-            dcc.Graph(id="f06-sensor-graph", figure={}, responsive=True,
-                      config={"displayModeBar": False},
-                      style={"height": "clamp(280px,38vh,420px)"}),
-            html.Small(id="f06-observed", className="f06-observed"),
-        ]),
-
-        html.Div(className="dt-f06-bottom", children=[
-            html.Div(className="dt-f06-block", children=[
-                html.H3("설비 전체 IF 이상 점수"),
-                html.Div(id="f06-if-score", children=ghost("IF 점수", 84)),
+                dcc.Graph(id="f06-sensor-graph", figure={}, responsive=True,
+                          config={"displayModeBar": False},
+                          style={"height": "clamp(300px,40vh,440px)"}),
+                html.Small(id="f06-observed", className="f06-observed"),
             ]),
-            html.Div(className="dt-f06-block", children=[
-                html.H3("센서별 판정 (현재 시점)"),
-                html.Div(id="f06-reason-table", children=ghost("센서별 판정", 84),
-                         className="table-scroll"),
+            html.Div(className="dt-f06-side", children=[
+                html.Div([html.H3("설비 전체 IF 이상 점수"),
+                          html.Div(id="f06-if-score", children=ghost("IF 점수", 84))], className="dt-side-block"),
+                html.Div([html.H3("센서별 판정 (현재 시점)"),
+                          html.Div(id="f06-reason-table", children=ghost("센서별 판정", 84), className="table-scroll")],
+                         className="dt-side-block"),
             ]),
         ]),
     ],
 )
 
-# ---------------- F07 : 발주 검토 ----------------
+# ---------------- ⑤ 발주 검토 ----------------
 f07_panel = dbc.Collapse(
     id="f07-collapse", is_open=False,
-    children=html.Section(className="dt-panel dt-panel--f07", children=[
+    children=html.Section(className="dt-band dt-panel", children=[
         section_head(
-            html.Span(["발주 시점 · 비용 검토 — ",
-                       html.Span("--", id="f07-part-label", className="f07-part-label")]),
+            html.Span(["발주 시점 · 비용 검토 ", html.Span("--", id="f07-part-label", className="f07-part-label")]),
             html.Div(className="btns", children=[
-                html.Button("발주 목록에 담기", id="btn-add-cart", n_clicks=0, className="dt-btn dt-btn--primary"),
+                html.Button("발주 정보 보기", id="btn-add-cart", n_clicks=0, className="dt-btn dt-btn--primary"),
                 html.Button("닫기", id="btn-f07-close", n_clicks=0, className="dt-btn"),
-            ]),
-            tag="F07"),
+            ])),
         html.Div(className="dt-f07-grid", children=[
-            html.Div(className="dt-f06-block", children=[
-                html.H3("비용 최소 발주 시점"),
-                dcc.Graph(id="f07-cost-curve", figure={}, responsive=True,
-                          config={"displayModeBar": False},
-                          style={"height": "clamp(160px,22vh,220px)"}),
+            html.Div(className="dt-f07-block", children=[
+                html.H3("언제 발주하면 가장 쌀까"),
+                html.P("발주일별 예상 총비용 · 너무 이르면 보관비, 늦으면 고장 후 긴급 대응 비용이 커집니다",
+                       className="dt-block-note"),
+                dcc.Graph(id="f07-cost-curve", figure=figure_base(), responsive=True,
+                          config={"displayModeBar": False}, style={"height": "clamp(200px,24vh,260px)"}),
             ]),
-            html.Div(className="dt-f06-block", children=[
-                html.H3("발주 및 재고 정보"),
-                html.Div(id="f07-order-info",
-                         children=ghost("발주 마감일 / 권장 수량 / 조달 기간 / 대응 여유", 150)),
+            html.Div(className="dt-f07-block", children=[
+                html.H3("발주 · 재고 정보"),
+                html.Div(id="f07-order-info", children=ghost("부품을 선택하세요", 150)),
             ]),
-            html.Div(className="dt-f06-block", children=[
-                html.H3("시나리오 비교"),
+            html.Div(className="dt-f07-block", children=[
+                html.H3("발주 시나리오 비교"),
                 html.Div(className="dt-scenarios", children=[
                     html.Div(["오늘 발주", html.Div("--", id="f07-cost-d0", className="f07-scenario-value")],
                              className="f07-scenario"),
-                    html.Div(["1주 대기", html.Div("--", id="f07-cost-d7", className="f07-scenario-value")],
+                    html.Div(["1주 뒤", html.Div("--", id="f07-cost-d7", className="f07-scenario-value")],
                              className="f07-scenario"),
-                    html.Div(["2주 대기", html.Div("--", id="f07-cost-d14", className="f07-scenario-value")],
+                    html.Div(["2주 뒤", html.Div("--", id="f07-cost-d14", className="f07-scenario-value")],
                              className="f07-scenario"),
                 ]),
+                html.P("예상 총비용 기준 · 가장 낮은 안에 '최저' 표시", className="dt-block-note"),
             ]),
         ]),
     ]),
 )
 
-# ---------------- F08-a : 협력사 ----------------
+# ---------------- ⑤ 발주 정보 (장바구니처럼 누적) ----------------
 f08_supplier = dbc.Collapse(
     id="f08-supplier-collapse", is_open=False,
-    children=html.Section(className="dt-panel", children=[
-        section_head("협력사 정보",
-                     html.Div(html.Button("닫기", id="btn-f08-supplier-close", n_clicks=0, className="dt-btn"),
-                              className="btns"),
-                     tag="F08"),
-        html.Div(id="f08-supplier-body", children=ghost("업체명 / 재고 / 납기 / 단가 / 연락처", 100)),
+    children=html.Section(className="dt-band dt-panel", children=[
+        section_head("발주 정보",
+                     html.Div(className="btns", children=[
+                         html.Button("비우기", id="f08-clear", n_clicks=0, className="dt-btn"),
+                         html.Button("닫기", id="btn-f08-supplier-close", n_clicks=0, className="dt-btn"),
+                     ])),
+        html.Div(id="f08-supplier-body", children=ghost("발주 검토에서 '발주 정보 보기'를 누르면 부품별로 쌓입니다", 100)),
     ]),
 )
 
-# ---------------- F08-b : 교체 이력 ----------------
+# ---------------- ⑤ 교체 이력 ----------------
 f08_history = dbc.Collapse(
     id="f08-history-collapse", is_open=False,
-    children=html.Section(className="dt-panel", children=[
+    children=html.Section(className="dt-band dt-panel", children=[
         section_head("교체 이력",
                      html.Div(html.Button("닫기", id="btn-f08-history-close", n_clicks=0, className="dt-btn"),
-                              className="btns"),
-                     tag="F08"),
-        html.Div(id="f08-history-table", className="table-scroll",
-                 children=ghost("교체일 / 부품 / 담당자 / 비용 / 비고", 130)),
+                              className="btns")),
+        html.Div(id="f08-history-table", children=ghost("교체일 / 부품 / 구분 / 담당자 / 비용", 130)),
     ]),
 )
 
@@ -279,30 +315,17 @@ def create_detail_layout(machine_id=None, as_of=None):
     return html.Div(className="page-detail", children=[
         dcc.Store(id="store-selected-machine", data=selected),
         dcc.Store(id="store-selected-comp", data=None),
+        dcc.Store(id="f08-last-order"),
         dcc.ConfirmDialog(id="f07-confirm-dismiss"),
 
-        html.Div(className="hdr", children=[
-            html.H1([html.Span("설비 상세", className="hdr-title"),
-                     html.Span(f"M-{selected:03d}", id="detail-machine-name", className="hdr-machine")]),
-            dcc.Dropdown(
-                id="detail-machine-select",
-                options=[{"label": f"M-{machine:03d}", "value": machine} for machine in MACHINES],
-                value=selected, clearable=False,
-                className="detail-machine-select",
-            ),
-            html.Div([
-                html.Span(f"기준일 {as_of}", id="detail-asof", className="hdr-asof"),
-                html.Button("교체 이력 보기", id="btn-open-history", n_clicks=0, className="dt-btn"),
-            ], className="hdr-right"),
-        ]),
-
-        f05_summary,
-        html.Div([f05_stage, f06_overlay], className="stage"),
+        canvas(selected, as_of),
+        f06_overlay,
         f07_panel,
         f08_supplier,
         f08_history,
         html.P("고장 위험은 부품별 예측 모델, 센서 이상은 별도의 이상 탐지 결과입니다. "
-               "발주 검토·협력사·교체 이력은 UI 프레임입니다.", className="detail-frame-note"),
+               "발주 검토·발주 정보의 비용과 업체는 가상 운영 데이터 기반 예시이며, 교체 이력은 원본 정비 기록입니다.",
+               className="detail-frame-note"),
     ])
 
 
@@ -363,46 +386,63 @@ def show_machine(machine_id, as_of=None):
 
 
 @callback(
-    Output("dt-part-table", "children"),
+    Output("dt-horizon-table", "children"),
     *[Output(f"hs-pop-table-{comp}", "children") for comp in COMPS],
     Input("detail-machine-select", "value"),
     State("store-as-of", "data"),
 )
 def show_parts(machine_id, as_of):
+    """부품별 기간 점수: 팝오버(부품 하나)와 '4개 부품 기간별 위험' 보기(전체)."""
     as_of = resolve_as_of(as_of)
-    parts = part_rows(machine_id, as_of)
-    table = html.Table([
-        html.Thead(html.Tr([html.Th(name) for name in ("부품", "발주 결정 시한", "위험 상승 예상", "판정", "")])),
-        html.Tbody([
-            html.Tr([
-                html.Td(html.B(part["comp"])),
-                html.Td(f"{DECISION[part['comp']]}일"),
-                html.Td(d_label(part["days"]) if part["adopted"] else "—"),
-                html.Td(status_badge(part["status"]) if part["adopted"]
-                        else html.Span("안전재고 대응", className="dt-status dt-status--off")),
-                html.Td(html.Button("발주 검토 →", id={"type": "dt-part-order", "comp": part["comp"]},
-                                    className="dt-row-action")),
-            ], className=f"dt-part-row is-{STATUS_CLASS.get(part['status'], 'calm')}"
-                         + ("" if part["adopted"] else " is-off"))
-            for part in parts
-        ]),
-    ], className="dt-table")
-
-    # 팝오버: 기준일 직전 예측의 기간별 점수 (결정 시한 칸 강조)
     preds = upto_as_of(PREDICTIONS, as_of)
     preds = preds.loc[preds.machineID.eq(machine_id)]
     latest = preds.loc[preds.as_of.eq(preds.as_of.max())]
+    scores = {comp: latest.loc[latest.component.eq(comp)].set_index("horizon_days").failure_probability
+              for comp in COMPS}
+    top = max([value for series in scores.values() for value in series.dropna()] or [1])
+
+    def cell(comp, h):
+        value = scores[comp].get(h)
+        missing = value is None or pd.isna(value)
+        level = 0 if missing else min(int(value / top * 5), 4)
+        return html.Td("--" if missing else f"{value:.2f}",
+                       className=f"dt-heat dt-heat--{level}" + (" is-decision" if h == DECISION[comp] else ""))
+
+    parts = {part["comp"]: part for part in part_rows(machine_id, as_of)}
+    table = html.Table([
+        html.Thead(html.Tr([html.Th("부품")] + [html.Th(f"{h}일") for h in HORIZONS]
+                           + [html.Th("위험 상승"), html.Th("")])),
+        html.Tbody([
+            html.Tr([html.Td(html.B(comp))] + [cell(comp, h) for h in HORIZONS] + [
+                html.Td(d_label(parts[comp]["days"]) if ADOPTED[comp] else "미채택"),
+                html.Td(html.Button("발주 검토 →", id={"type": "dt-part-order", "comp": comp},
+                                    className="dt-row-action")),
+            ], className="" if ADOPTED[comp] else "is-off")
+            for comp in COMPS
+        ]),
+    ], className="dt-table dt-heat-table")
+
     pops = []
     for comp in COMPS:
-        scores = latest.loc[latest.component.eq(comp)].set_index("horizon_days").failure_probability
         pops.append(html.Table([
             html.Thead(html.Tr([html.Th("기간")] + [
                 html.Th(f"{h}일", className="is-decision" if h == DECISION[comp] else "") for h in HORIZONS])),
             html.Tbody(html.Tr([html.Td("점수")] + [
-                html.Td("--" if h not in scores or pd.isna(scores[h]) else f"{scores[h]:.2f}",
+                html.Td("--" if h not in scores[comp] or pd.isna(scores[comp][h]) else f"{scores[comp][h]:.2f}",
                         className="is-decision" if h == DECISION[comp] else "") for h in HORIZONS])),
         ], className="hs-pop-table"))
     return table, *pops
+
+
+@callback(
+    Output("dt-horizon-panel", "className"),
+    Output("dt-drawing", "className"),
+    Input("dt-view", "value"),
+)
+def switch_view(view):
+    table = view == "table"
+    return ("dt-horizon-panel" + ("" if table else " is-hidden"),
+            "dt-drawing" + (" is-dimmed" if table else ""))
 
 
 def f06_sensor_figure(result, sensor):
@@ -570,23 +610,37 @@ def show_f06(machine_id, sensor, as_of=None):
 
 @callback(
     Output("dt-sensor-count", "children"),
+    Output("dt-sensor-spark", "figure"),
     Input("detail-machine-select", "value"),
     State("store-as-of", "data"),
 )
-def show_sensor_count(machine_id, as_of):
-    """센서 4종 × (IQR, 3σ) + 설비 IF 이상 건수 (최근 72시간)."""
+def show_sensor_overview(machine_id, as_of):
+    """캔버스용: 72시간 이상 건수(센서 4종 IQR·3σ + 설비 IF)와 시간별 건수 미리보기."""
     if machine_id not in MACHINES:
         raise PreventUpdate
     try:
         result = f06_analysis(int(machine_id), resolve_as_of(as_of))
     except (OSError, ValueError, KeyError):
-        return "—"
-    counts = [f06_counts(result, sensor)[0] for sensor in SENSOR_NAMES]
-    total = sum(c["iqr"] + c["three_sigma"] for c in counts) + (counts[0]["if"] if counts else 0)
-    return [html.Strong(f"{total}"), html.Span("건")]
+        return "—", figure_base()
+    points = result.get("timeline", [])
+
+    def flags(point):
+        sensors = point.get("sensors", {})
+        count = sum(bool(row and row.get(method) and row[method]["is_anomaly"])
+                    for row in sensors.values() for method in ("iqr", "three_sigma"))
+        return count + bool(point.get("if") and point["if"]["is_anomaly"])
+
+    per_hour = [flags(point) for point in points]
+    figure = figure_base()
+    figure.update_layout(margin={"l": 0, "r": 0, "t": 4, "b": 0}, bargap=0.25)
+    figure.add_trace(go.Bar(x=[point["as_of"] for point in points], y=per_hour,
+                            marker_color=[DANGER if value else "#c9d3df" for value in per_hour]))
+    figure.update_xaxes(visible=False)
+    figure.update_yaxes(visible=False, range=[0, max(per_hour or [1]) + 0.5])
+    return [html.Strong(f"{sum(per_hour)}"), html.Span("건")], figure
 
 
-# ---------------- 펼침 패널 (열림/닫힘) ----------------
+# ---------------- ⑤ 발주 검토 ----------------
 @callback(
     Output("f07-collapse", "is_open"),
     Output("store-selected-comp", "data"),
@@ -603,17 +657,217 @@ def toggle_f07(*_):
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
     comp = trig["comp"] if isinstance(trig, dict) else str(trig).replace("hotspot-", "")
-    return True, comp, f"{comp} ({DECISION.get(comp, '-')}일 기준)"
+    return True, comp, f"— {comp} ({DECISION.get(comp, '-')}일 발주 결정 시한)"
+
+
+@callback(
+    Output("f07-cost-curve", "figure"),
+    Output("f07-order-info", "children"),
+    Output("f07-cost-d0", "children"),
+    Output("f07-cost-d7", "children"),
+    Output("f07-cost-d14", "children"),
+    Input("store-selected-comp", "data"),
+    State("store-selected-machine", "data"),
+    State("store-as-of", "data"),
+)
+def show_f07(comp, machine_id, as_of):
+    if comp not in COMPS:
+        raise PreventUpdate
+    as_of = resolve_as_of(as_of)
+    part = next(part for part in part_rows(machine_id, as_of) if part["comp"] == comp)
+    curve = detail_data.cost_curve(comp, part["days"] if part["adopted"] else None, as_of)
+
+    figure = figure_base()
+    figure.add_trace(go.Scatter(
+        x=curve["dates"], y=curve["totals"], mode="lines", line={"color": NAVY, "width": 2.5, "shape": "spline"},
+        fill="tozeroy", fillcolor="rgba(0,53,102,.07)",
+        hovertemplate="%{x} 발주<br>예상 총비용 %{y:,.0f}만원<extra></extra>"))
+    best = curve["best_day"]
+    figure.add_trace(go.Scatter(
+        x=[curve["dates"][best]], y=[curve["totals"][best]], mode="markers+text",
+        marker={"size": 13, "color": YELLOW, "line": {"color": NAVY, "width": 2}},
+        text=[f"최저 {curve['totals'][best]:,.0f}만원"], textposition="top right",
+        textfont={"color": INK, "size": 12}, hoverinfo="skip"))
+    figure.add_vline(x=curve["deadline"], line={"color": DANGER, "width": 1.5, "dash": "dot"},
+                     annotation={"text": "발주 마감", "font": {"color": DANGER, "size": 11}},
+                     annotation_position="top right")
+    figure.update_xaxes(showgrid=False, tickformat="%m/%d", linecolor=GRID)
+    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix="만",
+                        range=[0, max(curve["totals"]) * 1.2])
+
+    warn = []
+    if curve["too_late"]:
+        warn = html.Div(f"조달에 {curve['lead']}일이 걸려 위험 상승({d_label(curve['rise'])}) 전에 받기 어렵습니다. "
+                        "오늘 발주하거나 긴급 대체 업체를 검토하세요.", className="dt-warn")
+    info = html.Div([
+        html.Dl([
+            html.Dt("발주 마감"), html.Dd(f"{curve['deadline']} (D-{curve['deadline_day']})",
+                                        className="is-alert" if curve["deadline_day"] <= 3 else ""),
+            html.Dt("권장 수량"), html.Dd(f"{curve['quantity']}개"),
+            html.Dt("조달 기간"), html.Dd(f"{curve['lead']}일 (준비 포함)"),
+            html.Dt("현재 재고"), html.Dd(f"{curve['stock']}개", className="is-alert" if not curve["stock"] else ""),
+            html.Dt("대응 여유"), html.Dd(f"{curve['slack']}일"),
+        ], className="dt-kv"),
+        warn,
+    ])
+    scenario = curve["scenario"]
+    lowest = min(scenario.values())
+
+    def tile(day):
+        value = scenario[day]
+        return [won(value), html.Small("최저" if value == lowest else f"+{won(value - lowest)}",
+                                       className="is-best" if value == lowest else "")]
+    return figure, info, tile(0), tile(7), tile(14)
+
+
+# ---------------- ⑤ 발주 정보 (장바구니) ----------------
+@callback(
+    Output("store-order-cart", "data", allow_duplicate=True),
+    Input("btn-add-cart", "n_clicks"),
+    Input({"type": "f08-remove", "key": ALL}, "n_clicks"),
+    Input("f08-clear", "n_clicks"),
+    State("store-selected-machine", "data"),
+    State("store-selected-comp", "data"),
+    State("store-order-cart", "data"),
+    prevent_initial_call=True,
+)
+def update_cart(_add, _remove, _clear, machine_id, comp, cart):
+    cart = list(cart or [])
+    trig = ctx.triggered_id
+    if not ctx.triggered or not ctx.triggered[0]["value"]:
+        raise PreventUpdate
+    if trig == "f08-clear":
+        return []
+    if isinstance(trig, dict):
+        return [item for item in cart if item["key"] != trig["key"]]
+    if comp not in COMPS:
+        raise PreventUpdate
+    key = f"{machine_id}-{comp}"
+    if all(item["key"] != key for item in cart):
+        cart.append({"key": key, "machine": machine_id, "comp": comp, "ordered": None})
+    return cart
 
 
 @callback(
     Output("f08-supplier-collapse", "is_open"),
     Input("btn-add-cart", "n_clicks"),
+    Input("dt-cart-btn", "n_clicks"),
     Input("btn-f08-supplier-close", "n_clicks"),
     prevent_initial_call=True,
 )
 def toggle_supplier(*_):
-    return ctx.triggered_id == "btn-add-cart"
+    return ctx.triggered_id != "btn-f08-supplier-close"
+
+
+@callback(
+    Output("f08-supplier-body", "children"),
+    Output("dt-cart-btn", "children"),
+    Input("store-order-cart", "data"),
+    State("store-as-of", "data"),
+)
+def render_cart(cart, as_of):
+    cart = cart or []
+    label = f"발주 정보 {len(cart)}건"
+    if not cart:
+        return ghost("발주 검토에서 '발주 정보 보기'를 누르면 부품별로 쌓입니다", 100), label
+    as_of = resolve_as_of(as_of)
+    cards = []
+    for item in cart:
+        part = next(part for part in part_rows(item["machine"], as_of) if part["comp"] == item["comp"])
+        curve = detail_data.cost_curve(item["comp"], part["days"] if part["adopted"] else None, as_of)
+        rows = []
+        for supplier in detail_data.suppliers_for(item["comp"]):
+            ordered = item.get("ordered") == supplier["id"]
+            price = won(supplier["price"]) + (f" (할증 {won(supplier['surcharge'])})" if supplier["surcharge"] else "")
+            rows.append(html.Tr([
+                html.Td([html.B(supplier["name"]), html.Span(supplier["tag"], className="dt-sup-tag")]),
+                html.Td(f"{supplier['lead']}일"),
+                html.Td(price),
+                html.Td(supplier["contact"]),
+                html.Td(html.Span("발주 완료", className="dt-status dt-status--ok") if ordered else
+                        html.Button("발주 요청", id={"type": "f08-order", "key": f"{item['key']}|{supplier['id']}"},
+                                    className="dt-btn dt-btn--primary dt-btn--sm",
+                                    disabled=bool(item.get("ordered")))),
+            ], className="is-ordered" if ordered else ""))
+        cards.append(html.Div(className="dt-cart-item", children=[
+            html.Div([
+                html.B(f"M-{item['machine']:03d} · {item['comp']}"),
+                html.Span(f"발주 마감 {curve['deadline'][5:].replace('-', '/')} (D-{curve['deadline_day']}) · "
+                          f"권장 {curve['quantity']}개 · 재고 {curve['stock']}개", className="dt-cart-meta"),
+                html.Button("✕", id={"type": "f08-remove", "key": item["key"]}, className="dt-icon-btn",
+                            title="목록에서 빼기", **{"aria-label": "목록에서 빼기"}),
+            ], className="dt-cart-head"),
+            html.Div(html.Table([html.Thead(html.Tr([html.Th(name) for name in ("업체", "납기", "단가", "연락처", "")])),
+                                 html.Tbody(rows)], className="dt-table"), className="table-scroll"),
+        ]))
+    return html.Div(cards, className="dt-cart"), label
+
+
+# TODO(기능): 실제 발주 시스템과 연결. 지금은 '발주 요청'을 누르면 세션에 기록만 한다.
+@callback(
+    Output("store-order-log", "data"),
+    Output("store-order-cart", "data", allow_duplicate=True),
+    Output("f08-last-order", "data"),
+    Input({"type": "f08-order", "key": ALL}, "n_clicks"),
+    State("store-order-log", "data"),
+    State("store-order-cart", "data"),
+    State("store-as-of", "data"),
+    prevent_initial_call=True,
+)
+def place_order(_clicks, orders, cart, as_of):
+    if not ctx.triggered or not ctx.triggered[0]["value"] or not isinstance(ctx.triggered_id, dict):
+        raise PreventUpdate
+    item_key, supplier = ctx.triggered_id["key"].split("|")
+    item = next((item for item in cart or [] if item["key"] == item_key), None)
+    if item is None:
+        raise PreventUpdate
+    cart = [{**row, "ordered": supplier} if row["key"] == item_key else row for row in cart]
+    order = {"machine": item["machine"], "component": item["comp"], "supplier": supplier,
+             "date": valid_as_of(as_of)}
+    return [*(orders or []), order], cart, order
+
+
+@callback(
+    Output("f08-history-table", "children"),
+    Input("detail-machine-select", "value"),
+    State("store-as-of", "data"),
+)
+def show_history(machine_id, as_of):
+    """교체 이력: 부품별 타임라인(원본 정비 기록) + 최근 기록 표."""
+    history = detail_data.replacement_history(machine_id, resolve_as_of(as_of))
+    rows = history["rows"]
+    figure = figure_base()
+    for failure, name, color, symbol in ((False, "예방 교체", NAVY, "circle"), (True, "고장 후 교체", DANGER, "x")):
+        part = [row for row in rows if row["failure"] == failure]
+        figure.add_trace(go.Scatter(
+            x=[row["date"] for row in part], y=[row["comp"] for row in part], mode="markers", name=name,
+            marker={"size": 13, "color": color, "symbol": symbol, "line": {"color": "white", "width": 2}},
+            customdata=[[row["cost"]] for row in part],
+            hovertemplate=f"%{{x}} · %{{y}}<br>{name} · %{{customdata[0]:,}}만원<extra></extra>"))
+    figure.update_layout(showlegend=True, legend={"orientation": "h", "x": 1, "xanchor": "right", "y": 1.18,
+                                                  "font": {"color": INK}},
+                         margin={"l": 8, "r": 12, "t": 28, "b": 8})
+    figure.update_xaxes(range=[history["start"], history["end"]], showgrid=True, gridcolor=GRID,
+                        tickformat="%y.%m", linecolor=GRID)
+    figure.update_yaxes(categoryorder="array", categoryarray=list(reversed(COMPS)), gridcolor=GRID)
+    table = html.Table([
+        html.Thead(html.Tr([html.Th(name) for name in ("교체일", "부품", "구분", "담당자", "비용")])),
+        html.Tbody([html.Tr([
+            html.Td(row["date"]), html.Td(row["comp"]),
+            html.Td(html.Span("고장 후 교체" if row["failure"] else "예방 교체",
+                              className="dt-status dt-status--now" if row["failure"] else "dt-status dt-status--ok")),
+            html.Td(row["worker"]), html.Td(won(row["cost"])),
+        ]) for row in rows[:8]]),
+    ], className="dt-table")
+    failures = sum(row["failure"] for row in rows)
+    return html.Div(className="dt-history", children=[
+        html.Div([
+            html.H3(f"최근 12개월 교체 {len(rows)}건 · 고장 후 교체 {failures}건"),
+            dcc.Graph(figure=figure, config={"displayModeBar": False}, responsive=True,
+                      style={"height": "clamp(200px,24vh,260px)"}),
+        ], className="dt-f07-block"),
+        html.Div([html.H3("최근 기록"), html.Div(table, className="table-scroll")], className="dt-f07-block"),
+    ])
 
 
 @callback(
@@ -634,53 +888,32 @@ def top5_matches(machine_id, comp, dismissed, as_of=UI_AS_OF):
             and (comp is None or item.get("component") in (None, comp))]
 
 
-# TODO(기능): 실제 '발주' 버튼이 생기면 아래 세 콜백의 Input을 그 버튼으로 바꾼다. 지금은 '발주 목록에 담기'.
-@callback(
-    Output("store-order-log", "data"),
-    Input("btn-add-cart", "n_clicks"),
-    State("store-selected-machine", "data"),
-    State("store-selected-comp", "data"),
-    State("store-order-log", "data"),
-    State("store-as-of", "data"),
-    prevent_initial_call=True,
-)
-def log_order(n_clicks, machine_id, comp, orders, as_of):
-    if not n_clicks:
-        raise PreventUpdate
-    return [*(orders or []), {"machine": machine_id, "component": comp, "date": valid_as_of(as_of)}]
-
-
-# 발주한 설비가 메인 TOP5에 있으면 삭제할지 묻는다.
 @callback(
     Output("f07-confirm-dismiss", "displayed"),
     Output("f07-confirm-dismiss", "message"),
-    Input("btn-add-cart", "n_clicks"),
-    State("store-selected-machine", "data"),
-    State("store-selected-comp", "data"),
+    Input("f08-last-order", "data"),
     State("store-todo-dismissed", "data"),
     State("store-as-of", "data"),
     prevent_initial_call=True,
 )
-def ask_dismiss(n_clicks, machine_id, comp, dismissed, as_of):
-    matches = top5_matches(machine_id, comp, dismissed, as_of)
-    if not n_clicks or not matches:
+def ask_dismiss(order, dismissed, as_of):
+    if not order or not top5_matches(order["machine"], order["component"], dismissed, as_of):
         raise PreventUpdate
-    label = f"M-{machine_id:03d}" + (f" {comp}" if comp else "")
-    return True, (f"{label}이(가) 메인 화면 '우선 확인 설비 TOP5'에 있습니다.\n"
+    label = f"M-{order['machine']:03d} {order['component']}"
+    return True, (f"{label} 발주를 요청했습니다. 이 항목이 메인 화면 '우선 확인 설비 TOP5'에 있습니다.\n"
                   "우선순위에서 삭제하시겠습니까?")
 
 
 @callback(
     Output("store-todo-dismissed", "data", allow_duplicate=True),
     Input("f07-confirm-dismiss", "submit_n_clicks"),
-    State("store-selected-machine", "data"),
-    State("store-selected-comp", "data"),
+    State("f08-last-order", "data"),
     State("store-todo-dismissed", "data"),
     State("store-as-of", "data"),
     prevent_initial_call=True,
 )
-def dismiss_ordered(submitted, machine_id, comp, dismissed, as_of):
-    matches = top5_matches(machine_id, comp, dismissed, as_of)
+def dismiss_ordered(submitted, order, dismissed, as_of):
+    matches = top5_matches(order["machine"], order["component"], dismissed, as_of) if order else []
     if not submitted or not matches:
         raise PreventUpdate
     return list(dict.fromkeys([*(dismissed or []), *(item["key"] for item in matches)]))

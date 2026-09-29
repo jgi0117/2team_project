@@ -32,7 +32,7 @@ def date_setting(as_of):
             initial_visible_month=as_of, display_format="YYYY-MM-DD", first_day_of_week=0,
             clearable=False, with_portal=True, className="sb-date",
         ),
-        html.Button("처음 기준일로", id="sb-date-reset", className="sb-date-reset"),
+        html.Button("오늘 날짜로", id="sb-date-reset", className="sb-date-reset"),
     ], className="sb-date-box")
 
 

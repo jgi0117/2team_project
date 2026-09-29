@@ -184,33 +184,57 @@ F02_STOCK = [
 F02_IS_NEW = True
 STATUS_LABEL = {"now": "즉시", "watch": "주의", "ok": "관찰"}
 
-# 대응 성과: 월별 (누적 아님). 위험 건은 '발주 마감일이 속한 달'로 묶는다.
+# 과거 대응률: 월별 (누적 아님). 위험 건은 '발주 마감일이 속한 달'로 묶는다.
 #   due: 그 달에 발주 마감이 도래한 위험 건수
 #   on_time: 그중 마감 전에 발주한 건수 → 적시 대응률 = on_time / due
-#   saved: 제때 발주해서 아낀 비용(만원) = 고장 시 예상 손실 − 계획 발주 비용
-# 마지막 달은 진행 중(기준일 이후 마감 건은 아직 판정하지 않음).
-HISTORY = [
-    {"due": 15, "on_time": 9, "saved": 2100},
-    {"due": 18, "on_time": 12, "saved": 2650},
-    {"due": 14, "on_time": 11, "saved": 2400},
-    {"due": 20, "on_time": 17, "saved": 3350},
-    {"due": 22, "on_time": 19, "saved": 3900},
-    {"due": 9, "on_time": 7, "saved": 1450},
-]
+#   saved: 제때 발주해서 아낀 비용(만원) = Σ(고장 후 대응 비용 − 계획 대응 비용), 계산식은 detail_data.saving
+# 기준일이 속한 달은 진행 중(기준일 이후 마감 건은 아직 판정하지 않음).
+HISTORY_MONTHS = {  # (연, 월): (due, on_time, saved)
+    (2015, 1): (12, 6, 1650), (2015, 2): (14, 8, 1980), (2015, 3): (13, 8, 1890),
+    (2015, 4): (16, 10, 2240), (2015, 5): (15, 9, 2100), (2015, 6): (18, 12, 2650),
+    (2015, 7): (14, 11, 2400), (2015, 8): (20, 17, 3350), (2015, 9): (22, 19, 3900),
+    (2015, 10): (21, 16, 3300), (2015, 11): (19, 16, 3150), (2015, 12): (17, 15, 2980),
+}
+HISTORY_FIRST = (2015, 1)
 DEFAULT_ORDER_SAVING = 500  # 할 일 목록에 없는 발주 1건의 절감액 가정 (만원)
 
 
-def history(as_of, orders=()):
-    """기준일이 속한 달까지 최근 6개월. 이번 달에는 세션에서 넣은 발주를 더한다."""
-    year, month = int(as_of[:4]), int(as_of[5:7])
+def month_key(value):
+    return int(value[:4]), int(value[5:7])
+
+
+def available_months(as_of):
+    """선택 가능한 달: 데이터 첫 달 ~ 기준일이 속한 달 ('YYYY-MM')."""
+    end = month_key(as_of)
+    months, (y, m) = [], HISTORY_FIRST
+    while (y, m) <= end:
+        months.append(f"{y}-{m:02d}")
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    return months
+
+
+def history(as_of, orders=(), start=None, end=None):
+    """start~end 달('YYYY-MM')의 월별 기록. 기준일이 속한 달은 진행 중이며 세션 발주를 더한다."""
+    months = available_months(as_of)
+    end = end if end in months else months[-1]
+    start = start if start in months else months[max(0, months.index(end) - 5)]
+    if start > end:
+        start, end = end, start
+    current = months[-1]
     rows = []
-    for back, row in zip(range(len(HISTORY) - 1, -1, -1), HISTORY):
-        y, m = divmod(year * 12 + month - 1 - back, 12)
-        rows.append({**row, "month": f"{m + 1}월", "year": y, "current": back == 0})
+    for month in months[months.index(start):months.index(end) + 1]:
+        due, on_time, saved = HISTORY_MONTHS.get(month_key(month), (15, 10, 2000))
+        if month == current:   # 진행 중인 달은 기준일까지 마감된 건만 (일수 비율로 축소)
+            share = min(int(as_of[8:10]) / 30, 1)
+            due, on_time, saved = max(round(due * share), 1), round(on_time * share), round(saved * share)
+        rows.append({"month": f"{int(month[5:])}월", "key": month, "due": due, "on_time": on_time,
+                     "saved": saved, "current": month == current})
     items = {(item["machine"], item.get("component")): item for item in todo_items(as_of)}
-    for order in orders or ():
-        # 발주한 건은 이번 달 마감 도래 건 중 하나로 보고 '제때 대응'으로 옮긴다.
-        item = items.get((order.get("machine"), order.get("component")))
-        rows[-1]["on_time"] = min(rows[-1]["due"], rows[-1]["on_time"] + 1)
-        rows[-1]["saved"] += item["loss"] if item and "loss" in item else DEFAULT_ORDER_SAVING
+    if rows and rows[-1]["current"]:
+        for order in orders or ():
+            # 발주한 건은 이번 달 마감 도래 건 중 하나로 보고 '제때 대응'으로 옮긴다.
+            item = items.get((order.get("machine"), order.get("component")))
+            rows[-1]["due"] = max(rows[-1]["due"], rows[-1]["on_time"] + 1)
+            rows[-1]["on_time"] += 1
+            rows[-1]["saved"] += item["loss"] if item and "loss" in item else DEFAULT_ORDER_SAVING
     return rows

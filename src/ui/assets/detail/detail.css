@@ -1,12 +1,14 @@
 /* ============ 설비 상세 ============
-   메인 화면과 같은 규칙: 섹션은 배경 위 제목+여백으로 나누고, 카드는 꼭 필요한 블록에만.
+   캔버스: 설비 그림이 배경에 은은하게 깔리고, 필요한 정보가 그 위에 떠 있다.
+   시선 흐름: ① 좌상단 설비·상태 → ② 도면 위 부품 → ③ 좌하단 AI 진단 → ④ 우하단 센서 미리보기 → 아래 섹션.
+   아래 섹션은 메인과 같은 규칙(제목 막대 + 가는 구분선), 흰 판은 섹션당 하나.
    모든 규칙은 .page-detail 안으로 한정 (팝오버는 body에 붙어 렌더링되므로 맨 아래 따로).
-   너비 기준: 1200px 이하 도면/센서 세로 배치 · 992px · 576px */
+   너비 기준: 1200px 이하 캔버스를 세로 흐름으로 · 992px · 576px */
 
 .page-detail{
     display:flex;
     flex-direction:column;
-    gap:clamp(16px,1.4vw,24px);
+    gap:clamp(20px,1.8vw,32px);
     min-width:0;
     min-height:100vh;
     padding:clamp(16px,1.6vw,28px);
@@ -15,24 +17,8 @@
 }
 .page-detail > *{ min-width:0; }
 .page-detail h1, .page-detail h2, .page-detail h3{ margin:0; }
-
-/* ============ 머리 ============ */
-.page-detail .hdr{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
-.page-detail .hdr h1{ display:flex; align-items:baseline; gap:10px; }
-.page-detail .hdr-title{ color:var(--ui-text-muted); font-size:clamp(16px,1.1vw,20px); font-weight:800; }
-.page-detail .hdr-machine{ color:var(--ui-ink); font-size:clamp(24px,1.8vw,32px); font-weight:800; letter-spacing:-.02em; }
-.page-detail .detail-machine-select{ width:150px; font-size:14px; }
-.page-detail .hdr-right{ display:flex; align-items:center; gap:10px; margin-left:auto; }
-.page-detail .hdr-asof{
-    padding:4px 12px;
-    border:1px solid var(--ui-border);
-    border-radius:999px;
-    background:var(--ui-surface);
-    color:var(--ui-text-muted);
-    font-size:13px;
-    font-weight:700;
-}
 .page-detail .detail-frame-note{ margin:0; color:var(--ui-text-subtle); font-size:12px; }
+.page-detail .table-scroll{ overflow-x:auto; }
 
 /* 버튼 */
 .page-detail .dt-btn{
@@ -43,33 +29,25 @@
     color:var(--ui-text);
     font-size:13px;
     font-weight:800;
+    white-space:nowrap;
     cursor:pointer;
 }
 .page-detail .dt-btn:hover{ background:var(--ui-surface-muted); }
 .page-detail .dt-btn--primary{ border-color:var(--ui-navy-700); background:var(--ui-navy-700); color:#fff; }
 .page-detail .dt-btn--primary:hover{ background:var(--ui-navy); }
-
-/* 섹션 제목 */
-.page-detail .dt-section-head{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-bottom:10px; }
-.page-detail .dt-section-head h2{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    color:var(--ui-ink);
-    font-size:clamp(17px,1.15vw,21px);
-    font-weight:800;
-    letter-spacing:-.02em;
+.page-detail .dt-btn--sm{ padding:5px 12px; font-size:12px; }
+.page-detail .dt-btn:disabled{ opacity:.4; cursor:default; }
+.page-detail .dt-icon-btn{
+    width:28px;
+    height:28px;
+    margin-left:auto;
+    border:1px solid var(--ui-border);
+    border-radius:50%;
+    background:var(--ui-surface);
+    color:var(--ui-text-muted);
+    cursor:pointer;
 }
-.page-detail .dt-tag{
-    padding:2px 7px;
-    border-radius:4px;
-    background:var(--ui-navy-700);
-    color:#fff;
-    font-size:11px;
-    font-weight:800;
-}
-.page-detail .dt-head-hint{ color:var(--ui-text-subtle); font-size:12px; font-weight:700; }
-.page-detail .dt-section-head .btns{ display:flex; gap:6px; margin-left:auto; }
+.page-detail .dt-icon-btn:hover{ background:var(--ui-danger-tint); color:var(--ui-danger); }
 
 /* 판정 배지: 즉시 / 주의 / 관찰 / 정상 (메인과 같은 색 규칙) */
 .page-detail .dt-status{
@@ -89,124 +67,108 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    height:100%;
     min-height:80px;
     padding:6px;
     border:1px dashed #c3ccd6;
     border-radius:8px;
     background:#fafbfc;
     color:var(--ui-text-subtle);
-    font-size:12px;
+    font-size:13px;
     text-align:center;
 }
-.page-detail .table-scroll{ overflow-x:auto; }
 
-/* ============ F05 종합 진단 띠 ============ */
-.page-detail .dt-diagnosis{
-    display:grid;
-    grid-template-columns:minmax(220px,.9fr) minmax(200px,.7fr) minmax(0,2.4fr);
-    border-radius:var(--ui-radius-lg);
-    background:linear-gradient(100deg, var(--ui-ink) 0%, var(--ui-navy) 45%, var(--ui-navy-700) 100%);
-    color:#fff;
-    overflow:hidden;
-}
-.page-detail .dt-diagnosis > div{ padding:clamp(14px,1.1vw,20px) clamp(16px,1.3vw,24px); min-width:0; }
-.page-detail .dt-diagnosis > div + div{ border-left:1px solid rgba(255,255,255,.12); }
-.page-detail .dt-diag-label{ display:block; margin-bottom:6px; color:rgba(255,255,255,.65); font-size:12px; font-weight:700; }
-.page-detail .summary-days{ color:var(--ui-yellow-400); font-size:clamp(30px,2.4vw,42px); font-weight:800; line-height:1; }
-.page-detail .summary-sub{ margin-top:6px; color:rgba(255,255,255,.72); font-size:12px; line-height:1.4; }
-.page-detail .dt-diag-value{ display:flex; align-items:baseline; gap:4px; }
-.page-detail .dt-diag-value strong{ color:#fff; font-size:clamp(28px,2.2vw,38px); font-weight:800; line-height:1; }
-.page-detail .dt-diag-value span{ color:rgba(255,255,255,.7); font-size:14px; font-weight:700; }
-.page-detail .dt-ai-badge{
-    padding:3px 9px;
-    border-radius:999px;
-    background:var(--ui-yellow);
-    color:var(--ui-ink);
-    font-size:11px;
-    font-weight:800;
-}
-.page-detail .dt-diag-text{ font-size:clamp(13px,.9vw,15px); font-weight:700; line-height:1.6; overflow-wrap:anywhere; }
-
-/* ============ 도면 | 센서 ============ */
-.page-detail .stage{
-    display:grid;
-    grid-template-columns:minmax(0,5fr) minmax(0,7fr);
-    gap:clamp(18px,1.6vw,28px);
-    align-items:start;
-}
-.page-detail .dt-stage-panel, .page-detail .dt-f06{ min-width:0; }
-
-.page-detail .stage-canvas{
+/* ============ 캔버스 ============ */
+.page-detail .dt-canvas{
     position:relative;
-    width:100%;
-    aspect-ratio:16/10;             /* 폭이 줄면 높이도 같이 줄어듦 */
-    border:1px solid var(--ui-border);
-    border-radius:var(--ui-radius-lg);
-    background:linear-gradient(180deg, var(--ui-surface) 0%, var(--ui-surface-muted) 100%);
-    overflow:hidden;
+    height:clamp(560px,66vh,720px);
 }
-/* 설비 그림은 은은한 배경으로만 */
-.page-detail .stage-bg{ position:absolute; inset:4%; display:flex; align-items:center; justify-content:center; }
+/* 배경 점 무늬: 가장자리로 갈수록 사라져 페이지에 녹아든다 */
+.page-detail .dt-canvas::before{
+    content:"";
+    position:absolute;
+    inset:-12px;
+    z-index:0;
+    background-image:radial-gradient(circle, #cdd6e2 1.3px, transparent 1.5px);
+    background-size:16px 16px;
+    -webkit-mask-image:radial-gradient(ellipse 70% 75% at 62% 50%, #000 40%, transparent 100%);
+            mask-image:radial-gradient(ellipse 70% 75% at 62% 50%, #000 40%, transparent 100%);
+    pointer-events:none;
+}
+.page-detail .dt-canvas > *{ z-index:1; }
+
+/* 설비 그림 (배경) + 말풍선 */
+.page-detail .dt-drawing{
+    position:absolute;
+    top:56px;
+    right:0;
+    width:62%;
+    aspect-ratio:1108/621;
+    max-height:calc(100% - 56px);
+}
+.page-detail .stage-bg{ position:absolute; inset:0; }
 .page-detail .stage-bg img{
     width:100%;
     height:100%;
     object-fit:contain;
-    opacity:.2;
-    filter:grayscale(1) contrast(.85);
+    opacity:.34;
+    filter:grayscale(1) contrast(.9);
+    mix-blend-mode:multiply;
     pointer-events:none;
 }
+.page-detail .dt-drawing.is-dimmed .hotspot,
+.page-detail .dt-drawing.is-dimmed .hotspot-dot{ opacity:0; pointer-events:none; }
 
-/* 부품 말풍선: 위치(top/left)는 page.py의 POS, 색은 채택 여부 클래스 */
+/* 부품 말풍선: 흰 말풍선 + 판정 색 막대 (레퍼런스의 지역 라벨처럼) */
 .page-detail .hotspot{
-    --hs-color:var(--ui-navy-700);
+    --hs-color:var(--ui-navy-soft);
     position:absolute;
     z-index:5;
     display:flex;
     flex-direction:column;
     gap:3px;
     width:max-content;
-    min-width:clamp(96px,8vw,128px);
-    max-width:40%;
-    padding:8px 10px 9px;
-    border:0;
-    border-top:3px solid var(--hs-color);
+    min-width:clamp(104px,8vw,132px);
+    padding:8px 12px 9px 14px;
     border-radius:10px;
     background:var(--ui-surface);
-    box-shadow:0 4px 14px rgba(0,8,20,.14);
+    box-shadow:0 6px 18px rgba(0,8,20,.14);
     font-size:clamp(11px,.8vw,13px);
     line-height:1.25;
-    transform:translate(-50%,-100%) translateY(-8px);
+    transform:translate(-50%,-100%) translateY(-10px);
     cursor:pointer;
-    transition:box-shadow .15s ease, transform .15s ease;
+    transition:box-shadow .15s ease, transform .15s ease, opacity .2s ease;
 }
-.page-detail .hotspot.hotspot--below{ transform:translate(-50%,0) translateY(12px); }
-.page-detail .hotspot.hotspot--below:hover{ transform:translate(-50%,0) translateY(10px); }
-.page-detail .hotspot.hotspot--right{ transform:translate(14px,-50%); }
-.page-detail .hotspot.hotspot--right:hover{ transform:translate(16px,-50%); }
-.page-detail .hotspot--off{ --hs-color:var(--ui-off); background:rgba(255,255,255,.9); }
-.page-detail .hotspot:hover{ box-shadow:0 8px 22px rgba(0,8,20,.22); transform:translate(-50%,-100%) translateY(-10px); }
+.page-detail .hotspot::before{
+    content:"";
+    position:absolute;
+    top:10px;
+    bottom:10px;
+    left:6px;
+    width:3px;
+    border-radius:2px;
+    background:var(--hs-color);
+}
+.page-detail .hotspot:has(.dt-status--now){ --hs-color:var(--ui-danger); }
+.page-detail .hotspot:has(.dt-status--watch){ --hs-color:var(--ui-yellow); }
+.page-detail .hotspot:has(.dt-status--ok){ --hs-color:var(--ui-navy-700); }
+.page-detail .hotspot--off{ --hs-color:var(--ui-off); background:rgba(255,255,255,.85); }
+.page-detail .hotspot:hover{ box-shadow:0 10px 26px rgba(0,8,20,.22); transform:translate(-50%,-100%) translateY(-12px); }
+.page-detail .hotspot.hotspot--right{ transform:translate(16px,-50%); }
+.page-detail .hotspot.hotspot--right:hover{ transform:translate(18px,-50%); }
+.page-detail .hotspot.hotspot--below{ transform:translate(-50%,0) translateY(14px); }
+.page-detail .hotspot.hotspot--below:hover{ transform:translate(-50%,0) translateY(12px); }
 .page-detail .hotspot:focus-visible{ outline:3px solid var(--ui-yellow); outline-offset:2px; }
 .page-detail .hs-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
-.page-detail .hs-name{ color:var(--ui-ink); font-weight:800; }
-.page-detail .hs-horizon{ color:var(--ui-text-subtle); font-size:.9em; }
+.page-detail .hs-name{ color:var(--ui-text-muted); font-weight:800; }
+.page-detail .hs-horizon{ color:var(--ui-text-subtle); font-size:.88em; }
 .page-detail .hotspot-prob{ display:flex; align-items:center; gap:6px; }
-.page-detail .hs-dday{ color:var(--ui-ink); font-size:clamp(16px,1.3vw,22px); font-weight:800; }
-.page-detail .hs-dday.is-off{ color:var(--ui-off); font-size:clamp(13px,1vw,15px); }
-.page-detail .hs-note{ color:var(--ui-off); font-size:10px; }
+.page-detail .hs-dday{ color:var(--ui-ink); font-size:clamp(17px,1.3vw,22px); font-weight:800; }
+.page-detail .hs-dday.is-off{ color:var(--ui-off); font-size:clamp(14px,1vw,16px); }
+.page-detail .hs-note{ color:var(--ui-off); font-size:11px; }
 .page-detail .hs-note:empty{ display:none; }
-.page-detail .hs-order{
-    align-self:flex-start;
-    margin-top:3px;
-    padding:3px 10px;
-    border-radius:999px;
-    background:var(--ui-navy-700);
-    color:#fff;
-    font-size:11px;
-    font-weight:800;
-}
-.page-detail .hotspot--off .hs-order{ background:var(--ui-surface-muted); color:var(--ui-text-muted); }
-.page-detail .hotspot:hover .hs-order{ background:var(--ui-yellow); color:var(--ui-ink); }
+.page-detail .hs-order{ margin-top:2px; color:var(--ui-navy-700); font-size:12px; font-weight:800; }
+.page-detail .hotspot--off .hs-order{ color:var(--ui-text-muted); }
+.page-detail .hotspot:hover .hs-order{ text-decoration:underline; }
 .page-detail .hotspot-dot{
     position:absolute;
     z-index:4;
@@ -215,13 +177,139 @@
     border:3px solid var(--ui-surface);
     border-radius:50%;
     background:var(--ui-navy-700);
-    box-shadow:0 0 0 3px rgba(0,53,102,.25);
+    box-shadow:0 0 0 4px rgba(0,53,102,.18);
     transform:translate(-50%,-50%);
+    transition:opacity .2s ease;
 }
 .page-detail .hotspot-dot.hotspot--off{ background:var(--ui-off); box-shadow:none; }
 
-/* 부품 현황 표 */
-.page-detail .dt-part-table{ margin-top:12px; overflow-x:auto; border:1px solid var(--ui-border); border-radius:var(--ui-radius-lg); background:var(--ui-surface); }
+/* 보기 전환 (부품 위치 / 4개 부품 기간별 위험) */
+.page-detail .dt-view-switch{ position:absolute; top:0; left:38%; right:0; display:flex; justify-content:center; pointer-events:none; }
+.page-detail .dt-seg{
+    display:inline-flex;
+    padding:4px;
+    border-radius:999px;
+    background:var(--ui-surface);
+    box-shadow:0 4px 14px rgba(0,8,20,.1);
+    pointer-events:auto;
+}
+.page-detail .dt-seg label{ margin:0; padding:7px 16px; border-radius:999px; color:var(--ui-text-muted); font-size:13px; font-weight:800; cursor:pointer; }
+.page-detail .dt-seg input{ display:none; }
+.page-detail .dt-seg label:has(input:checked){ background:var(--ui-navy-700); color:#fff; }
+
+/* 4개 부품 기간별 위험 패널 (도면 자리에 겹쳐 뜸) */
+.page-detail .dt-horizon-panel{
+    position:absolute;
+    top:64px;
+    right:0;
+    width:62%;
+    padding:18px 20px;
+    border-radius:16px;
+    background:rgba(255,255,255,.96);
+    box-shadow:0 14px 34px rgba(0,29,61,.14);
+}
+.page-detail .dt-horizon-panel.is-hidden{ display:none; }
+.page-detail .dt-horizon-head{ display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; margin-bottom:12px; }
+.page-detail .dt-horizon-head h3{ font-size:16px; font-weight:800; }
+.page-detail .dt-panel-hint{ color:var(--ui-text-subtle); font-size:12px; }
+.page-detail .dt-heat-table td, .page-detail .dt-heat-table th{ text-align:center; }
+.page-detail .dt-heat-table td:first-child, .page-detail .dt-heat-table th:first-child{ text-align:left; }
+.page-detail .dt-heat{ font-variant-numeric:tabular-nums; }
+.page-detail .dt-heat--0{ background:#f4f7fb; }
+.page-detail .dt-heat--1{ background:#dfe8f3; }
+.page-detail .dt-heat--2{ background:#b9cbe0; }
+.page-detail .dt-heat--3{ background:#6f8fb5; color:#fff; }
+.page-detail .dt-heat--4{ background:var(--ui-navy-700); color:#fff; font-weight:800; }
+.page-detail .dt-heat.is-decision{ box-shadow:inset 0 0 0 3px var(--ui-yellow); font-weight:800; }
+.page-detail .dt-heat-table tr.is-off td{ color:var(--ui-text-subtle); }
+
+/* ① 좌상단: 설비와 상태 (카드 없이 배경 위에) */
+.page-detail .dt-head{ position:absolute; top:0; left:0; width:36%; }
+.page-detail .dt-head-top{ display:flex; align-items:center; gap:10px; }
+.page-detail .hdr-title{ color:var(--ui-text-muted); font-size:15px; font-weight:800; }
+.page-detail .detail-machine-select{ width:140px; font-size:14px; }
+.page-detail .hdr-machine{ margin:6px 0 14px; color:var(--ui-ink); font-size:clamp(40px,3.2vw,58px); font-weight:800; line-height:1; letter-spacing:-.03em; }
+.page-detail .dt-kicker{ display:block; color:var(--ui-text-muted); font-size:13px; font-weight:800; }
+.page-detail .summary-days{
+    display:inline-block;
+    margin-top:2px;
+    color:var(--ui-navy-700);
+    font-size:clamp(44px,3.6vw,64px);
+    font-weight:800;
+    line-height:1.05;
+    background:linear-gradient(transparent 64%, var(--ui-yellow) 64%, var(--ui-yellow) 92%, transparent 92%);
+}
+.page-detail .summary-sub{ margin-top:6px; color:var(--ui-text-muted); font-size:14px; font-weight:700; }
+.page-detail .dt-mini-row{ display:flex; gap:24px; margin-top:18px; }
+.page-detail .dt-mini{ padding-left:12px; border-left:3px solid var(--ui-navy-soft); }
+.page-detail .dt-mini span{ color:var(--ui-text-muted); font-size:12px; font-weight:700; }
+.page-detail .dt-mini-value{ display:flex; align-items:baseline; gap:3px; color:var(--ui-ink); font-size:18px; font-weight:800; }
+.page-detail .dt-mini-value strong{ font-size:24px; }
+.page-detail .dt-mini-value span{ font-size:13px; }
+
+/* 우상단 행동 버튼 */
+.page-detail .dt-actions{ position:absolute; top:0; right:0; display:flex; gap:8px; }
+
+/* ③ 좌하단: AI 종합 진단 (떠 있는 판) */
+.page-detail .dt-ai{
+    position:absolute;
+    bottom:0;
+    left:0;
+    width:min(36%,560px);
+    padding:16px 18px;
+    border-radius:16px;
+    background:rgba(255,255,255,.94);
+    box-shadow:0 12px 30px rgba(0,29,61,.12);
+}
+.page-detail .dt-ai-badge{
+    display:inline-block;
+    margin-bottom:8px;
+    padding:3px 10px;
+    border-radius:999px;
+    background:var(--ui-navy);
+    color:var(--ui-yellow-400);
+    font-size:12px;
+    font-weight:800;
+}
+.page-detail .dt-ai-text{ color:var(--ui-text); font-size:14px; font-weight:700; line-height:1.6; overflow-wrap:anywhere; }
+
+/* ④ 우하단: 센서 이상 미리보기 */
+.page-detail .dt-trend{
+    position:absolute;
+    right:0;
+    bottom:0;
+    width:clamp(220px,15vw,280px);
+    padding:12px 14px 8px;
+    border-radius:14px;
+    background:rgba(255,255,255,.94);
+    box-shadow:0 10px 26px rgba(0,29,61,.12);
+    color:inherit;
+    text-decoration:none;
+}
+.page-detail .dt-trend:hover{ box-shadow:0 14px 30px rgba(0,29,61,.2); }
+.page-detail .dt-trend-head{ display:flex; justify-content:space-between; color:var(--ui-text); font-size:13px; font-weight:800; }
+.page-detail .dt-trend-link{ color:var(--ui-navy-700); font-size:12px; }
+
+/* ============ 아래 섹션 (메인과 같은 구획 규칙) ============ */
+.page-detail .dt-band{ position:relative; padding-top:clamp(16px,1.3vw,22px); border-top:1px solid var(--ui-border); }
+.page-detail .dt-anchor{ position:absolute; top:-16px; }
+.page-detail .dt-section-head{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-bottom:12px; }
+.page-detail .dt-section-head h2{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--ui-ink);
+    font-size:clamp(17px,1.15vw,21px);
+    font-weight:800;
+    letter-spacing:-.02em;
+}
+.page-detail .dt-section-head h2::before{ content:""; width:4px; height:1em; border-radius:2px; background:var(--ui-navy-700); }
+.page-detail .dt-section-head .btns{ display:flex; gap:6px; margin-left:auto; }
+.page-detail .dt-select-row{ display:flex; align-items:center; gap:8px; margin-left:auto; }
+.page-detail .dt-select-label{ margin:0; color:var(--ui-ink); font-size:13px; font-weight:800; }
+.page-detail .f06-sensor-select{ width:170px; font-size:13px; }
+
+/* 공통 표 */
 .page-detail .dt-table{ width:100%; border-collapse:collapse; font-size:14px; }
 .page-detail .dt-table th{
     padding:9px 12px;
@@ -233,8 +321,6 @@
     white-space:nowrap;
 }
 .page-detail .dt-table td{ padding:10px 12px; border-top:1px solid var(--ui-border-soft); white-space:nowrap; }
-.page-detail .dt-part-row.is-now td{ background:var(--ui-yellow-tint); }
-.page-detail .dt-part-row.is-off td{ color:var(--ui-text-subtle); }
 .page-detail .dt-row-action{
     padding:0;
     border:0;
@@ -246,13 +332,18 @@
 }
 .page-detail .dt-row-action:hover{ text-decoration:underline; }
 
-/* ============ F06 시간별 센서 이상 ============ */
-.page-detail .dt-select-row{ display:flex; align-items:center; gap:8px; margin-left:auto; }
-.page-detail .dt-select-label{ margin:0; color:var(--ui-ink); font-size:13px; font-weight:800; }
-.page-detail .f06-sensor-select{ width:170px; font-size:13px; }
-
-/* 상태 요약 띠 */
-.page-detail .f06-alert-summary{ margin-bottom:12px; }
+/* ④ 센서 이상 근거: 그래프(넓게) | 점수·판정 */
+.page-detail .dt-f06-grid{ display:grid; grid-template-columns:minmax(0,2.3fr) minmax(300px,1fr); gap:16px; align-items:start; }
+.page-detail .dt-f06-main, .page-detail .dt-f06-side{
+    min-width:0;
+    padding:clamp(14px,1.1vw,18px);
+    border:1px solid var(--ui-border);
+    border-radius:16px;
+    background:var(--ui-surface);
+}
+.page-detail .dt-side-block + .dt-side-block{ margin-top:16px; padding-top:16px; border-top:1px solid var(--ui-border-soft); }
+.page-detail .dt-side-block h3{ margin-bottom:10px; color:var(--ui-text); font-size:14px; font-weight:800; }
+.page-detail .f06-alert-summary{ margin-bottom:10px; }
 .page-detail .f06-summary-alert, .page-detail .f06-summary-ok{
     display:flex;
     align-items:center;
@@ -263,22 +354,10 @@
     font-weight:800;
 }
 .page-detail .f06-summary-alert{ background:var(--ui-danger-tint); color:var(--ui-danger); }
-.page-detail .f06-summary-alert::before{ content:"!"; display:grid; place-items:center; width:20px; height:20px; border-radius:50%; background:var(--ui-danger); color:#fff; font-size:12px; }
+.page-detail .f06-summary-alert::before{ content:"!"; display:grid; place-items:center; flex:none; width:20px; height:20px; border-radius:50%; background:var(--ui-danger); color:#fff; font-size:12px; }
 .page-detail .f06-summary-ok{ background:var(--ui-navy-tint); color:var(--ui-navy-700); }
-.page-detail .f06-summary-ok::before{ content:"✓"; display:grid; place-items:center; width:20px; height:20px; border-radius:50%; background:var(--ui-navy-700); color:#fff; font-size:11px; }
-
-/* 구획 블록 */
-.page-detail .dt-f06-block{
-    min-width:0;
-    padding:clamp(12px,1vw,16px);
-    border:1px solid var(--ui-border);
-    border-radius:var(--ui-radius-lg);
-    background:var(--ui-surface);
-}
-.page-detail .dt-f06-block h3{ margin-bottom:8px; color:var(--ui-text); font-size:14px; font-weight:800; }
-.page-detail .dt-f06-block-head{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 14px; }
-.page-detail .dt-f06-block-head h3{ margin-bottom:0; }
-.page-detail .dt-legend{ display:flex; flex-wrap:wrap; gap:4px 14px; color:var(--ui-text-muted); font-size:12px; font-weight:700; }
+.page-detail .f06-summary-ok::before{ content:"✓"; display:grid; place-items:center; flex:none; width:20px; height:20px; border-radius:50%; background:var(--ui-navy-700); color:#fff; font-size:11px; }
+.page-detail .dt-legend{ display:flex; flex-wrap:wrap; gap:4px 16px; color:var(--ui-text-muted); font-size:12px; font-weight:700; }
 .page-detail .dt-legend-item{ display:inline-flex; align-items:center; gap:6px; }
 .page-detail .dt-lg{ display:inline-block; width:18px; height:0; border-top:2px solid; }
 .page-detail .dt-lg--value{ border-color:#003566; }
@@ -287,13 +366,6 @@
 .page-detail .dt-lg--alert{ width:9px; height:9px; border:0; border-radius:50%; background:var(--ui-danger); }
 .page-detail .dt-lg--if{ border-color:#003566; box-shadow:0 4px 0 -2px #c99a00; }
 .page-detail .f06-observed{ display:block; margin-top:4px; color:var(--ui-text-subtle); font-size:12px; }
-
-.page-detail .dt-f06-bottom{
-    display:grid;
-    grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);
-    gap:12px;
-    margin-top:12px;
-}
 .page-detail .f06-if-card{ display:flex; flex-direction:column; gap:8px; }
 .page-detail .f06-if-top{ display:flex; align-items:center; gap:10px; }
 .page-detail .f06-if-value{ color:var(--ui-ink); font-size:clamp(26px,2vw,34px); font-weight:800; line-height:1; }
@@ -309,54 +381,107 @@
 .page-detail .f06-table tr:last-child td{ border-bottom:0; }
 .page-detail .f06-empty{ padding:10px; color:var(--ui-text-muted); font-size:13px; }
 
-/* ============ F07 / F08 펼침 패널 ============ */
-.page-detail .dt-panel{
-    padding-top:clamp(14px,1.2vw,20px);
-    border-top:1px solid var(--ui-border);
-}
+/* ⑤ 발주 검토: 한 판 안에 세 칸 (가는 세로선으로 구분) */
 .page-detail .f07-part-label{ color:var(--ui-navy-700); }
-.page-detail .dt-f07-grid{ display:grid; grid-template-columns:minmax(0,5fr) minmax(0,3fr) minmax(0,4fr); gap:12px; }
-.page-detail .dt-scenarios{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.page-detail .dt-f07-grid, .page-detail .dt-history{
+    display:grid;
+    overflow:hidden;
+    border:1px solid var(--ui-border);
+    border-radius:16px;
+    background:var(--ui-surface);
+}
+.page-detail .dt-f07-grid{ grid-template-columns:minmax(0,5fr) minmax(0,3fr) minmax(0,4fr); }
+.page-detail .dt-history{ grid-template-columns:minmax(0,3fr) minmax(0,2fr); }
+.page-detail .dt-f07-block{ min-width:0; padding:clamp(14px,1.1vw,18px); }
+.page-detail .dt-f07-block + .dt-f07-block{ border-left:1px solid var(--ui-border-soft); }
+.page-detail .dt-f07-block h3{ margin-bottom:4px; color:var(--ui-text); font-size:14px; font-weight:800; }
+.page-detail .dt-block-note{ margin:0 0 8px; color:var(--ui-text-subtle); font-size:12px; }
+.page-detail .dt-kv{ display:grid; grid-template-columns:auto 1fr; gap:10px 16px; margin:8px 0 0; font-size:14px; }
+.page-detail .dt-kv dt{ color:var(--ui-text-muted); font-weight:700; }
+.page-detail .dt-kv dd{ margin:0; color:var(--ui-ink); font-weight:800; text-align:right; }
+.page-detail .dt-kv dd.is-alert{ color:var(--ui-danger); }
+.page-detail .dt-warn{
+    margin-top:14px;
+    padding:10px 12px;
+    border-left:3px solid var(--ui-yellow);
+    border-radius:6px;
+    background:var(--ui-yellow-tint);
+    color:var(--ui-ink);
+    font-size:13px;
+    font-weight:700;
+    line-height:1.5;
+}
+.page-detail .dt-scenarios{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0; }
 .page-detail .f07-scenario{
-    padding:12px 8px;
-    border-radius:var(--ui-radius);
+    padding:14px 8px;
+    border:1px solid var(--ui-border-soft);
+    border-radius:12px;
     background:var(--ui-surface-muted);
     color:var(--ui-text-muted);
     font-size:12px;
-    font-weight:700;
+    font-weight:800;
     text-align:center;
 }
-.page-detail .f07-scenario-value{ margin-top:4px; color:var(--ui-ink); font-size:18px; font-weight:800; }
+.page-detail .f07-scenario:has(.is-best){ border-color:var(--ui-yellow); background:var(--ui-yellow-tint); }
+.page-detail .f07-scenario-value{ display:flex; flex-direction:column; gap:2px; margin-top:6px; color:var(--ui-ink); font-size:18px; font-weight:800; }
+.page-detail .f07-scenario-value small{ color:var(--ui-danger); font-size:11px; }
+.page-detail .f07-scenario-value small.is-best{ color:var(--ui-navy-700); }
+
+/* ⑤ 발주 정보 (장바구니) */
+.page-detail .dt-cart{ display:grid; gap:12px; }
+.page-detail .dt-cart-item{ overflow:hidden; border:1px solid var(--ui-border); border-radius:16px; background:var(--ui-surface); }
+.page-detail .dt-cart-head{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:12px 16px; }
+.page-detail .dt-cart-head b{ font-size:16px; }
+.page-detail .dt-cart-meta{ color:var(--ui-text-muted); font-size:13px; font-weight:700; }
+.page-detail .dt-sup-tag{
+    margin-left:8px;
+    padding:1px 8px;
+    border-radius:999px;
+    background:var(--ui-surface-muted);
+    color:var(--ui-text-muted);
+    font-size:11px;
+    font-weight:800;
+}
+.page-detail .dt-cart .dt-table tr.is-ordered td{ background:var(--ui-navy-tint); }
 
 /* ============ 반응형 ============ */
 @media (max-width:1199.98px){
-    .page-detail .stage{ grid-template-columns:minmax(0,1fr); }
-    .page-detail .dt-diagnosis{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
-    .page-detail .dt-diag-ai{ grid-column:1 / -1; border-left:0 !important; border-top:1px solid rgba(255,255,255,.12); }
+    /* 캔버스를 세로 흐름으로: 상태 → 버튼 → 보기 전환 → 도면 → AI → 센서 미리보기 */
+    .page-detail .dt-canvas{ display:flex; flex-direction:column; gap:14px; height:auto; }
+    .page-detail .dt-canvas > *{ position:relative; top:auto; right:auto; bottom:auto; left:auto; }
+    .page-detail .dt-head{ order:1; width:auto; }
+    .page-detail .dt-actions{ order:2; }
+    .page-detail .dt-view-switch{ order:3; justify-content:flex-start; }
+    .page-detail .dt-drawing{ order:4; width:100%; max-height:none; }
+    .page-detail .dt-horizon-panel{ order:4; width:100%; }
+    .page-detail .dt-ai{ order:5; width:auto; }
+    .page-detail .dt-trend{ order:6; width:auto; }
+    .page-detail .dt-f06-grid{ grid-template-columns:minmax(0,1fr); }
     .page-detail .dt-f07-grid{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
     .page-detail .dt-f07-grid > :first-child{ grid-column:1 / -1; }
+    .page-detail .dt-f07-grid > :nth-child(2){ border-left:0; }
+    .page-detail .dt-f07-grid > :nth-child(n+2){ border-top:1px solid var(--ui-border-soft); }
 }
 
 @media (max-width:991.98px){
-    .page-detail .hdr-right{ width:100%; margin-left:0; }
-    .page-detail .dt-f06-bottom{ grid-template-columns:minmax(0,1fr); }
-    .page-detail .hotspot{ max-width:46%; }
+    .page-detail .dt-history{ grid-template-columns:minmax(0,1fr); }
+    .page-detail .dt-history > * + *{ border-left:0; border-top:1px solid var(--ui-border-soft); }
+    .page-detail .hotspot{ min-width:84px; }
 }
 
 @media (max-width:575.98px){
-    .page-detail .dt-diagnosis{ grid-template-columns:minmax(0,1fr); }
-    .page-detail .dt-diagnosis > div + div{ border-left:0; border-top:1px solid rgba(255,255,255,.12); }
-    .page-detail .stage-canvas{ aspect-ratio:4/3; }
-    .page-detail .hotspot{ min-width:74px; max-width:60%; padding:6px 8px; }
-    .page-detail .hotspot .hs-note, .page-detail .hotspot .hs-horizon{ display:none; }
-    .page-detail .dt-f07-grid, .page-detail .dt-scenarios{ grid-template-columns:minmax(0,1fr); }
+    .page-detail .dt-f07-grid{ grid-template-columns:minmax(0,1fr); }
+    .page-detail .dt-f07-grid > * + *{ border-left:0 !important; }
+    .page-detail .dt-scenarios{ grid-template-columns:minmax(0,1fr); }
+    .page-detail .hotspot{ padding:6px 8px 6px 12px; }
+    .page-detail .hotspot .hs-note, .page-detail .hotspot .hs-horizon, .page-detail .hotspot .hs-order{ display:none; }
+    .page-detail .dt-mini-row{ flex-wrap:wrap; gap:12px; }
     .page-detail .dt-section-head .btns{ width:100%; margin-left:0; }
 }
 
 /* ============ 팝오버 (body에 렌더링) ============ */
 .hs-pop{ max-width:min(560px,92vw); border:0; border-radius:12px; box-shadow:0 10px 30px rgba(0,8,20,.2); font-family:var(--ui-font); }
 .hs-pop .popover-header{ border:0; border-radius:12px 12px 0 0; background:var(--ui-navy); color:#fff; font-size:13px; font-weight:800; }
-.hs-pop .popover-arrow::after, .hs-pop .popover-arrow::before{ border-bottom-color:var(--ui-navy) !important; }
 .pop-scroll{ max-width:88vw; overflow-x:auto; }
 .hs-pop-table{ border-collapse:collapse; font-size:12px; }
 .hs-pop-table th, .hs-pop-table td{ padding:4px 7px; text-align:center; white-space:nowrap; }
