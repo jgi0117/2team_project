@@ -184,7 +184,19 @@
 .page-detail .hotspot-dot.hotspot--off{ background:var(--ui-off); box-shadow:none; }
 
 /* 보기 전환 (부품 위치 / 4개 부품 기간별 위험) */
-.page-detail .dt-view-switch{ position:absolute; top:0; left:38%; right:0; display:flex; justify-content:center; pointer-events:none; }
+.page-detail .dt-toolbar{
+    position:absolute;
+    top:0;
+    right:0;
+    z-index:6;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px 12px;
+    width:62%;
+}
+.page-detail .dt-view-switch{ display:flex; }
 .page-detail .dt-seg{
     display:inline-flex;
     padding:4px;
@@ -263,7 +275,7 @@
 .page-detail .dt-mini-value span{ font-size:13px; }
 
 /* 우상단 행동 버튼 */
-.page-detail .dt-actions{ position:absolute; top:0; right:0; display:flex; gap:8px; }
+.page-detail .dt-actions{ display:flex; gap:8px; margin-left:auto; }
 .page-detail .dt-action{
     display:inline-flex;
     align-items:center;
@@ -530,6 +542,17 @@
 .page-detail .dt-qty{ min-width:34px; font-weight:800; text-align:center; font-variant-numeric:tabular-nums; }
 .page-detail .dt-added{ margin-left:8px; color:var(--ui-navy-700); font-size:12px; font-weight:800; }
 
+/* 비용 그래프 아래 구성 설명 */
+.page-detail .dt-mix-row{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; margin-top:6px; color:var(--ui-text); font-size:12px; font-weight:700; }
+.page-detail .dt-mix-row > span{ display:inline-flex; align-items:center; gap:6px; }
+.page-detail .dt-mix-title{ color:var(--ui-text-muted); }
+.page-detail .dt-mix{ display:inline-block; width:10px; height:10px; border-radius:3px; }
+.page-detail .dt-mix--base{ background:var(--ui-navy-700); }
+.page-detail .dt-mix--early{ background:var(--ui-yellow); }
+.page-detail .dt-mix--late{ background:var(--ui-danger); }
+.page-detail .dt-mix-note{ flex-basis:100%; color:var(--ui-text-subtle); font-weight:400; line-height:1.5; }
+.page-detail .f07-scenario-risk{ color:var(--ui-text-subtle); font-size:11px; font-weight:700; }
+
 /* 교체 이력 페이지 넘기기 */
 .page-detail .dt-pager{ display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:10px; }
 .page-detail .dt-pager-text{ color:var(--ui-text-muted); font-size:13px; font-weight:800; }
@@ -540,8 +563,7 @@
     .page-detail .dt-canvas{ display:flex; flex-direction:column; gap:14px; height:auto; }
     .page-detail .dt-canvas > *{ position:relative; top:auto; right:auto; bottom:auto; left:auto; }
     .page-detail .dt-head{ order:1; width:auto; }
-    .page-detail .dt-actions{ order:2; }
-    .page-detail .dt-view-switch{ order:3; justify-content:flex-start; }
+    .page-detail .dt-toolbar{ order:2; width:100%; }
     .page-detail .dt-drawing{ order:4; width:100%; height:auto; max-width:none; }
     .page-detail .dt-horizon-panel{ order:4; width:100%; }
     .page-detail .dt-ai{ order:5; width:auto; }

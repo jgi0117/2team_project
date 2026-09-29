@@ -150,12 +150,18 @@ def canvas(selected, as_of):
                                        alt="4개 부품 위치가 표시된 산업용 설비")),
             *[el for c in COMPS for el in hotspot(c)],
         ]),
-        # 보기 전환: 도면 / 4개 부품 기간별 전체
-        html.Div(dcc.RadioItems(
-            id="dt-view", value="drawing", inline=True, className="dt-seg",
-            options=[{"label": "부품 위치", "value": "drawing"},
-                     {"label": "4개 부품 기간별 위험", "value": "table"}],
-        ), className="dt-view-switch"),
+        # 우상단 툴바: 보기 전환 | 발주 담기·교체 이력 (좁아지면 줄바꿈, 서로 겹치지 않음)
+        html.Div(className="dt-toolbar", children=[
+            html.Div(dcc.RadioItems(
+                id="dt-view", value="drawing", inline=True, className="dt-seg",
+                options=[{"label": "부품 위치", "value": "drawing"},
+                         {"label": "4개 부품 기간별 위험", "value": "table"}],
+            ), className="dt-view-switch"),
+            html.Div(className="dt-actions", children=[
+                dcc.Link("발주 담기 0건", id="dt-cart-btn", href="/order", className="dt-action dt-action--primary"),
+                html.Button("교체 이력", id="btn-open-history", n_clicks=0, className="dt-action"),
+            ]),
+        ]),
         html.Div(id="dt-horizon-panel", className="dt-horizon-panel is-hidden", children=[
             html.Div([html.H3("부품별 · 기간별 고장 위험 점수"),
                       html.Span("노란 테두리 = 부품별 발주 결정 시한 · 진할수록 위험 · 상대 점수(확률 아님)",
@@ -192,12 +198,6 @@ def canvas(selected, as_of):
                 html.Div([html.Span("기준일"),
                           html.Div(as_of, id="detail-asof", className="dt-mini-value")], className="dt-mini"),
             ], className="dt-mini-row"),
-        ]),
-
-        # 우상단: 행동 버튼
-        html.Div(className="dt-actions", children=[
-            dcc.Link("발주 담기 0건", id="dt-cart-btn", href="/order", className="dt-action dt-action--primary"),
-            html.Button("교체 이력", id="btn-open-history", n_clicks=0, className="dt-action"),
         ]),
 
         # ③ 좌하단: AI 종합 진단
@@ -680,51 +680,73 @@ def toggle_reviews(*args):
 
 
 def review_body(comp, curve, part):
+    """발주일별 기대 총비용. 시나리오 3점·최저점·발주 마감·늦을 위험 구간을 한 그래프에."""
     figure = figure_base()
+    hover = [f"예상 총비용 {total:,.1f}만원<br>· 일찍 받아 기다리는 비용 {early:,.2f}만원"
+             f"<br>· 늦게 받을 위험 비용 {late:,.1f}만원 (늦을 확률 {late_p}%)"
+             for total, early, late, late_p in zip(curve["totals"], curve["early"], curve["late"], curve["late_p"])]
     figure.add_trace(go.Scatter(
-        x=curve["dates"], y=curve["totals"], mode="lines", line={"color": NAVY, "width": 2.5, "shape": "spline"},
-        fill="tozeroy", fillcolor="rgba(0,53,102,.07)",
-        hovertemplate="%{x} 발주<br>예상 총비용 %{y:,.0f}만원<extra></extra>"))
+        x=curve["dates"], y=curve["totals"], mode="lines", line={"color": NAVY, "width": 2.5},
+        fill="tozeroy", fillcolor="rgba(0,53,102,.07)", customdata=hover,
+        hovertemplate="%{x} 발주<br>%{customdata}<extra></extra>"))
+    # 발주 시나리오(오늘·1주·2주 뒤)를 같은 곡선 위의 점으로 → 오른쪽 카드와 1:1
+    points = [(d, label) for d, label in ((0, "오늘"), (7, "1주 뒤"), (14, "2주 뒤")) if d < len(curve["dates"])]
+    figure.add_trace(go.Scatter(
+        x=[curve["dates"][d] for d, _ in points], y=[curve["totals"][d] for d, _ in points],
+        mode="markers+text", text=[label for _, label in points], textposition="bottom center",
+        marker={"size": 9, "color": "white", "line": {"color": NAVY, "width": 2}},
+        textfont={"size": 11, "color": MUTED}, hoverinfo="skip"))
     best = curve["best_day"]
     figure.add_trace(go.Scatter(
         x=[curve["dates"][best]], y=[curve["totals"][best]], mode="markers+text",
-        marker={"size": 13, "color": YELLOW, "line": {"color": NAVY, "width": 2}},
-        text=[f"최저 {curve['totals'][best]:,.0f}만원"], textposition="top right",
+        marker={"size": 14, "color": YELLOW, "line": {"color": NAVY, "width": 2}},
+        text=[f"최저 {curve['totals'][best]:,.1f}만원"], textposition="top center",
         textfont={"color": INK, "size": 12}, hoverinfo="skip"))
-    late_from = max(curve["deadline"], curve["dates"][0])
-    figure.add_vrect(x0=late_from, x1=curve["dates"][-1], fillcolor=DANGER, opacity=.06, line_width=0,
-                     annotation={"text": "이후 발주 = 부품이 늦게 도착 → 긴급 비용", "font": {"size": 11, "color": DANGER}},
-                     annotation_position="top left")
-    figure.add_vline(x=curve["deadline"], line={"color": DANGER, "width": 1.5, "dash": "dot"},
-                     annotation={"text": "발주 마감", "font": {"color": DANGER, "size": 11}},
-                     annotation_position="top right")
+    risky = [date for date, p in zip(curve["dates"], curve["late_p"]) if p > 20]
+    if risky:
+        figure.add_vrect(x0=risky[0], x1=curve["dates"][-1], fillcolor=DANGER, opacity=.06, line_width=0,
+                         annotation={"text": "늦을 위험 20% 초과", "font": {"size": 11, "color": DANGER}},
+                         annotation_position="top right")
+    if not curve["too_late"]:
+        figure.add_vline(x=curve["deadline"], line={"color": DANGER, "width": 1.5, "dash": "dot"},
+                         annotation={"text": "발주 마감", "font": {"color": DANGER, "size": 11}},
+                         annotation_position="top left")
     figure.update_xaxes(showgrid=False, tickformat="%m/%d", linecolor=GRID)
-    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix="만", range=[0, max(curve["totals"]) * 1.2])
+    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix="만", range=[0, max(curve["totals"]) * 1.18])
 
-    warn = []
-    if curve["too_late"]:
-        warn = html.Div(f"{curve['reason']} (정비 목표일 {curve['target']}, 조달 {curve['lead']}일). "
-                        "오늘 발주하거나 긴급 대체 업체를 검토하세요.", className="dt-warn")
-    elif curve["status"] in ("order_due", "watch"):
-        warn = html.Div(f"{curve['reason']} · 정비 목표일 {curve['target']}", className="dt-warn")
+    parts = curve["best_parts"]
+    explain = html.Div([
+        html.Span("최저안 구성", className="dt-mix-title"),
+        html.Span([html.I(className="dt-mix dt-mix--base"), f"구매·발주·작업 {parts['base']:,.1f}만원"]),
+        html.Span([html.I(className="dt-mix dt-mix--early"), f"일찍 받아 기다리는 비용 {parts['early']:,.2f}만원"]),
+        html.Span([html.I(className="dt-mix dt-mix--late"), f"늦을 위험 비용 {parts['late']:,.1f}만원"]),
+        html.Small(f"보관비는 하루 부품값의 0.05%(연 20%)라 일찍 사도 추가 비용이 작고, 늦으면 정지 손실이 하루 단위로 붙습니다. "
+                   f"사용 기한 {curve['shelf']}일을 넘겨 기다리면 폐기·재구매 비용이 더해집니다.",
+                   className="dt-mix-note"),
+    ], className="dt-mix-row")
+
+    warn = html.Div(curve["reason"], className="dt-warn")
     scenario = curve["scenario"]
     lowest = min(scenario.values())
 
     def tile(label, day):
         value = scenario[day]
         best_tile = value == lowest
+        late_p = curve["scenario_parts"][day]["late_p"]
         return html.Div([label, html.Div([won(value), html.Small("최저" if best_tile else f"+{won(value - lowest)}",
-                                                                  className="is-best" if best_tile else "")],
+                                                                  className="is-best" if best_tile else ""),
+                                          html.Span(f"늦을 확률 {late_p}%", className="f07-scenario-risk")],
                                          className="f07-scenario-value")], className="f07-scenario")
 
     return html.Div([
         html.Div(className="dt-f07-grid", children=[
             html.Div(className="dt-f07-block", children=[
                 html.H3("언제 발주하면 가장 쌀까"),
-                html.P("발주를 며칠 미룰 때의 예상 총비용 · 이르면 보관비, 늦으면 긴급 작업·운송·정지 손실이 붙습니다",
+                html.P("이 설비 부품 1개 기준 · 필요 시점(모델의 위험 상승 구간)의 불확실성을 반영한 기대 비용",
                        className="dt-block-note"),
                 dcc.Graph(figure=figure, responsive=True, config={"displayModeBar": False},
-                          style={"height": "clamp(200px,24vh,250px)"}),
+                          style={"height": "clamp(220px,26vh,270px)"}),
+                explain,
             ]),
             html.Div(className="dt-f07-block", children=[
                 html.H3("발주 · 재고 정보"),

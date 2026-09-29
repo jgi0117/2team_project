@@ -13,7 +13,7 @@ from src.ui.live_data import (
 )
 
 TOP_N = 5
-CHIPS_PER_DAY = 3
+CHIPS_PER_DAY = 2
 F03_MAX_LINKS = 3
 
 # 차트 색: 00_tokens.css와 같은 값 (Plotly는 CSS 변수를 읽지 못함)
@@ -123,13 +123,15 @@ def make_calendar(items, ranks, as_of):
         date = f"{year}-{month:02d}-{day:02d}"
         day_items = by_date.get(date, [])
         chips = [cal_chip(item, ranks.get(item["key"])) for item in day_items[:CHIPS_PER_DAY]]
-        if len(day_items) > CHIPS_PER_DAY:
-            chips.append(html.Button(f"+{len(day_items) - CHIPS_PER_DAY}건 더 보기",
-                                     id={"type": "mn-day-more", "date": date}, className="mn-chip-more"))
+        # '+N건 더 보기'는 날짜 줄에 둔다 → 칸이 낮아도 잘리지 않음
+        more = (html.Button(f"+{len(day_items) - CHIPS_PER_DAY}건 더 보기",
+                            id={"type": "mn-day-more", "date": date}, className="mn-chip-more")
+                if len(day_items) > CHIPS_PER_DAY else None)
         state = ("mn-day--today" if date == as_of else
                  "mn-day--past" if date < as_of else "")
+        head = [html.Span(str(day), className="mn-day-num")] + ([more] if more else [])
         cells.append(html.Div(
-            [html.Span(str(day), className="mn-day-num"), html.Div(chips, className="mn-day-items")],
+            [html.Div(head, className="mn-day-head"), html.Div(chips, className="mn-day-items")],
             className=f"mn-day {state}".strip(),
         ))
     week = [html.Div(name, className="mn-week-day" + (" is-weekend" if name in "일토" else ""))

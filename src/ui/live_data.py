@@ -274,32 +274,45 @@ def history(as_of, orders=(), start=None, end=None):
 
 # ---------------- 설비 상세: 발주 검토 · 협력사 · 조치 이력 ----------------
 def cost_review(machine_id, comp, as_of, rise=None):
-    """F07 비용 곡선을 detail 화면 형식(만원, 날짜)으로. 목표일 = 위험 상승 시점."""
+    """F07 발주일별 기대 총비용을 detail 화면 형식(만원, 날짜)으로."""
     result = analyze_order(int(machine_id), comp, as_of)
     plan = result["plan"]
     start = pd.Timestamp(plan["as_of"]).normalize()
-    totals = [round(item["total_cost"] / WON, 1) for item in result["curve"]]
-    days = [item["delay_days"] for item in result["curve"]]
+    curve = result["curve"]
     order_by = pd.Timestamp(result["order_by_at"]).normalize()
-    target = pd.Timestamp(result["target_at"]).normalize()
     deadline_day = int((order_by - start).days)
-    too_late = deadline_day < 0
+    low, mode, high = result["need_window"]
+    need_from, need_to = _day(start + timedelta(days=round(low))), _day(start + timedelta(days=round(high)))
+    too_late = bool(result["too_late"])
     if too_late:
-        reason = f"오늘 발주해도 필요 시점({_day(target)})보다 {-deadline_day}일 늦게 준비됩니다"
+        reason = (f"부품이 필요한 시점({need_from}~{need_to})까지 조달 {result['lead_days']}일을 맞출 수 없습니다. "
+                  "오늘 발주하거나 긴급 대체 업체(납기 단축)를 검토하세요.")
     elif deadline_day <= 7:
-        reason = f"발주 마감까지 {deadline_day}일 남았습니다"
+        reason = f"발주 마감까지 {deadline_day}일 남았습니다 · 필요 시점 {need_from}~{need_to}"
     else:
-        reason = f"발주 마감까지 여유가 있습니다 ({deadline_day}일)"
+        reason = f"발주 마감까지 여유가 있습니다 ({deadline_day}일) · 필요 시점 {need_from}~{need_to}"
+
+    def breakdown(item):
+        return {"base": round(item["base"] / WON, 1), "early": round((item["holding"] + item["expiry"]) / WON, 2),
+                "late": round(item["late"] / WON, 1), "late_p": round(100 * item["late_probability"])}
+
     return {
-        "days": days, "dates": [_day(start + timedelta(days=d)) for d in days], "totals": totals,
+        "days": [item["delay_days"] for item in curve],
+        "dates": [_day(start + timedelta(days=item["delay_days"])) for item in curve],
+        "totals": [round(item["total_cost"] / WON, 1) for item in curve],
+        "early": [round((item["holding"] + item["expiry"]) / WON, 2) for item in curve],
+        "late": [round(item["late"] / WON, 1) for item in curve],
+        "late_p": [round(100 * item["late_probability"]) for item in curve],
         "best_day": int(result["optimum"]["delay_days"]),
         "deadline": _day(order_by), "deadline_day": deadline_day,
         "scenario": {d: round(result["scenarios"][d]["total_cost"] / WON, 1) for d in (0, 7, 14)},
-        "lead": int(result["lead_days"]), "rise": rise, "stock": int(plan["available_stock"]),
-        "too_late": too_late, "quantity": int(result["quantity"]),
+        "scenario_parts": {d: breakdown(result["scenarios"][d]) for d in (0, 7, 14)},
+        "best_parts": breakdown(result["optimum"]),
+        "lead": int(result["lead_days"]), "shelf": int(result["shelf_life_days"]), "rise": rise,
+        "stock": int(plan["available_stock"]), "too_late": too_late, "quantity": 1,
         "slack": max(deadline_day, 0), "reason": reason,
         "status": "late" if too_late else ("order_due" if deadline_day <= 7 else "watch"),
-        "target": _day(target),
+        "target": _day(result["target_at"]), "need_from": need_from, "need_to": need_to,
     }
 
 

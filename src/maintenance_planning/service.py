@@ -420,3 +420,69 @@ def response_history(machine_id: int, as_of=None, limit: int | None = 20) -> pd.
     if limit is not None:
         rows = rows.head(limit)
     return rows.reset_index(drop=True)
+
+
+def order_timing(machine_id: int, component: str, as_of=None, need_window=None,
+                 late_tolerance: float = 0.2) -> dict:
+    """이 설비의 부품 1개를 오늘부터 d일 뒤에 발주할 때의 기대 총비용 (KRW).
+
+    필요 시점 T는 확정값이 아니라 구간 [need_window[0], need_window[2]]에 퍼진 삼각분포(최빈값 need_window[1])로 본다.
+    발주일 d → 준비 완료 a = d + 조달일 + 준비일.
+      · a < T (일찍 도착): 기다리는 (T - a)일 동안 보유비. T - a > 사용 기한이면 폐기 후 재구매.
+      · a > T (늦게 도착): 긴급 작업비 + 긴급 운송 할증 + 정지 손실 × (a - T)일. 예방 작업비는 쓰지 않음.
+    모든 항목은 확률 가중 평균. 단가는 costs.csv·part_master.csv, 필요 시점은 risk_curve(모델 산출물).
+    """
+    plan = build_maintenance_plan(as_of)
+    selected = plan.loc[plan.machineID.eq(int(machine_id)) & plan.component.eq(component)]
+    if selected.empty:
+        raise ValueError("No plan for machine/component")
+    row = selected.iloc[0]
+    meta = _ops("part_master.csv").set_index("component").loc[component]
+    unit = (_ops("costs.csv").loc[lambda x: x.component.eq(component)]
+            .set_index("cost_type").amount.astype(float).to_dict())
+    lead = int(meta.lead_time_days + meta.preparation_days)
+    shelf = int(meta.shelf_life_days)
+    low, mode, high = need_window if need_window else (lead, lead, lead + 7)
+    high = max(high, low + 1)
+    mode = min(max(mode, low), high)
+
+    # 삼각분포를 하루 단위로 나눈 필요 시점 확률
+    days = list(range(int(low), int(math.ceil(high)) + 1))
+    weights = []
+    for t in days:
+        w = ((t - low) / (mode - low) if t < mode and mode > low else
+             (high - t) / (high - mode) if t > mode and high > mode else 1.0)
+        weights.append(max(w, 0.0) + 1e-9)
+    total_w = sum(weights)
+    need = [(t, w / total_w) for t, w in zip(days, weights)]
+
+    base = unit["purchase"] + unit["order_admin"]
+    curve = []
+    for delay in range(0, int(math.ceil(high)) + 15):
+        ready = delay + lead
+        hold = expire = late = labor = 0.0
+        p_late = 0.0
+        for t, p in need:
+            if ready <= t:
+                wait = t - ready
+                hold += p * unit["holding"] * min(wait, shelf)
+                if wait > shelf:   # 사용 기한 초과 → 폐기하고 다시 구매
+                    expire += p * (unit["disposal_processing"] + unit["purchase"] + unit["order_admin"])
+                labor += p * unit["preventive_labor"]
+            else:
+                p_late += p
+                late += p * (unit["emergency_labor"] + unit["expedite_surcharge"] + unit["downtime"] * (ready - t))
+        total = base + labor + hold + expire + late
+        curve.append({"delay_days": delay, "total_cost": round(total), "holding": round(hold),
+                      "expiry": round(expire), "late": round(late), "base": round(base + labor),
+                      "late_probability": p_late,
+                      "ready_at": row.as_of + pd.Timedelta(days=ready)})
+    optimum = min(curve, key=lambda item: (item["total_cost"], item["delay_days"]))
+    ok = [item["delay_days"] for item in curve if item["late_probability"] <= late_tolerance]
+    order_by = row.as_of + pd.Timedelta(days=max(ok) if ok else 0)
+    scenarios = {d: curve[min(d, len(curve) - 1)] for d in (0, 7, 14)}
+    expected_need = sum(t * p for t, p in need)
+    return {"plan": row.to_dict(), "curve": curve, "optimum": optimum, "scenarios": scenarios,
+            "currency": "KRW", "quantity": 1, "lead_days": lead, "shelf_life_days": shelf,
+            "need_window": (low, mode, high), "target_at": row.as_of + pd.Timedelta(days=round(expected_need)),
+            "order_by_at": order_by, "too_late": not ok, "late_tolerance": late_tolerance}
