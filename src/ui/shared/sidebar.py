@@ -37,9 +37,11 @@ def date_setting(as_of):
 
 
 def create_sidebar(active="main", as_of=UI_AS_OF):
-    def menu(icon, label, href, selected=False):
+    def menu(icon, label, href, selected=False, badge=None):
         children = [html.Span(icon, className="ui-nav-icon", **{"aria-hidden": "true"}),
                     html.Span(label, className="ui-nav-text")]
+        if badge:
+            children.append(badge)
         if selected:
             return html.Span(
                 children,
@@ -61,6 +63,8 @@ def create_sidebar(active="main", as_of=UI_AS_OF):
                     menu("🏠", "메인화면", "/", active == "main"),
                     menu("🛠", "설비별", "/detail", active == "equipment"),
                     menu("📊", "통계", "/statistics", active == "statistics"),
+                    menu("🛒", "발주", "/order", active == "order",
+                         badge=html.Span("", id="sb-order-count", className="ui-nav-badge")),
                 ],
                 **{"aria-label": "대시보드 메뉴"},
             ),
@@ -81,3 +85,13 @@ def set_as_of(date, reset, current):
     if new == valid_as_of(current):
         raise PreventUpdate
     return new
+
+
+@callback(
+    Output("sb-order-count", "children"),
+    Output("sb-order-count", "className"),
+    Input("store-order-basket", "data"),
+)
+def show_order_count(basket):
+    count = len(basket or [])
+    return (str(count) if count else ""), ("ui-nav-badge" if count else "ui-nav-badge is-empty")

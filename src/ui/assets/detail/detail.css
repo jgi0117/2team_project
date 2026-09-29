@@ -80,7 +80,7 @@
 /* ============ 캔버스 ============ */
 .page-detail .dt-canvas{
     position:relative;
-    height:clamp(560px,66vh,720px);
+    height:clamp(430px,47vh,540px);
 }
 /* 배경 점 무늬: 가장자리로 갈수록 사라져 페이지에 녹아든다 */
 .page-detail .dt-canvas::before{
@@ -99,11 +99,11 @@
 /* 설비 그림 (배경) + 말풍선 */
 .page-detail .dt-drawing{
     position:absolute;
-    top:56px;
+    top:52px;
     right:0;
-    width:62%;
+    height:calc(100% - 52px);
     aspect-ratio:1108/621;
-    max-height:calc(100% - 56px);
+    max-width:62%;
 }
 .page-detail .stage-bg{ position:absolute; inset:0; }
 .page-detail .stage-bg img{
@@ -228,7 +228,7 @@
 .page-detail .dt-head-top{ display:flex; align-items:center; gap:10px; }
 .page-detail .hdr-title{ color:var(--ui-text-muted); font-size:15px; font-weight:800; }
 .page-detail .detail-machine-select{ width:140px; font-size:14px; }
-.page-detail .hdr-machine{ margin:6px 0 14px; color:var(--ui-ink); font-size:clamp(40px,3.2vw,58px); font-weight:800; line-height:1; letter-spacing:-.03em; }
+.page-detail .hdr-machine{ margin:4px 0 10px; color:var(--ui-ink); font-size:clamp(40px,3.2vw,58px); font-weight:800; line-height:1; letter-spacing:-.03em; }
 .page-detail .dt-kicker{ display:block; color:var(--ui-text-muted); font-size:13px; font-weight:800; }
 .page-detail .summary-days{
     display:inline-block;
@@ -240,7 +240,22 @@
     background:linear-gradient(transparent 64%, var(--ui-yellow) 64%, var(--ui-yellow) 92%, transparent 92%);
 }
 .page-detail .summary-sub{ margin-top:6px; color:var(--ui-text-muted); font-size:14px; font-weight:700; }
-.page-detail .dt-mini-row{ display:flex; gap:24px; margin-top:18px; }
+.page-detail .dt-mini-row{ display:flex; gap:24px; margin-top:14px; }
+.page-detail .dt-mini--link{
+    display:block;
+    padding:2px 0 2px 12px;
+    border:0;
+    border-left:3px solid var(--ui-danger);
+    background:none;
+    color:inherit;
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+}
+.page-detail .dt-mini--link:hover .dt-mini-link{ text-decoration:underline; }
+.page-detail .dt-mini-line{ display:flex; align-items:center; gap:10px; }
+.page-detail .dt-spark{ flex:none; }
+.page-detail .dt-mini-link{ color:var(--ui-navy-700) !important; font-size:12px; font-weight:800; }
 .page-detail .dt-mini{ padding-left:12px; border-left:3px solid var(--ui-navy-soft); }
 .page-detail .dt-mini span{ color:var(--ui-text-muted); font-size:12px; font-weight:700; }
 .page-detail .dt-mini-value{ display:flex; align-items:baseline; gap:3px; color:var(--ui-ink); font-size:18px; font-weight:800; }
@@ -249,6 +264,31 @@
 
 /* 우상단 행동 버튼 */
 .page-detail .dt-actions{ position:absolute; top:0; right:0; display:flex; gap:8px; }
+.page-detail .dt-action{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 18px;
+    border:2px solid var(--ui-navy-700);
+    border-radius:999px;
+    background:var(--ui-surface);
+    color:var(--ui-navy-700);
+    font-size:14px;
+    font-weight:800;
+    text-decoration:none;
+    box-shadow:0 4px 12px rgba(0,29,61,.12);
+    cursor:pointer;
+}
+.page-detail .dt-action:hover{ background:var(--ui-navy-tint); color:var(--ui-navy-700); }
+.page-detail .dt-action--primary{ background:var(--ui-navy-700); color:#fff; }
+.page-detail .dt-action--primary:hover{ background:var(--ui-navy); color:#fff; }
+.page-detail .dt-action-count{
+    padding:1px 8px;
+    border-radius:999px;
+    background:var(--ui-yellow);
+    color:var(--ui-ink);
+    font-size:13px;
+}
 
 /* ③ 좌하단: AI 종합 진단 (떠 있는 판) */
 .page-detail .dt-ai{
@@ -256,7 +296,7 @@
     bottom:0;
     left:0;
     width:min(36%,560px);
-    padding:16px 18px;
+    padding:12px 16px;
     border-radius:16px;
     background:rgba(255,255,255,.94);
     box-shadow:0 12px 30px rgba(0,29,61,.12);
@@ -271,7 +311,18 @@
     font-size:12px;
     font-weight:800;
 }
-.page-detail .dt-ai-text{ color:var(--ui-text); font-size:14px; font-weight:700; line-height:1.6; overflow-wrap:anywhere; }
+.page-detail .dt-ai-text{
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    color:var(--ui-text);
+    font-size:13px;
+    font-weight:700;
+    line-height:1.55;
+    overflow-wrap:anywhere;
+}
+.page-detail .dt-ai:hover .dt-ai-text{ -webkit-line-clamp:unset; }
 
 /* ④ 우하단: 센서 이상 미리보기 */
 .page-detail .dt-trend{
@@ -305,6 +356,7 @@
 }
 .page-detail .dt-section-head h2::before{ content:""; width:4px; height:1em; border-radius:2px; background:var(--ui-navy-700); }
 .page-detail .dt-section-head .btns{ display:flex; gap:6px; margin-left:auto; }
+.page-detail .dt-head-hint{ color:var(--ui-text-subtle); font-size:12px; font-weight:700; }
 .page-detail .dt-select-row{ display:flex; align-items:center; gap:8px; margin-left:auto; }
 .page-detail .dt-select-label{ margin:0; color:var(--ui-ink); font-size:13px; font-weight:800; }
 .page-detail .f06-sensor-select{ width:170px; font-size:13px; }
@@ -381,6 +433,35 @@
 .page-detail .f06-table tr:last-child td{ border-bottom:0; }
 .page-detail .f06-empty{ padding:10px; color:var(--ui-text-muted); font-size:13px; }
 
+/* ⑤ 발주 검토: 부품별 접기/펼치기 — 접힌 상태는 한 줄 */
+.page-detail .dt-accordion{ overflow:hidden; border:1px solid var(--ui-border); border-radius:16px; background:var(--ui-surface); }
+.page-detail .dt-acc-item + .dt-acc-item{ border-top:1px solid var(--ui-border-soft); }
+.page-detail .dt-acc-item{ scroll-margin-top:16px; }
+.page-detail .dt-acc-head{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    padding:12px 18px;
+    border:0;
+    background:var(--ui-surface);
+    color:var(--ui-text);
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+}
+.page-detail .dt-acc-head:hover{ background:var(--ui-surface-muted); }
+.page-detail .dt-acc-name{ min-width:64px; color:var(--ui-ink); font-size:16px; }
+.page-detail .dt-acc-summary{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 18px; color:var(--ui-text-muted); font-size:13px; font-weight:700; }
+.page-detail .dt-acc-summary .is-alert{ color:var(--ui-danger); }
+.page-detail .dt-acc-chevron{ margin-left:auto; color:var(--ui-text-subtle); font-size:18px; transition:transform .2s ease; }
+.page-detail .dt-acc-item:has(.collapse.show) .dt-acc-chevron,
+.page-detail .dt-acc-item:has(.collapsing) .dt-acc-chevron{ transform:rotate(180deg); }
+.page-detail .dt-acc-item:has(.collapse.show) .dt-acc-head{ background:var(--ui-navy-tint); }
+.page-detail .dt-acc-body{ padding:4px 18px 18px; background:var(--ui-navy-tint); }
+.page-detail .dt-acc-foot{ display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-top:12px; }
+.page-detail .dt-acc-foot-hint{ color:var(--ui-text-muted); font-size:13px; }
+
 /* ⑤ 발주 검토: 한 판 안에 세 칸 (가는 세로선으로 구분) */
 .page-detail .f07-part-label{ color:var(--ui-navy-700); }
 .page-detail .dt-f07-grid, .page-detail .dt-history{
@@ -442,7 +523,12 @@
     font-size:11px;
     font-weight:800;
 }
-.page-detail .dt-cart .dt-table tr.is-ordered td{ background:var(--ui-navy-tint); }
+.page-detail .dt-cart .dt-table tr.is-added td{ background:var(--ui-yellow-tint); }
+.page-detail .dt-stepper{ display:inline-flex; align-items:center; overflow:hidden; border:1px solid var(--ui-border); border-radius:999px; }
+.page-detail .dt-step{ width:30px; height:30px; border:0; background:var(--ui-surface-muted); color:var(--ui-navy-700); font-size:16px; font-weight:800; cursor:pointer; }
+.page-detail .dt-step:hover{ background:var(--ui-navy-tint); }
+.page-detail .dt-qty{ min-width:34px; font-weight:800; text-align:center; font-variant-numeric:tabular-nums; }
+.page-detail .dt-added{ margin-left:8px; color:var(--ui-navy-700); font-size:12px; font-weight:800; }
 
 /* ============ 반응형 ============ */
 @media (max-width:1199.98px){
@@ -452,10 +538,10 @@
     .page-detail .dt-head{ order:1; width:auto; }
     .page-detail .dt-actions{ order:2; }
     .page-detail .dt-view-switch{ order:3; justify-content:flex-start; }
-    .page-detail .dt-drawing{ order:4; width:100%; max-height:none; }
+    .page-detail .dt-drawing{ order:4; width:100%; height:auto; max-width:none; }
     .page-detail .dt-horizon-panel{ order:4; width:100%; }
     .page-detail .dt-ai{ order:5; width:auto; }
-    .page-detail .dt-trend{ order:6; width:auto; }
+    .page-detail .dt-actions{ flex-wrap:wrap; }
     .page-detail .dt-f06-grid{ grid-template-columns:minmax(0,1fr); }
     .page-detail .dt-f07-grid{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
     .page-detail .dt-f07-grid > :first-child{ grid-column:1 / -1; }

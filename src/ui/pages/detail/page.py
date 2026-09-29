@@ -6,7 +6,7 @@ from functools import lru_cache
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
-from dash import html, dcc, Input, Output, State, ALL, callback, ctx
+from dash import html, dcc, Input, Output, State, ALL, MATCH, callback, clientside_callback, ctx, no_update
 from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
 
@@ -14,8 +14,8 @@ from src.common.paths import PROCESSED
 from src.F09.heatmap import load_predictions, machine_ids
 from src.ui import detail_data
 from src.ui.ai_data import f05_diagnosis, f06_analysis
-from src.ui.config import UI_AS_OF, upto_as_of, valid_as_of
-from src.ui.sample_data import ranked_items
+from src.ui.config import upto_as_of, valid_as_of
+from src.ui.pages.order.page import add_line, basket_line
 
 PREDICTIONS = load_predictions()
 MACHINES = machine_ids()
@@ -176,8 +176,15 @@ def canvas(selected, as_of):
             html.Div("--", id="f05-summary-days", className="summary-days"),
             html.Div("부품별 위험 비교", id="f05-summary-note", className="summary-sub"),
             html.Div([
-                html.Div([html.Span("센서 이상 신호 · 72시간"),
-                          html.Div("--", id="dt-sensor-count", className="dt-mini-value")], className="dt-mini"),
+                html.Button([
+                    html.Span("센서 이상 신호 · 72시간"),
+                    html.Div([html.Div("--", id="dt-sensor-count", className="dt-mini-value"),
+                              dcc.Graph(id="dt-sensor-spark", figure=figure_base(),
+                                        config={"displayModeBar": False, "staticPlot": True},
+                                        className="dt-spark", style={"height": "34px", "width": "120px"})],
+                             className="dt-mini-line"),
+                    html.Span("근거 보기 ↓", className="dt-mini-link"),
+                ], id="dt-sensor-jump", n_clicks=0, className="dt-mini dt-mini--link"),
                 html.Div([html.Span("기준일"),
                           html.Div(as_of, id="detail-asof", className="dt-mini-value")], className="dt-mini"),
             ], className="dt-mini-row"),
@@ -185,8 +192,8 @@ def canvas(selected, as_of):
 
         # 우상단: 행동 버튼
         html.Div(className="dt-actions", children=[
-            html.Button("발주 정보 0건", id="dt-cart-btn", n_clicks=0, className="dt-btn"),
-            html.Button("교체 이력", id="btn-open-history", n_clicks=0, className="dt-btn"),
+            dcc.Link("발주 담기 0건", id="dt-cart-btn", href="/order", className="dt-action dt-action--primary"),
+            html.Button("교체 이력", id="btn-open-history", n_clicks=0, className="dt-action"),
         ]),
 
         # ③ 좌하단: AI 종합 진단
@@ -195,13 +202,6 @@ def canvas(selected, as_of):
             html.Div("종합진단을 준비하고 있습니다", id="f05-summary-basis", className="dt-ai-text"),
         ]),
 
-        # ④로 이어지는 우하단: 센서 이상 추이 미리보기
-        html.A(href="#dt-sensor", className="dt-trend", children=[
-            html.Div([html.Span("센서 이상 · 시간별 건수"), html.Span("자세히 ↓", className="dt-trend-link")],
-                     className="dt-trend-head"),
-            dcc.Graph(id="dt-sensor-spark", figure=figure_base(),
-                      config={"displayModeBar": False, "staticPlot": True}, style={"height": "78px"}),
-        ]),
     ])
 
 
@@ -245,54 +245,41 @@ f06_overlay = html.Section(
     ],
 )
 
-# ---------------- ⑤ 발주 검토 ----------------
-f07_panel = dbc.Collapse(
-    id="f07-collapse", is_open=False,
-    children=html.Section(className="dt-band dt-panel", children=[
-        section_head(
-            html.Span(["발주 시점 · 비용 검토 ", html.Span("--", id="f07-part-label", className="f07-part-label")]),
-            html.Div(className="btns", children=[
-                html.Button("발주 정보 보기", id="btn-add-cart", n_clicks=0, className="dt-btn dt-btn--primary"),
-                html.Button("닫기", id="btn-f07-close", n_clicks=0, className="dt-btn"),
-            ])),
-        html.Div(className="dt-f07-grid", children=[
-            html.Div(className="dt-f07-block", children=[
-                html.H3("언제 발주하면 가장 쌀까"),
-                html.P("발주일별 예상 총비용 · 너무 이르면 보관비, 늦으면 고장 후 긴급 대응 비용이 커집니다",
-                       className="dt-block-note"),
-                dcc.Graph(id="f07-cost-curve", figure=figure_base(), responsive=True,
-                          config={"displayModeBar": False}, style={"height": "clamp(200px,24vh,260px)"}),
-            ]),
-            html.Div(className="dt-f07-block", children=[
-                html.H3("발주 · 재고 정보"),
-                html.Div(id="f07-order-info", children=ghost("부품을 선택하세요", 150)),
-            ]),
-            html.Div(className="dt-f07-block", children=[
-                html.H3("발주 시나리오 비교"),
-                html.Div(className="dt-scenarios", children=[
-                    html.Div(["오늘 발주", html.Div("--", id="f07-cost-d0", className="f07-scenario-value")],
-                             className="f07-scenario"),
-                    html.Div(["1주 뒤", html.Div("--", id="f07-cost-d7", className="f07-scenario-value")],
-                             className="f07-scenario"),
-                    html.Div(["2주 뒤", html.Div("--", id="f07-cost-d14", className="f07-scenario-value")],
-                             className="f07-scenario"),
-                ]),
-                html.P("예상 총비용 기준 · 가장 낮은 안에 '최저' 표시", className="dt-block-note"),
-            ]),
+# ---------------- ⑤ 발주 검토: 부품별 접기/펼치기 ----------------
+def review_item(comp):
+    return html.Div(id=f"dt-part-{comp}", className="dt-acc-item", children=[
+        html.Button(id={"type": "f07-head", "comp": comp}, n_clicks=0, className="dt-acc-head", children=[
+            html.B(comp, className="dt-acc-name"),
+            html.Span(id={"type": "f07-summary", "comp": comp}, className="dt-acc-summary"),
+            html.Span("⌄", className="dt-acc-chevron", **{"aria-hidden": "true"}),
         ]),
-    ]),
-)
+        dbc.Collapse(id={"type": "f07-collapse", "comp": comp}, is_open=False,
+                     children=html.Div(id={"type": "f07-body", "comp": comp}, className="dt-acc-body")),
+    ])
 
-# ---------------- ⑤ 발주 정보 (장바구니처럼 누적) ----------------
+
+f07_panel = html.Section(id="dt-review", className="dt-band dt-panel", children=[
+    section_head("발주 시점 · 비용 검토",
+                 html.Span("말풍선의 '발주 검토'를 누르면 해당 부품이 열려요", className="dt-head-hint"),
+                 html.Div(className="btns", children=[
+                     html.Button("모두 펼치기", id="dt-expand-all", n_clicks=0, className="dt-btn"),
+                     html.Button("모두 접기", id="dt-collapse-all", n_clicks=0, className="dt-btn"),
+                 ])),
+    html.Div([review_item(comp) for comp in COMPS], className="dt-accordion"),
+])
+
+# ---------------- ⑤ 발주 담기: 협력사별 수량을 정해 발주 화면 장바구니로 ----------------
 f08_supplier = dbc.Collapse(
     id="f08-supplier-collapse", is_open=False,
-    children=html.Section(className="dt-band dt-panel", children=[
-        section_head("발주 정보",
+    children=html.Section(id="dt-stage", className="dt-band dt-panel", children=[
+        section_head("발주 담기",
+                     html.Span("협력사별로 수량을 정해 담으면 발주 화면에 쌓입니다", className="dt-head-hint"),
                      html.Div(className="btns", children=[
+                         dcc.Link("발주 화면 보기 →", href="/order", className="dt-btn"),
                          html.Button("비우기", id="f08-clear", n_clicks=0, className="dt-btn"),
                          html.Button("닫기", id="btn-f08-supplier-close", n_clicks=0, className="dt-btn"),
                      ])),
-        html.Div(id="f08-supplier-body", children=ghost("발주 검토에서 '발주 정보 보기'를 누르면 부품별로 쌓입니다", 100)),
+        html.Div(id="f08-supplier-body", children=ghost("발주 검토에서 '발주 목록 담기'를 누르면 부품별로 쌓입니다", 100)),
     ]),
 )
 
@@ -315,8 +302,8 @@ def create_detail_layout(machine_id=None, as_of=None):
     return html.Div(className="page-detail", children=[
         dcc.Store(id="store-selected-machine", data=selected),
         dcc.Store(id="store-selected-comp", data=None),
-        dcc.Store(id="f08-last-order"),
-        dcc.ConfirmDialog(id="f07-confirm-dismiss"),
+        dcc.Store(id="dt-scroll"),
+        html.Div(id="dt-scroll-done", hidden=True),
 
         canvas(selected, as_of),
         f06_overlay,
@@ -640,43 +627,41 @@ def show_sensor_overview(machine_id, as_of):
     return [html.Strong(f"{sum(per_hour)}"), html.Span("건")], figure
 
 
-# ---------------- ⑤ 발주 검토 ----------------
+# ---------------- ⑤ 발주 검토: 열고 닫기 + 자동 스크롤 ----------------
 @callback(
-    Output("f07-collapse", "is_open"),
+    Output({"type": "f07-collapse", "comp": ALL}, "is_open"),
     Output("store-selected-comp", "data"),
-    Output("f07-part-label", "children"),
+    Output("dt-scroll", "data", allow_duplicate=True),
     [Input(f"hotspot-{c}", "n_clicks") for c in COMPS] +
-    [Input("btn-f07-close", "n_clicks"),
-     Input({"type": "dt-part-order", "comp": ALL}, "n_clicks")],
+    [Input({"type": "f07-head", "comp": ALL}, "n_clicks"),
+     Input({"type": "dt-part-order", "comp": ALL}, "n_clicks"),
+     Input("dt-expand-all", "n_clicks"),
+     Input("dt-collapse-all", "n_clicks")],
+    State({"type": "f07-collapse", "comp": ALL}, "is_open"),
     prevent_initial_call=True,
 )
-def toggle_f07(*_):
-    trig = ctx.triggered_id
-    if trig == "btn-f07-close":
-        return False, None, "--"
+def toggle_reviews(*args):
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
+    opened = args[-1]
+    comps = [item["id"]["comp"] for item in ctx.outputs_list[0]]
+    state = dict(zip(comps, opened))
+    trig = ctx.triggered_id
+    if trig == "dt-expand-all":
+        return [True] * len(comps), no_update, no_update
+    if trig == "dt-collapse-all":
+        return [False] * len(comps), None, no_update
+    if isinstance(trig, dict) and trig["type"] == "f07-head":      # 머리 누르면 그 부품만 열고 닫기
+        comp = trig["comp"]
+        state[comp] = not state[comp]
+        return [state[c] for c in comps], comp if state[comp] else no_update, no_update
+    # 말풍선/기간표의 '발주 검토' → 그 부품을 열고 그 자리로 이동
     comp = trig["comp"] if isinstance(trig, dict) else str(trig).replace("hotspot-", "")
-    return True, comp, f"— {comp} ({DECISION.get(comp, '-')}일 발주 결정 시한)"
+    state[comp] = True
+    return [state[c] for c in comps], comp, {"id": f"dt-part-{comp}", "at": ctx.triggered[0]["value"]}
 
 
-@callback(
-    Output("f07-cost-curve", "figure"),
-    Output("f07-order-info", "children"),
-    Output("f07-cost-d0", "children"),
-    Output("f07-cost-d7", "children"),
-    Output("f07-cost-d14", "children"),
-    Input("store-selected-comp", "data"),
-    State("store-selected-machine", "data"),
-    State("store-as-of", "data"),
-)
-def show_f07(comp, machine_id, as_of):
-    if comp not in COMPS:
-        raise PreventUpdate
-    as_of = resolve_as_of(as_of)
-    part = next(part for part in part_rows(machine_id, as_of) if part["comp"] == comp)
-    curve = detail_data.cost_curve(comp, part["days"] if part["adopted"] else None, as_of)
-
+def review_body(comp, curve, part):
     figure = figure_base()
     figure.add_trace(go.Scatter(
         x=curve["dates"], y=curve["totals"], mode="lines", line={"color": NAVY, "width": 2.5, "shape": "spline"},
@@ -692,103 +677,158 @@ def show_f07(comp, machine_id, as_of):
                      annotation={"text": "발주 마감", "font": {"color": DANGER, "size": 11}},
                      annotation_position="top right")
     figure.update_xaxes(showgrid=False, tickformat="%m/%d", linecolor=GRID)
-    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix="만",
-                        range=[0, max(curve["totals"]) * 1.2])
+    figure.update_yaxes(gridcolor=GRID, zeroline=False, ticksuffix="만", range=[0, max(curve["totals"]) * 1.2])
 
     warn = []
     if curve["too_late"]:
         warn = html.Div(f"조달에 {curve['lead']}일이 걸려 위험 상승({d_label(curve['rise'])}) 전에 받기 어렵습니다. "
                         "오늘 발주하거나 긴급 대체 업체를 검토하세요.", className="dt-warn")
-    info = html.Div([
-        html.Dl([
-            html.Dt("발주 마감"), html.Dd(f"{curve['deadline']} (D-{curve['deadline_day']})",
-                                        className="is-alert" if curve["deadline_day"] <= 3 else ""),
-            html.Dt("권장 수량"), html.Dd(f"{curve['quantity']}개"),
-            html.Dt("조달 기간"), html.Dd(f"{curve['lead']}일 (준비 포함)"),
-            html.Dt("현재 재고"), html.Dd(f"{curve['stock']}개", className="is-alert" if not curve["stock"] else ""),
-            html.Dt("대응 여유"), html.Dd(f"{curve['slack']}일"),
-        ], className="dt-kv"),
-        warn,
-    ])
     scenario = curve["scenario"]
     lowest = min(scenario.values())
 
-    def tile(day):
+    def tile(label, day):
         value = scenario[day]
-        return [won(value), html.Small("최저" if value == lowest else f"+{won(value - lowest)}",
-                                       className="is-best" if value == lowest else "")]
-    return figure, info, tile(0), tile(7), tile(14)
+        best_tile = value == lowest
+        return html.Div([label, html.Div([won(value), html.Small("최저" if best_tile else f"+{won(value - lowest)}",
+                                                                  className="is-best" if best_tile else "")],
+                                         className="f07-scenario-value")], className="f07-scenario")
+
+    return html.Div([
+        html.Div(className="dt-f07-grid", children=[
+            html.Div(className="dt-f07-block", children=[
+                html.H3("언제 발주하면 가장 쌀까"),
+                html.P("발주일별 예상 총비용 · 너무 이르면 보관비, 늦으면 고장 후 긴급 대응 비용이 커집니다",
+                       className="dt-block-note"),
+                dcc.Graph(figure=figure, responsive=True, config={"displayModeBar": False},
+                          style={"height": "clamp(200px,24vh,250px)"}),
+            ]),
+            html.Div(className="dt-f07-block", children=[
+                html.H3("발주 · 재고 정보"),
+                html.Dl([
+                    html.Dt("발주 마감"), html.Dd(f"{curve['deadline']} (D-{curve['deadline_day']})",
+                                                className="is-alert" if curve["deadline_day"] <= 3 else ""),
+                    html.Dt("권장 수량"), html.Dd(f"{curve['quantity']}개"),
+                    html.Dt("조달 기간"), html.Dd(f"{curve['lead']}일 (준비 포함)"),
+                    html.Dt("현재 재고"), html.Dd(f"{curve['stock']}개", className="is-alert" if not curve["stock"] else ""),
+                    html.Dt("대응 여유"), html.Dd(f"{curve['slack']}일"),
+                ], className="dt-kv"),
+                warn,
+            ]),
+            html.Div(className="dt-f07-block", children=[
+                html.H3("발주 시나리오 비교"),
+                html.Div([tile("오늘 발주", 0), tile("1주 뒤", 7), tile("2주 뒤", 14)], className="dt-scenarios"),
+                html.P("예상 총비용 기준 · 가장 낮은 안에 '최저' 표시", className="dt-block-note"),
+            ]),
+        ]),
+        html.Div([
+            html.Span("협력사를 고르고 수량을 정하려면", className="dt-acc-foot-hint"),
+            html.Button("발주 목록 담기", id={"type": "f07-stage", "comp": comp}, n_clicks=0,
+                        className="dt-btn dt-btn--primary"),
+        ], className="dt-acc-foot"),
+    ])
 
 
-# ---------------- ⑤ 발주 정보 (장바구니) ----------------
 @callback(
-    Output("store-order-cart", "data", allow_duplicate=True),
-    Input("btn-add-cart", "n_clicks"),
+    Output({"type": "f07-body", "comp": ALL}, "children"),
+    Output({"type": "f07-summary", "comp": ALL}, "children"),
+    Input("detail-machine-select", "value"),
+    State("store-as-of", "data"),
+)
+def show_reviews(machine_id, as_of):
+    """부품별 발주 검토 내용과 접힌 상태에서 보이는 한 줄 요약."""
+    as_of = resolve_as_of(as_of)
+    parts = {part["comp"]: part for part in part_rows(machine_id, as_of)}
+    comps = [item["id"]["comp"] for item in ctx.outputs_list[0]]
+    bodies, summaries = [], []
+    for comp in comps:
+        part = parts[comp]
+        curve = detail_data.cost_curve(comp, part["days"] if part["adopted"] else None, as_of)
+        bodies.append(review_body(comp, curve, part))
+        summaries.append([
+            status_badge(part["status"]) if part["adopted"] else html.Span("미채택", className="dt-status dt-status--off"),
+            html.Span(f"위험 상승 {d_label(part['days'])}" if part["adopted"] else "안전재고 대응"),
+            html.Span(f"발주 마감 {curve['deadline'][5:].replace('-', '/')} (D-{curve['deadline_day']})",
+                      className="is-alert" if curve["deadline_day"] <= 3 else ""),
+            html.Span(f"최저 비용 {won(curve['totals'][curve['best_day']])}"),
+        ])
+    return bodies, summaries
+
+
+# ---------------- ⑤ 발주 담기 ----------------
+@callback(
+    Output("store-order-cart", "data"),
+    Input({"type": "f07-stage", "comp": ALL}, "n_clicks"),
     Input({"type": "f08-remove", "key": ALL}, "n_clicks"),
     Input("f08-clear", "n_clicks"),
     State("store-selected-machine", "data"),
-    State("store-selected-comp", "data"),
     State("store-order-cart", "data"),
     prevent_initial_call=True,
 )
-def update_cart(_add, _remove, _clear, machine_id, comp, cart):
+def update_cart(_stage, _remove, _clear, machine_id, cart):
     cart = list(cart or [])
     trig = ctx.triggered_id
     if not ctx.triggered or not ctx.triggered[0]["value"]:
         raise PreventUpdate
     if trig == "f08-clear":
         return []
-    if isinstance(trig, dict):
+    if trig["type"] == "f08-remove":
         return [item for item in cart if item["key"] != trig["key"]]
-    if comp not in COMPS:
-        raise PreventUpdate
-    key = f"{machine_id}-{comp}"
+    key = f"{machine_id}-{trig['comp']}"
     if all(item["key"] != key for item in cart):
-        cart.append({"key": key, "machine": machine_id, "comp": comp, "ordered": None})
+        cart.append({"key": key, "machine": machine_id, "comp": trig["comp"]})
     return cart
 
 
 @callback(
     Output("f08-supplier-collapse", "is_open"),
-    Input("btn-add-cart", "n_clicks"),
-    Input("dt-cart-btn", "n_clicks"),
+    Output("dt-scroll", "data", allow_duplicate=True),
+    Input({"type": "f07-stage", "comp": ALL}, "n_clicks"),
     Input("btn-f08-supplier-close", "n_clicks"),
     prevent_initial_call=True,
 )
 def toggle_supplier(*_):
-    return ctx.triggered_id != "btn-f08-supplier-close"
+    if ctx.triggered_id == "btn-f08-supplier-close":
+        return False, no_update
+    if not ctx.triggered or not ctx.triggered[0]["value"]:
+        raise PreventUpdate
+    return True, {"id": "dt-stage", "at": ctx.triggered[0]["value"]}
 
 
 @callback(
     Output("f08-supplier-body", "children"),
-    Output("dt-cart-btn", "children"),
     Input("store-order-cart", "data"),
+    Input("store-order-basket", "data"),
     State("store-as-of", "data"),
 )
-def render_cart(cart, as_of):
+def render_cart(cart, basket, as_of):
     cart = cart or []
-    label = f"발주 정보 {len(cart)}건"
     if not cart:
-        return ghost("발주 검토에서 '발주 정보 보기'를 누르면 부품별로 쌓입니다", 100), label
+        return ghost("발주 검토에서 '발주 목록 담기'를 누르면 부품별로 쌓입니다", 100)
     as_of = resolve_as_of(as_of)
+    in_basket = {line["key"]: line["qty"] for line in basket or []}
     cards = []
     for item in cart:
         part = next(part for part in part_rows(item["machine"], as_of) if part["comp"] == item["comp"])
         curve = detail_data.cost_curve(item["comp"], part["days"] if part["adopted"] else None, as_of)
         rows = []
         for supplier in detail_data.suppliers_for(item["comp"]):
-            ordered = item.get("ordered") == supplier["id"]
+            key = f"{item['key']}|{supplier['id']}"
             price = won(supplier["price"]) + (f" (할증 {won(supplier['surcharge'])})" if supplier["surcharge"] else "")
+            added = in_basket.get(key)
             rows.append(html.Tr([
                 html.Td([html.B(supplier["name"]), html.Span(supplier["tag"], className="dt-sup-tag")]),
                 html.Td(f"{supplier['lead']}일"),
                 html.Td(price),
                 html.Td(supplier["contact"]),
-                html.Td(html.Span("발주 완료", className="dt-status dt-status--ok") if ordered else
-                        html.Button("발주 요청", id={"type": "f08-order", "key": f"{item['key']}|{supplier['id']}"},
-                                    className="dt-btn dt-btn--primary dt-btn--sm",
-                                    disabled=bool(item.get("ordered")))),
-            ], className="is-ordered" if ordered else ""))
+                html.Td(html.Div([
+                    html.Button("−", id={"type": "f08-dec", "key": key}, n_clicks=0, className="dt-step"),
+                    html.Span(str(curve["quantity"]), id={"type": "f08-qty", "key": key}, className="dt-qty"),
+                    html.Button("+", id={"type": "f08-inc", "key": key}, n_clicks=0, className="dt-step"),
+                ], className="dt-stepper")),
+                html.Td([html.Button("발주 담기", id={"type": "f08-order", "key": key}, n_clicks=0,
+                                     className="dt-btn dt-btn--primary dt-btn--sm"),
+                         html.Span(f"담김 {added}개", className="dt-added") if added else None]),
+            ], className="is-added" if added else ""))
         cards.append(html.Div(className="dt-cart-item", children=[
             html.Div([
                 html.B(f"M-{item['machine']:03d} · {item['comp']}"),
@@ -797,34 +837,80 @@ def render_cart(cart, as_of):
                 html.Button("✕", id={"type": "f08-remove", "key": item["key"]}, className="dt-icon-btn",
                             title="목록에서 빼기", **{"aria-label": "목록에서 빼기"}),
             ], className="dt-cart-head"),
-            html.Div(html.Table([html.Thead(html.Tr([html.Th(name) for name in ("업체", "납기", "단가", "연락처", "")])),
-                                 html.Tbody(rows)], className="dt-table"), className="table-scroll"),
+            html.Div(html.Table([
+                html.Thead(html.Tr([html.Th(name) for name in ("협력사", "납기", "단가", "연락처", "수량", "")])),
+                html.Tbody(rows)], className="dt-table"), className="table-scroll"),
         ]))
-    return html.Div(cards, className="dt-cart"), label
+    return html.Div(cards, className="dt-cart")
 
 
-# TODO(기능): 실제 발주 시스템과 연결. 지금은 '발주 요청'을 누르면 세션에 기록만 한다.
 @callback(
-    Output("store-order-log", "data"),
-    Output("store-order-cart", "data", allow_duplicate=True),
-    Output("f08-last-order", "data"),
-    Input({"type": "f08-order", "key": ALL}, "n_clicks"),
-    State("store-order-log", "data"),
-    State("store-order-cart", "data"),
-    State("store-as-of", "data"),
+    Output({"type": "f08-qty", "key": MATCH}, "children"),
+    Input({"type": "f08-inc", "key": MATCH}, "n_clicks"),
+    Input({"type": "f08-dec", "key": MATCH}, "n_clicks"),
+    State({"type": "f08-qty", "key": MATCH}, "children"),
     prevent_initial_call=True,
 )
-def place_order(_clicks, orders, cart, as_of):
+def step_qty(_inc, _dec, qty):
+    if not ctx.triggered or not ctx.triggered[0]["value"]:
+        raise PreventUpdate
+    qty = int(qty or 1)
+    return str(qty + 1 if ctx.triggered_id["type"] == "f08-inc" else max(qty - 1, 1))
+
+
+@callback(
+    Output("store-order-basket", "data", allow_duplicate=True),
+    Input({"type": "f08-order", "key": ALL}, "n_clicks"),
+    State({"type": "f08-qty", "key": ALL}, "children"),
+    State("store-order-basket", "data"),
+    prevent_initial_call=True,
+)
+def add_to_basket(_clicks, quantities, basket):
     if not ctx.triggered or not ctx.triggered[0]["value"] or not isinstance(ctx.triggered_id, dict):
         raise PreventUpdate
-    item_key, supplier = ctx.triggered_id["key"].split("|")
-    item = next((item for item in cart or [] if item["key"] == item_key), None)
-    if item is None:
+    key = ctx.triggered_id["key"]
+    qty = next((int(q or 1) for q, item in zip(quantities, ctx.states_list[0]) if item["id"]["key"] == key), 1)
+    item_key, supplier_id = key.split("|")
+    machine, comp = item_key.split("-", 1)
+    supplier = next(s for s in detail_data.suppliers_for(comp) if s["id"] == supplier_id)
+    return add_line(basket, basket_line(int(machine), comp, supplier, qty))
+
+
+@callback(
+    Output("dt-cart-btn", "children"),
+    Input("store-order-basket", "data"),
+)
+def show_basket_count(basket):
+    return [html.Span("발주 담기"), html.Strong(f"{len(basket or [])}건", className="dt-action-count")]
+
+
+@callback(
+    Output("dt-scroll", "data", allow_duplicate=True),
+    Input("dt-sensor-jump", "n_clicks"),
+    prevent_initial_call=True,
+)
+def jump_to_sensor(n_clicks):
+    if not n_clicks:
         raise PreventUpdate
-    cart = [{**row, "ordered": supplier} if row["key"] == item_key else row for row in cart]
-    order = {"machine": item["machine"], "component": item["comp"], "supplier": supplier,
-             "date": valid_as_of(as_of)}
-    return [*(orders or []), order], cart, order
+    return {"id": "dt-sensor", "at": n_clicks}
+
+
+# 펼쳐진 뒤 그 자리로 부드럽게 이동 (Collapse 애니메이션이 끝날 때까지 잠깐 기다림)
+clientside_callback(
+    """
+    function(target) {
+        if (!target || !target.id) { return window.dash_clientside.no_update; }
+        setTimeout(function () {
+            var el = document.getElementById(target.id);
+            if (el) { el.scrollIntoView({behavior: "smooth", block: "start"}); }
+        }, 380);
+        return "";
+    }
+    """,
+    Output("dt-scroll-done", "children"),
+    Input("dt-scroll", "data"),
+    prevent_initial_call=True,
+)
 
 
 @callback(
@@ -878,42 +964,3 @@ def show_history(machine_id, as_of):
 )
 def toggle_history(*_):
     return ctx.triggered_id == "btn-open-history"
-
-
-# ---------------- 발주 → 메인 TOP5에서 삭제 확인 ----------------
-def top5_matches(machine_id, comp, dismissed, as_of=UI_AS_OF):
-    """발주한 설비(·부품)가 메인 TOP5에 있으면 그 항목들을 반환."""
-    top = ranked_items(dismissed, as_of=valid_as_of(as_of))[:5]
-    return [item for item in top if item["machine"] == machine_id
-            and (comp is None or item.get("component") in (None, comp))]
-
-
-@callback(
-    Output("f07-confirm-dismiss", "displayed"),
-    Output("f07-confirm-dismiss", "message"),
-    Input("f08-last-order", "data"),
-    State("store-todo-dismissed", "data"),
-    State("store-as-of", "data"),
-    prevent_initial_call=True,
-)
-def ask_dismiss(order, dismissed, as_of):
-    if not order or not top5_matches(order["machine"], order["component"], dismissed, as_of):
-        raise PreventUpdate
-    label = f"M-{order['machine']:03d} {order['component']}"
-    return True, (f"{label} 발주를 요청했습니다. 이 항목이 메인 화면 '우선 확인 설비 TOP5'에 있습니다.\n"
-                  "우선순위에서 삭제하시겠습니까?")
-
-
-@callback(
-    Output("store-todo-dismissed", "data", allow_duplicate=True),
-    Input("f07-confirm-dismiss", "submit_n_clicks"),
-    State("f08-last-order", "data"),
-    State("store-todo-dismissed", "data"),
-    State("store-as-of", "data"),
-    prevent_initial_call=True,
-)
-def dismiss_ordered(submitted, order, dismissed, as_of):
-    matches = top5_matches(order["machine"], order["component"], dismissed, as_of) if order else []
-    if not submitted or not matches:
-        raise PreventUpdate
-    return list(dict.fromkeys([*(dismissed or []), *(item["key"] for item in matches)]))

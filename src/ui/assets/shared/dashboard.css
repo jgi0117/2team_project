@@ -143,6 +143,18 @@ button, input, select, textarea { font-family: inherit; }
     text-decoration: none;
 }
 .ui-nav-icon { width: 20px; text-align: center; }
+.ui-nav-badge {
+    min-width: 22px;
+    margin-left: auto;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--ui-yellow);
+    color: var(--ui-ink);
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+}
+.ui-nav-badge.is-empty { display: none; }
 
 .ui-nav-item:disabled { color: #657489; cursor: default; }
 a.ui-nav-item:hover { background: rgba(255, 255, 255, .08); color: #fff; }

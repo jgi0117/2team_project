@@ -1,0 +1,129 @@
+/* ============ 발주 화면 ============
+   부품별 판(총수량) 아래에 설비별 줄. 메인·설비 화면과 같은 구획 규칙. */
+
+.page-order{
+    display:flex;
+    flex-direction:column;
+    gap:clamp(18px,1.6vw,28px);
+    min-width:0;
+    min-height:100vh;
+    padding:clamp(16px,1.6vw,28px);
+    background:var(--ui-bg);
+    color:var(--ui-text);
+}
+.page-order > *{ min-width:0; }
+.page-order h1, .page-order h2{ margin:0; }
+
+.page-order .od-head{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; }
+.page-order .od-head h1{ color:var(--ui-ink); font-size:clamp(28px,2.2vw,38px); font-weight:800; letter-spacing:-.02em; }
+.page-order .od-sub{ margin:4px 0 0; color:var(--ui-text-muted); font-size:14px; }
+.page-order .od-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+.page-order .od-btn{
+    padding:10px 18px;
+    border:2px solid var(--ui-navy-700);
+    border-radius:999px;
+    background:var(--ui-surface);
+    color:var(--ui-navy-700);
+    font-size:14px;
+    font-weight:800;
+    text-decoration:none;
+    cursor:pointer;
+}
+.page-order .od-btn:hover{ background:var(--ui-navy-tint); color:var(--ui-navy-700); }
+.page-order .od-btn--primary{ background:var(--ui-navy-700); color:#fff; }
+.page-order .od-btn--primary:hover{ background:var(--ui-navy); color:#fff; }
+
+/* 요약 */
+.page-order .od-summary{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.page-order .od-summary:empty{ display:none; }
+.page-order .od-kpi{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:14px 18px;
+    border-top:4px solid var(--ui-navy-700);
+    border-radius:var(--ui-radius-lg);
+    background:var(--ui-surface);
+    box-shadow:var(--ui-shadow-soft);
+}
+.page-order .od-kpi span{ color:var(--ui-text-muted); font-size:13px; font-weight:800; }
+.page-order .od-kpi strong{ color:var(--ui-ink); font-size:clamp(22px,1.7vw,30px); font-weight:800; line-height:1; }
+.page-order .od-kpi.is-accent{ border-top-color:var(--ui-yellow); background:var(--ui-navy); }
+.page-order .od-kpi.is-accent span{ color:rgba(255,255,255,.7); }
+.page-order .od-kpi.is-accent strong{ color:var(--ui-yellow-400); }
+
+/* 부품별 판 */
+.page-order .od-cards{ display:grid; gap:14px; }
+.page-order .od-card{ overflow:hidden; border:1px solid var(--ui-border); border-radius:16px; background:var(--ui-surface); }
+.page-order .od-card-head{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px 20px;
+    padding:14px 20px;
+    background:var(--ui-navy-tint);
+}
+.page-order .od-card-head h2{ display:inline; margin-right:12px; color:var(--ui-ink); font-size:20px; font-weight:800; }
+.page-order .od-breakdown{ color:var(--ui-text-muted); font-size:14px; font-weight:700; }
+.page-order .od-card-total{ display:flex; align-items:baseline; gap:6px; color:var(--ui-text-muted); font-size:14px; font-weight:800; }
+.page-order .od-card-total strong{ color:var(--ui-navy-700); font-size:28px; line-height:1; }
+.page-order .od-card-cost{ margin-left:10px; color:var(--ui-ink); }
+
+.page-order .od-scroll{ overflow-x:auto; }
+.page-order .od-table{ width:100%; border-collapse:collapse; font-size:14px; }
+.page-order .od-table th{
+    padding:9px 16px;
+    background:var(--ui-surface-muted);
+    color:var(--ui-text-muted);
+    font-size:12px;
+    font-weight:800;
+    text-align:left;
+    white-space:nowrap;
+}
+.page-order .od-table td{ padding:10px 16px; border-top:1px solid var(--ui-border-soft); white-space:nowrap; }
+.page-order .od-num{ font-weight:800; font-variant-numeric:tabular-nums; }
+.page-order .od-link{ color:var(--ui-navy-700); font-weight:800; text-decoration:none; }
+.page-order .od-link:hover{ text-decoration:underline; }
+.page-order .od-stepper{ display:inline-flex; align-items:center; overflow:hidden; border:1px solid var(--ui-border); border-radius:999px; }
+.page-order .od-step{ width:30px; height:30px; border:0; background:var(--ui-surface-muted); color:var(--ui-navy-700); font-size:16px; font-weight:800; cursor:pointer; }
+.page-order .od-step:hover{ background:var(--ui-navy-tint); }
+.page-order .od-qty{ min-width:34px; font-weight:800; text-align:center; font-variant-numeric:tabular-nums; }
+.page-order .od-icon-btn{
+    width:28px;
+    height:28px;
+    border:1px solid var(--ui-border);
+    border-radius:50%;
+    background:var(--ui-surface);
+    color:var(--ui-text-muted);
+    cursor:pointer;
+}
+.page-order .od-icon-btn:hover{ background:var(--ui-danger-tint); color:var(--ui-danger); }
+
+.page-order .od-empty{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    padding:48px 16px;
+    border:1px dashed #c3ccd6;
+    border-radius:16px;
+    background:var(--ui-surface);
+    color:var(--ui-text-muted);
+    text-align:center;
+}
+.page-order .od-empty strong{ color:var(--ui-ink); font-size:18px; }
+
+/* 발주 요청 내역 */
+.page-order .od-band{ padding-top:clamp(14px,1.2vw,20px); border-top:1px solid var(--ui-border); }
+.page-order .od-section-head{ margin-bottom:12px; }
+.page-order .od-section-head h2{ display:flex; align-items:center; gap:8px; color:var(--ui-ink); font-size:clamp(17px,1.15vw,21px); font-weight:800; }
+.page-order .od-section-head h2::before{ content:""; width:4px; height:1em; border-radius:2px; background:var(--ui-navy-700); }
+.page-order .od-history-table{ border:1px solid var(--ui-border); border-radius:16px; background:var(--ui-surface); }
+.page-order .od-status{ padding:2px 9px; border-radius:999px; background:var(--ui-navy-tint); color:var(--ui-navy-700); font-size:12px; font-weight:800; }
+.page-order .od-empty-line{ color:var(--ui-text-subtle); font-size:13px; }
+.page-order .od-note{ color:var(--ui-text-subtle); font-size:12px; }
+
+@media (max-width:991.98px){
+    .page-order .od-summary{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+}

@@ -10,6 +10,7 @@ from dash.exceptions import PreventUpdate
 from .pages.main import create_main_layout
 from .pages.detail.page import MACHINES, create_detail_layout
 from .pages.statistics.page import create_statistics_page
+from .pages.order.page import create_order_page
 from .shared.sidebar import create_sidebar
 from .config import UI_AS_OF, valid_as_of
 
@@ -69,6 +70,8 @@ def create_app():
         dcc.Store(id="store-order-log", storage_type="session", data=[]),
         # 설비 상세에서 '발주 정보 보기'로 쌓은 부품 목록 (장바구니). 발주 요청 전 단계.
         dcc.Store(id="store-order-cart", storage_type="session", data=[]),
+        # 발주 화면 장바구니: 설비·부품·협력사별 수량. 설비 화면 '발주 담기'로 쌓인다.
+        dcc.Store(id="store-order-basket", storage_type="session", data=[]),
         html.Div(id="ui-page"),
     ])
 
@@ -84,6 +87,8 @@ def create_app():
             return create_detail_page(selected_machine(search), as_of)
         if pathname == "/statistics":
             return create_statistics_page(as_of)
+        if pathname == "/order":
+            return create_order_page(as_of)
         return create_main_page(as_of)
 
     @app.callback(
