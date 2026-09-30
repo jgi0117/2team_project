@@ -1,0 +1,2 @@
+total_rows,anomaly_rows,anomaly_rate,threshold,score_mean,score_median,score_std,score_min,score_max,lower_bound,upper_bound,near_threshold_rows,near_threshold_rate,event_count,mean_duration_hours,median_duration_hours,max_duration_hours
+173800,6435,0.037025316455696206,0.5,0.4204058844741054,0.4117493970097373,0.035581976605706,0.3560900388538316,0.6425310648380447,0.475,0.525,13176,0.07581127733026467,2320,2.773706896551724,1.0,79.0
