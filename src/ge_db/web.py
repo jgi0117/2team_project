@@ -11,7 +11,7 @@ from flask import redirect, render_template_string, request, session, url_for
 from sqlalchemy import text
 
 from .auth import authenticate, create_admin, has_users
-from .connection import SessionLocal
+from .connection import SessionLocal, enabled
 from .models import ErrorLog
 
 
@@ -32,7 +32,7 @@ def _local_request() -> bool:
 
 
 def configure(server) -> None:
-    if os.getenv("AUTH_ENABLED", "true").lower() not in {"1", "true", "yes", "on"}:
+    if not enabled() or os.getenv("AUTH_ENABLED", "true").lower() not in {"1", "true", "yes", "on"}:
         return
     secret = os.getenv("AUTH_SECRET_KEY", "")
     if len(secret) < 32:
@@ -113,6 +113,8 @@ def configure(server) -> None:
 
 
 def log_error(error: BaseException, path: str, owner_key: str) -> None:
+    if not enabled():
+        return
     try:
         with SessionLocal.begin() as db:
             db.add(ErrorLog(owner_key=owner_key, path=path[:255], error_type=type(error).__name__[:120],

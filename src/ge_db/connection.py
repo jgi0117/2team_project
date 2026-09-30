@@ -33,5 +33,8 @@ def url(database: str | None = None) -> URL:
     )
 
 
-engine = create_engine(url(), pool_pre_ping=True, pool_recycle=3600)
+engine = create_engine(
+    url(), pool_pre_ping=True, pool_recycle=3600, pool_timeout=5,
+    connect_args={"connect_timeout": 3, "read_timeout": 5, "write_timeout": 5},
+)
 SessionLocal = sessionmaker(engine, expire_on_commit=False)

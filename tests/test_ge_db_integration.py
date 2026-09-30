@@ -1,10 +1,13 @@
 import secrets
 import unittest
+from unittest.mock import patch
+
+from flask import Flask, jsonify
 
 from sqlalchemy import delete, func, select
 
 from src.ge_db.auth import create_admin
-from src.ge_db.bridge import persist
+from src.ge_db.bridge import install, persist, persist_updates
 from src.ge_db.connection import SessionLocal
 from src.ge_db.models import LoginAudit, OrderRecord, UiEvent, UiState, User
 from src.ge_app import app
@@ -34,17 +37,19 @@ def ids(component):
 class GeDatabaseIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.user_id = create_admin("integration_test", secrets.token_urlsafe(24))
+        cls.username = "integration_" + secrets.token_hex(8)
+        cls.user_id = create_admin(cls.username, secrets.token_urlsafe(24))
+        cls.owner = f"user:{cls.user_id}"
         app._setup_server()
 
     @classmethod
     def tearDownClass(cls):
         with SessionLocal.begin() as session:
-            owners = ["anonymous", f"user:{cls.user_id}"]
+            owners = [cls.owner]
             session.execute(delete(OrderRecord).where(OrderRecord.owner_key.in_(owners)))
             session.execute(delete(UiEvent).where(UiEvent.owner_key.in_(owners)))
             session.execute(delete(UiState).where(UiState.owner_key.in_(owners)))
-            session.execute(delete(LoginAudit).where(LoginAudit.username == "integration_test"))
+            session.execute(delete(LoginAudit).where(LoginAudit.username == cls.username))
             session.execute(delete(User).where(User.user_id == cls.user_id))
 
     def test_ge_features_remain_present(self):
@@ -65,13 +70,29 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
         persist(["13-comp2"], [{
             "machine": 13, "component": "comp2", "supplier": "supplier-a",
             "supplier_name": "공급업체 A", "qty": 2, "price": 15.5, "date": "2015-10-05",
-        }], dict(DEFAULTS))
+        }], dict(DEFAULTS), owner=self.owner)
         with SessionLocal() as session:
             self.assertEqual(session.scalar(select(func.count()).select_from(OrderRecord)
-                                            .where(OrderRecord.owner_key == "anonymous")), 1)
+                                            .where(OrderRecord.owner_key == self.owner)), 1)
             keys = set(session.scalars(select(UiState.state_key)
-                                       .where(UiState.owner_key == "anonymous")).all())
+                                       .where(UiState.owner_key == self.owner)).all())
         self.assertEqual(keys, {"todo", "orders", "settings"})
+
+    def test_orders_are_idempotent_and_invalid_updates_roll_back(self):
+        order = {"machine": 13, "component": "comp2", "supplier": "a",
+                 "qty": 2, "price": 15.5, "date": "2015-10-05"}
+        persist_updates({"orders": [order, order]}, self.owner)
+        self.assertEqual(persist_updates({"orders": [order, order]}, self.owner), 0)
+        with self.assertRaises(ValueError):
+            persist_updates({"orders": [dict(order, machine="invalid")]}, self.owner)
+        with SessionLocal() as db:
+            active = db.scalars(select(OrderRecord).where(
+                OrderRecord.owner_key == self.owner, OrderRecord.status == "requested")).all()
+            self.assertEqual(len(active), 2)
+        persist_updates({"orders": []}, self.owner)
+        with SessionLocal() as db:
+            self.assertEqual(db.scalar(select(func.count()).select_from(OrderRecord).where(
+                OrderRecord.owner_key == self.owner, OrderRecord.status == "requested")), 0)
 
     def test_ge_settings_open_and_save_callbacks(self):
         client = app.server.test_client()
@@ -106,6 +127,26 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
         stored = saved.get_json()["response"]["store-settings"]["data"]
         self.assertEqual(stored["main_sort"], "deadline")
         self.assertEqual(stored["stats_horizon"], 14)
+
+
+class DatabaseFailureTests(unittest.TestCase):
+    def test_disabled_database_does_not_open_a_connection(self):
+        with patch("src.ge_db.bridge.enabled", return_value=False), \
+                patch("src.ge_db.bridge.SessionLocal") as db:
+            self.assertEqual(persist_updates({"orders": []}), 0)
+            db.assert_not_called()
+
+    def test_database_failure_preserves_callback_response(self):
+        server = Flask(__name__)
+        install(server)
+        payload = {"response": {"store-order-log": {"data": []}}, "multi": True}
+        server.add_url_rule("/_dash-update-component", view_func=lambda: jsonify(payload), methods=["POST"])
+        with patch("src.ge_db.bridge.enabled", return_value=True), \
+                patch("src.ge_db.bridge.persist_updates", side_effect=RuntimeError("offline")), \
+                self.assertLogs("src.ge_db.bridge", level="ERROR"):
+            response = server.test_client().post("/_dash-update-component")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), payload)
 
 
 if __name__ == "__main__":

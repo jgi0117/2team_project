@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from collections import defaultdict
 from datetime import datetime
 
@@ -19,6 +20,7 @@ TRACKED_STORES = {
     "store-order-log": "orders",
     "store-settings": "settings",
 }
+logger = logging.getLogger(__name__)
 
 
 def _owner() -> str:
@@ -70,7 +72,7 @@ def _sync_orders(db, owner: str, orders: list[dict]) -> None:
 
 
 def persist_updates(updates: dict[str, object], owner: str | None = None) -> int:
-    if not updates:
+    if not enabled() or not updates:
         return 0
     Base.metadata.create_all(engine, tables=[UiState.__table__, UiEvent.__table__, OrderRecord.__table__])
     owner = owner or _owner()
@@ -104,6 +106,8 @@ def install(server) -> None:
                 and "data" in callback_response[store_id]
             }
             persist_updates(updates)
-        except Exception:
-            pass
+        except Exception as exc:
+            # Keep GE's response usable, but make failed persistence observable.
+            # Do not log SQL parameters, which can contain user data.
+            logger.error("GE database persistence failed (%s); UI response preserved", type(exc).__name__)
         return response
