@@ -5,13 +5,14 @@ from __future__ import annotations
 from functools import lru_cache
 
 import pandas as pd
+from src.common.data_source import read_csv
 
 from src.common.paths import OPS, PROCESSED
 from .operations_snapshot import END, START, snapshot
 
 
 def _read(name: str) -> pd.DataFrame:
-    return pd.read_csv(OPS / name)
+    return read_csv(OPS / name)
 
 
 def build_procurement_history() -> pd.DataFrame:

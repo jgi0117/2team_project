@@ -3,6 +3,7 @@ docs/DATA_CONTRACT.md 의 규약을 코드로 고정한다.
 컬럼 이름을 바꾸려면 여기만 고치고 다른 담당자와 합의한다.
 """
 import pandas as pd
+from src.common.data_source import read_csv
 from src.common.paths import OPS, find, pick
 
 # ── 계약서가 정한 컬럼 이름 ──────────────────────────────────
@@ -36,7 +37,7 @@ _FALLBACK = {"comp1": 8, "comp2": 42, "comp3": 16, "comp4": 24}
 def load_decision_horizon() -> dict:
     """part_master.csv 에서 부품별 결정 시한(조달+준비)을 읽는다."""
     try:
-        pm = pd.read_csv(find(OPS, "part_master"))
+        pm = read_csv(find(OPS, "part_master"))
         c  = pick(pm, "component", "comp")
         lt = pick(pm, "lead_time_days", "lead_time")
         pr = pick(pm, "preparation_days", "prep_days")

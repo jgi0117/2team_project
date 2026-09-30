@@ -42,5 +42,15 @@ SPEC = [
 def merged(stored):
     """저장된 값 위에 기본값을 채운다 (새 항목이 추가돼도 안전)."""
     values = dict(DEFAULTS)
-    values.update({key: value for key, value in (stored or {}).items() if key in DEFAULTS and value is not None})
+    if not isinstance(stored, dict):
+        return values
+    for _, key, _, _, kind, options in SPEC:
+        value = stored.get(key)
+        if value is None or isinstance(value, bool):
+            continue
+        if kind == "dropdown":
+            if value in [option[0] for option in options]:
+                values[key] = value
+        elif isinstance(value, (int, float)) and options["min"] <= value <= options["max"]:
+            values[key] = value
     return values

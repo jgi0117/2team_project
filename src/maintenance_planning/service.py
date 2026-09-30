@@ -6,6 +6,7 @@ from functools import lru_cache
 import math
 
 import pandas as pd
+from src.common.data_source import read_csv
 
 from src.common.paths import OPS, PROCESSED, ROOT, WORK
 from src.common.labels import load_events
@@ -14,7 +15,7 @@ from .operations_snapshot import snapshot
 
 @lru_cache(maxsize=None)
 def _csv(path: str) -> pd.DataFrame:
-    return pd.read_csv(path)
+    return read_csv(path)
 
 
 @lru_cache(maxsize=None)

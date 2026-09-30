@@ -11,7 +11,7 @@ from datetime import datetime
 from flask import has_request_context, request, session
 from sqlalchemy import select, update
 
-from .connection import Base, SessionLocal, enabled, engine
+from .connection import SessionLocal, enabled
 from .models import OrderRecord, UiEvent, UiState
 
 
@@ -74,7 +74,6 @@ def _sync_orders(db, owner: str, orders: list[dict]) -> None:
 def persist_updates(updates: dict[str, object], owner: str | None = None) -> int:
     if not enabled() or not updates:
         return 0
-    Base.metadata.create_all(engine, tables=[UiState.__table__, UiEvent.__table__, OrderRecord.__table__])
     owner = owner or _owner()
     changed = 0
     with SessionLocal.begin() as db:
@@ -89,11 +88,42 @@ def persist(todo, orders, settings, owner: str | None = None) -> int:
     return persist_updates({"todo": todo or [], "orders": orders or [], "settings": settings or {}}, owner)
 
 
+def restore_layout(layout, owner):
+    """Hydrate stores once per page load; old browser/account state cannot override DB."""
+    with SessionLocal() as db:
+        states = {row.state_key: json.loads(row.value_json) for row in db.scalars(
+            select(UiState).where(UiState.owner_key == owner)).all()}
+
+    def walk(node):
+        if isinstance(node, list):
+            for child in node:
+                walk(child)
+        elif isinstance(node, dict):
+            props = node.get("props", {})
+            identifier = props.get("id")
+            if isinstance(identifier, str) and identifier in TRACKED_STORES:
+                props["storage_type"] = "memory"
+                key = TRACKED_STORES[identifier]
+                if key in states:
+                    props["data"] = states[key]
+            elif identifier in ("store-order-cart", "store-order-basket", "store-login-log", "store-session-started"):
+                props["storage_type"] = "memory"
+            walk(props.get("children"))
+    walk(layout)
+    return layout
+
+
 def install(server) -> None:
     """Attach a response observer; GE's layout and callback map remain untouched."""
 
     @server.after_request
     def observe_ge_callback(response):
+        if enabled() and request.path == "/_dash-layout" and response.status_code == 200 and session.get("user_id"):
+            try:
+                response.set_data(json.dumps(restore_layout(response.get_json(), _owner()), ensure_ascii=False))
+            except Exception as exc:
+                logger.error("GE state restore failed (%s)", type(exc).__name__)
+            return response
         if not enabled() or request.path != "/_dash-update-component" or response.status_code != 200:
             return response
         try:

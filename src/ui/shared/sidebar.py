@@ -1,6 +1,7 @@
 """Navigation shared by the main, equipment, and statistics pages."""
 
 from pathlib import Path
+from flask import current_app, has_request_context, session
 
 from dash import Input, Output, State, callback, ctx, dcc, html
 from dash.exceptions import PreventUpdate
@@ -11,15 +12,19 @@ _PROFILE_PHOTO = Path(__file__).resolve().parents[1] / "assets" / "profile.png"
 
 
 def profile():
+    user = dict(CURRENT_USER)
+    if has_request_context() and session.get("user_id"):
+        user.update(name=session.get("username", "사용자"), title="설비보전팀",
+                    role="관리자" if session.get("is_admin") else "사용자")
     photo = (html.Img(src="/assets/profile.png", alt="", className="sb-avatar")
              if _PROFILE_PHOTO.is_file() else
-             html.Span(CURRENT_USER["name"][:1], className="sb-avatar", **{"aria-hidden": "true"}))
+             html.Span(user["name"][:1], className="sb-avatar", **{"aria-hidden": "true"}))
     return html.Div([
         photo,
         html.Div([
-            html.Strong(CURRENT_USER["name"], className="sb-name"),
-            html.Span(CURRENT_USER["title"], className="sb-title"),
-            html.Span(CURRENT_USER["role"], className="sb-role"),
+            html.Strong(user["name"], className="sb-name"),
+            html.Span(user["title"], className="sb-title"),
+            html.Span(user["role"], className="sb-role"),
         ], className="sb-profile-text"),
     ], className="sb-profile")
 
@@ -69,6 +74,9 @@ def create_sidebar(active="main", as_of=UI_AS_OF):
                 ],
                 **{"aria-label": "대시보드 메뉴"},
             ),
+            html.A([html.Span("↪", **{"aria-hidden": "true"}), html.Span("로그아웃")],
+                   href="/logout", className="sb-logout", title="로그아웃")
+            if has_request_context() and "ge_logout" in current_app.view_functions else None,
         ],
         className="ui-sidebar",
     )

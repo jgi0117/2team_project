@@ -6,6 +6,7 @@ from functools import lru_cache
 from threading import Lock
 
 import pandas as pd
+from src.common.data_source import read_csv
 
 from src.F03 import build_summary
 from src.F05 import build_diagnosis
@@ -23,17 +24,17 @@ _IF_RESULTS = ROOT / "outputs" / "model3" / "predictions.csv"
 
 @lru_cache(maxsize=1)
 def _failure_predictions():
-    return pd.read_csv(PROCESSED / "predictions.csv")
+    return read_csv(PROCESSED / "predictions.csv")
 
 
 @lru_cache(maxsize=1)
 def _telemetry():
-    return pd.read_csv(RAW_PDM / "PdM_telemetry.csv", parse_dates=["datetime"])
+    return read_csv(RAW_PDM / "PdM_telemetry.csv", parse_dates=["datetime"])
 
 
 @lru_cache(maxsize=1)
 def _if_predictions():
-    return pd.read_csv(_IF_RESULTS) if _IF_RESULTS.is_file() else None
+    return read_csv(_IF_RESULTS) if _IF_RESULTS.is_file() else None
 
 
 @lru_cache(maxsize=16)

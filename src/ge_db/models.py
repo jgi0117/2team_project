@@ -86,3 +86,12 @@ class SourceManifest(Base):
     size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
     row_count: Mapped[int | None] = mapped_column(BigInteger)
     scanned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, nullable=False)
+
+
+class Dataset(Base):
+    __tablename__ = "datasets"
+    source_path: Mapped[str] = mapped_column(String(255), primary_key=True)
+    table_name: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    row_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    dtypes_json: Mapped[str] = mapped_column(Text, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)

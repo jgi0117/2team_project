@@ -7,6 +7,10 @@ from flask import got_request_exception, request, session
 
 from src.ge_db.bridge import install
 from src.ge_db.web import configure, log_error
+from src.common.data_source import configure_reader
+from src.ge_db.datasets import read_csv
+
+configure_reader(read_csv)
 from src.ui.app import app
 
 

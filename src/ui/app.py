@@ -60,7 +60,7 @@ def create_app():
         __name__,
         assets_folder=str(Path(__file__).resolve().parent / "assets"),
         title="설비보전 대시보드",
-        external_stylesheets=[dbc.themes.BOOTSTRAP],
+        # Bootstrap is bundled in assets so dialogs work without CDN access.
         suppress_callback_exceptions=True,
         meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
     )

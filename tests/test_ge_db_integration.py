@@ -38,7 +38,8 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.username = "integration_" + secrets.token_hex(8)
-        cls.user_id = create_admin(cls.username, secrets.token_urlsafe(24))
+        cls.password = secrets.token_urlsafe(24)
+        cls.user_id = create_admin(cls.username, cls.password)
         cls.owner = f"user:{cls.user_id}"
         app._setup_server()
 
@@ -104,7 +105,8 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
                         for output in app.callback_map[open_key]["output"]]
         opened = client.post("/_dash-update-component", json={
             "output": open_key, "outputs": open_outputs,
-            "inputs": [{"id": "sb-settings-open", "property": "n_clicks", "value": 1}],
+            "inputs": [{"id": "sb-settings-open", "property": "n_clicks", "value": 1},
+                       {"id": "st-reset", "property": "n_clicks", "value": 0}],
             "state": [{"id": "store-settings", "property": "data", "value": dict(DEFAULTS)}],
             "changedPropIds": ["sb-settings-open.n_clicks"],
         })
@@ -127,6 +129,68 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
         stored = saved.get_json()["response"]["store-settings"]["data"]
         self.assertEqual(stored["main_sort"], "deadline")
         self.assertEqual(stored["stats_horizon"], 14)
+
+    def test_login_restore_and_logout(self):
+        client = app.server.test_client()
+        self.assertEqual(client.get("/login").status_code, 200)
+        with client.session_transaction() as browser:
+            csrf = browser["csrf"]
+        response = client.post("/login", data={"username": self.username,
+                              "password": self.password, "csrf": csrf})
+        self.assertEqual(response.status_code, 302)
+        persist_updates({"settings": dict(DEFAULTS, stats_horizon=42)}, self.owner)
+        layout = client.get("/_dash-layout")
+        self.assertEqual(layout.status_code, 200)
+        stores = {node["props"].get("id"): node["props"]
+                  for node in layout.get_json()["props"]["children"]}
+        self.assertEqual(stores["store-settings"]["data"]["stats_horizon"], 42)
+        self.assertEqual(stores["store-settings"]["storage_type"], "memory")
+        self.assertEqual(stores["store-order-basket"]["storage_type"], "memory")
+        from src.ui.shared.sidebar import create_sidebar
+        with app.server.test_request_context("/"):
+            self.assertIn("sb-settings-open", ids(create_sidebar()))
+            self.assertIn('"/logout"', str(create_sidebar().to_plotly_json()).replace("'", '"'))
+        self.assertEqual(client.get("/logout").status_code, 302)
+        with client.session_transaction() as browser:
+            self.assertNotIn("user_id", browser)
+
+    def test_reset_updates_visible_settings_controls(self):
+        client = app.server.test_client()
+        with client.session_transaction() as browser:
+            browser["user_id"] = self.user_id
+        key = next(key for key in app.callback_map if "sb-settings-modal.is_open" in key)
+        outputs = [{"id": out.component_id, "property": out.component_property}
+                   for out in app.callback_map[key]["output"]]
+        response = client.post("/_dash-update-component", json={
+            "output": key, "outputs": outputs,
+            "inputs": [{"id": "sb-settings-open", "property": "n_clicks", "value": 1},
+                       {"id": "st-reset", "property": "n_clicks", "value": 1}],
+            "state": [{"id": "store-settings", "property": "data", "value": dict(DEFAULTS, stats_horizon=42)}],
+            "changedPropIds": ["st-reset.n_clicks"]})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["response"]["st-stats_horizon"]["value"], 7)
+
+    def test_all_pages_render_through_authenticated_dash_callbacks(self):
+        client = app.server.test_client()
+        with client.session_transaction() as browser:
+            browser.update(user_id=self.user_id, username=self.username, is_admin=True)
+        for path in ("/", "/detail", "/statistics", "/order"):
+            with self.subTest(path=path):
+                response = client.post("/_dash-update-component", json={
+                    "output": "ui-page.children", "outputs": {"id": "ui-page", "property": "children"},
+                    "inputs": [{"id": "ui-location", "property": "pathname", "value": path},
+                               {"id": "ui-location", "property": "search", "value": "?machine=13"},
+                               {"id": "store-as-of", "property": "data", "value": "2015-10-05"},
+                               {"id": "store-settings", "property": "data", "value": dict(DEFAULTS)}],
+                    "state": [], "changedPropIds": ["ui-location.pathname"]})
+                self.assertEqual(response.status_code, 200)
+                page = response.get_json()["response"]["ui-page"]["children"]
+                self.assertTrue(page["props"]["children"])
+        css = client.get("/assets/00_bootstrap.min.css")
+        self.assertEqual(css.status_code, 200)
+        self.assertIn(b".modal-dialog", css.data)
+        css.close()
+        self.assertNotIn(b"cdn.jsdelivr.net", client.get("/").data)
 
 
 class DatabaseFailureTests(unittest.TestCase):

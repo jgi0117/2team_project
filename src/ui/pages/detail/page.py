@@ -5,6 +5,7 @@ from functools import lru_cache
 
 import dash_bootstrap_components as dbc
 import pandas as pd
+from src.common.data_source import read_csv
 import plotly.graph_objects as go
 from dash import html, dcc, Input, Output, State, ALL, MATCH, callback, clientside_callback, ctx, no_update
 from dash.exceptions import PreventUpdate
@@ -52,7 +53,7 @@ PLACE = {"comp1": "right", "comp2": "above", "comp3": "above", "comp4": "above"}
 @lru_cache(maxsize=1)
 def risk_curve():
     """부품별 위험 상승 예상 시점과 판정 (모델 산출물)."""
-    return pd.read_csv(PROCESSED / "risk_curve.csv")
+    return read_csv(PROCESSED / "risk_curve.csv")
 
 
 def machine_risk(machine_id, as_of):

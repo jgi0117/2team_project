@@ -4,13 +4,12 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func, select
 
-from .connection import Base, SessionLocal, engine
+from .connection import SessionLocal
 from .models import LoginAudit, User
 from .security import encrypt_text, hash_password, verify_password
 
 
 def has_users() -> bool:
-    Base.metadata.create_all(engine, tables=[User.__table__, LoginAudit.__table__])
     with SessionLocal() as session:
         return bool(session.scalar(select(func.count()).select_from(User)))
 

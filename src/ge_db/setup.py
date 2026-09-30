@@ -21,7 +21,7 @@ SOURCE_PATTERNS = (
     "outputs/model3/predictions.csv",
     "outputs/model3/evaluation/*.csv",
 )
-EXCLUDED = {"inventory_daily_history.csv", "procurement_history.csv"}
+EXCLUDED = set()
 
 
 def create_database() -> None:
@@ -89,6 +89,10 @@ def main() -> None:
         drop_database()
     create_database()
     Base.metadata.create_all(engine)
+    from .datasets import import_csv
+    for path in sorted({path for pattern in SOURCE_PATTERNS for path in ROOT.glob(pattern)}):
+        rows = import_csv(path)
+        print(f"Imported {path.relative_to(ROOT).as_posix()}: {rows:,} rows", flush=True)
     count = refresh_manifest()
     print(f"GE database ready: {url().database} (source files: {count})")
 

@@ -11,6 +11,7 @@ from datetime import date, timedelta
 from functools import lru_cache
 
 import pandas as pd
+from src.common.data_source import read_csv
 
 from src.common.labels import load_events
 from src.common.paths import OPS, PROCESSED
@@ -350,7 +351,7 @@ def replacement_history(machine_id, as_of, months=12):
 # ---------------- comp2 안전재고 근거 ----------------
 @lru_cache(maxsize=1)
 def _metrics():
-    return pd.read_csv(PROCESSED / "model_metrics.csv")
+    return read_csv(PROCESSED / "model_metrics.csv")
 
 
 def safety_stock_info(comp, as_of):
@@ -381,4 +382,4 @@ def safety_stock_info(comp, as_of):
 
 @lru_cache(maxsize=1)
 def _parts():
-    return pd.read_csv(OPS / "part_master.csv").set_index("component")
+    return read_csv(OPS / "part_master.csv").set_index("component")

@@ -9,6 +9,7 @@
 """
 import numpy as np
 import pandas as pd
+from src.common.data_source import read_csv
 from src.common.paths import RAW_PDM, PROCESSED, find, pick
 
 LABEL_VERSION = "label_v1"
@@ -20,7 +21,7 @@ def _norm(s):
 
 
 def load_maint() -> pd.DataFrame:
-    m = pd.read_csv(find(RAW_PDM, "maint"))
+    m = read_csv(find(RAW_PDM, "maint"))
     return pd.DataFrame({
         "machineID": m[pick(m, "machineID")].astype(int),
         "component": m[pick(m, "comp", "component")].astype(str).str.strip(),
@@ -29,7 +30,7 @@ def load_maint() -> pd.DataFrame:
 
 
 def load_failures() -> pd.DataFrame:
-    f = pd.read_csv(find(RAW_PDM, "failure"))
+    f = read_csv(find(RAW_PDM, "failure"))
     return pd.DataFrame({
         "machineID": f[pick(f, "machineID")].astype(int),
         "component": f[pick(f, "failure", "comp", "component")].astype(str).str.strip(),

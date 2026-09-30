@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from src.common.data_source import read_csv
 
 from src.common.machine_heatmap import ANOMALY_COLORS, machine_grid
 
@@ -12,7 +13,7 @@ DEFAULT_PREDICTIONS = Path(__file__).resolve().parents[2] / "outputs/model3/pred
 
 
 def load_predictions(path=DEFAULT_PREDICTIONS):
-    data = pd.read_csv(path, usecols=["machineID", "as_of", "anomaly_score", "threshold", "is_anomaly"], parse_dates=["as_of"])
+    data = read_csv(path, usecols=["machineID", "as_of", "anomaly_score", "threshold", "is_anomaly"], parse_dates=["as_of"])
     if data.empty or data.isna().any().any():
         raise ValueError("Missing IF results")
     if data.as_of.dt.tz is not None or data.duplicated(["machineID", "as_of"]).any():

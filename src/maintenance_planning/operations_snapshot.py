@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 import pandas as pd
+from src.common.data_source import read_csv
 
 from src.common.paths import OPS
 
@@ -15,7 +16,7 @@ END = pd.Timestamp("2016-01-01 06:00:00")
 
 @lru_cache(maxsize=None)
 def _csv(name: str) -> pd.DataFrame:
-    return pd.read_csv(OPS / name)
+    return read_csv(OPS / name)
 
 
 def _at(value) -> pd.Timestamp:

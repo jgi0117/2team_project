@@ -1,6 +1,7 @@
 """설정 창 (사이드바 톱니바퀴): 로그인 기록 · 완료 기록 관리 · 기본 설정."""
 
 from datetime import datetime
+from flask import has_request_context, session
 
 import dash_bootstrap_components as dbc
 from dash import ALL, Input, Output, State, callback, ctx, dcc, html
@@ -53,11 +54,14 @@ def settings_modal(settings=None):
     Output("sb-settings-modal", "is_open"),
     [Output(f"st-{key}", "value") for key in CONTROL_IDS],
     Input("sb-settings-open", "n_clicks"),
+    Input("st-reset", "n_clicks"),
     State("store-settings", "data"),
     prevent_initial_call=True,
 )
-def open_settings(n_clicks, stored):
+def open_settings(n_clicks, reset_clicks, stored):
     """톱니바퀴를 누르면 저장된 값으로 채워서 연다."""
+    if ctx.triggered_id == "st-reset" and reset_clicks:
+        return True, *[DEFAULTS[key] for key in CONTROL_IDS]
     if not n_clicks:
         raise PreventUpdate
     values = merged(stored)
@@ -89,10 +93,33 @@ def record_access(_pathname, started, log):
 def show_logins(is_open, log):
     if not is_open:
         raise PreventUpdate
+    if has_request_context() and session.get("user_id"):
+        from sqlalchemy import select
+        from src.ge_db.connection import SessionLocal
+        from src.ge_db.models import LoginAudit
+        try:
+            with SessionLocal() as db:
+                entries = db.scalars(select(LoginAudit).where(
+                    LoginAudit.username == session.get("username")
+                ).order_by(LoginAudit.occurred_at.desc()).limit(200)).all()
+                rows = [html.Tr([
+                    html.Td(item.occurred_at.strftime("%Y-%m-%d %H:%M:%S")),
+                    html.Td(item.username), html.Td("성공" if item.success else "실패"),
+                    html.Td("잠김" if item.reason == "locked" else "로그인"),
+                ]) for item in entries]
+            return html.Div([
+                html.P("현재 계정의 최근 로그인 기록입니다.", className="st-desc"),
+                html.Div(html.Table([
+                    html.Thead(html.Tr([html.Th(n) for n in ("접속 시각", "사용자", "결과", "상태")])),
+                    html.Tbody(rows or [html.Tr(html.Td("기록 없음", colSpan=4))]),
+                ], className="st-table"), className="st-scroll"),
+            ])
+        except Exception:
+            return html.P("로그인 기록을 불러오지 못했습니다. 잠시 후 다시 열어주세요.", className="st-desc")
     rows = [html.Tr([html.Td(item["at"]), html.Td(item["user"]), html.Td(item["title"]), html.Td(item["role"])])
             for item in log or []]
     return html.Div([
-        html.P("이 브라우저에서 대시보드에 접속한 기록입니다. 로그인 기능이 연결되면 계정별 접속 기록(DB)으로 바뀝니다.",
+        html.P("이 브라우저에서 대시보드에 접속한 기록입니다.",
                className="st-desc"),
         html.Div(html.Table([html.Thead(html.Tr([html.Th(n) for n in ("접속 시각", "사용자", "소속·직급", "권한")])),
                              html.Tbody(rows or [html.Tr(html.Td("기록 없음", colSpan=4))])],
