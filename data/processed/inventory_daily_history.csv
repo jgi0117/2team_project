@@ -1,0 +1,1105 @@
+date,component,opening_qty,received_qty,issued_qty,expired_lot_events,disposed_qty,quality_release_events,closing_on_hand,available_stock,quarantined_stock,expired_stock,open_order_count,open_order_qty,pending_maintenance_count,target_stock,stock_gap,stock_status,daily_event_summary,history_source
+2015-04-01,comp1,19,0,1,0,0,0,18,18,0,0,2,16,0,19,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-01,comp2,25,0,7,0,0,0,18,18,0,0,6,85,0,25,7,shortage,출고 7,derived:synthetic_operations_v1
+2015-04-01,comp3,19,0,2,0,0,0,17,17,0,0,3,30,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-01,comp4,22,0,6,0,0,0,16,16,0,0,4,52,0,22,6,shortage,출고 6,derived:synthetic_operations_v1
+2015-04-02,comp1,0,0,5,0,0,0,13,13,0,0,2,16,0,19,6,shortage,출고 5,derived:synthetic_operations_v1
+2015-04-02,comp2,0,0,3,0,0,0,15,15,0,0,6,85,0,25,10,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-02,comp3,0,0,1,0,0,0,16,16,0,0,3,30,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-02,comp4,0,0,3,0,0,0,13,13,0,0,4,52,0,22,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-03,comp1,0,0,1,0,0,0,12,12,0,0,2,16,0,19,7,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-03,comp2,0,0,1,0,0,0,14,14,0,0,6,85,0,25,11,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-03,comp3,0,0,2,0,0,0,14,14,0,0,3,30,0,19,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-03,comp4,0,0,1,0,0,0,12,12,0,0,4,52,0,22,10,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-04,comp1,0,0,3,1,0,0,9,9,0,0,2,16,0,19,10,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-04-04,comp2,0,13,4,1,0,0,23,10,0,0,5,72,0,25,15,shortage,입고 13; 출고 4; 기한초과 1,derived:synthetic_operations_v1
+2015-04-04,comp3,0,12,3,1,0,0,23,11,0,0,2,18,0,19,8,shortage,입고 12; 출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-04-04,comp4,0,13,1,1,0,0,24,11,0,0,3,39,0,22,11,shortage,입고 13; 출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-04-05,comp1,0,13,3,0,0,0,19,6,0,0,1,3,0,19,13,shortage,입고 13; 출고 3,derived:synthetic_operations_v1
+2015-04-05,comp2,0,0,2,0,0,0,21,8,0,0,5,72,0,25,17,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-05,comp3,0,0,4,0,0,0,19,7,0,0,2,18,0,19,12,shortage,출고 4,derived:synthetic_operations_v1
+2015-04-05,comp4,0,0,5,0,0,0,19,6,0,0,3,39,0,22,16,shortage,출고 5,derived:synthetic_operations_v1
+2015-04-06,comp1,0,0,2,0,0,0,17,17,0,0,1,3,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-06,comp2,0,0,2,0,0,0,19,6,0,0,5,72,0,25,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-06,comp3,0,0,3,0,0,0,16,16,0,0,2,18,0,19,3,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-06,comp4,0,0,1,0,0,0,18,5,0,0,3,39,0,22,17,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-07,comp1,0,0,4,0,0,0,13,13,0,0,1,3,0,19,6,shortage,출고 4,derived:synthetic_operations_v1
+2015-04-07,comp2,0,0,2,0,0,0,17,4,0,0,5,72,0,25,21,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-07,comp3,0,0,4,0,0,0,12,12,0,0,2,18,0,19,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-04-07,comp4,0,0,2,0,0,0,16,16,0,0,3,39,0,22,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-08,comp1,0,3,2,0,0,0,14,11,0,0,1,21,0,19,8,shortage,입고 3; 출고 2,derived:synthetic_operations_v1
+2015-04-08,comp2,0,0,0,0,0,0,17,4,0,0,6,87,0,25,21,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-08,comp3,0,0,0,0,0,0,12,12,0,0,3,38,0,19,7,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-08,comp4,0,0,4,0,0,0,12,12,0,0,4,59,0,22,10,shortage,출고 4,derived:synthetic_operations_v1
+2015-04-09,comp1,0,0,1,0,0,0,13,13,0,0,1,21,0,19,6,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-09,comp2,0,0,4,0,0,0,13,0,0,0,6,87,0,25,25,shortage,출고 4,derived:synthetic_operations_v1
+2015-04-09,comp3,0,0,1,0,0,0,11,11,0,0,3,38,0,19,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-09,comp4,0,0,0,0,0,0,12,12,0,0,4,59,0,22,10,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-10,comp1,0,0,1,0,0,0,12,12,0,0,1,21,0,19,7,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-10,comp2,0,0,0,0,0,0,13,0,0,0,6,87,0,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-10,comp3,0,0,0,0,0,0,11,11,0,0,3,38,0,19,8,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-10,comp4,0,0,1,0,0,0,11,11,0,0,4,59,0,22,11,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-11,comp1,0,0,1,0,0,0,11,11,0,0,1,21,0,19,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-11,comp2,0,0,0,0,0,0,13,13,0,0,6,87,0,25,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-11,comp3,0,0,2,0,0,0,9,9,0,0,3,38,0,19,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-11,comp4,0,13,2,0,0,0,22,9,0,0,3,46,0,22,13,shortage,입고 13; 출고 2,derived:synthetic_operations_v1
+2015-04-12,comp1,0,0,1,0,0,0,10,10,0,0,1,21,0,19,9,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-12,comp2,0,0,0,0,0,0,13,13,0,0,6,87,0,25,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-12,comp3,0,0,0,0,0,0,9,9,0,0,3,38,0,19,10,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-12,comp4,0,0,0,0,0,0,22,9,0,0,3,46,0,22,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-13,comp1,0,0,5,0,0,0,5,5,0,0,1,21,0,19,14,shortage,출고 5,derived:synthetic_operations_v1
+2015-04-13,comp2,0,13,4,0,0,0,22,9,0,0,5,74,0,25,16,shortage,입고 13; 출고 4,derived:synthetic_operations_v1
+2015-04-13,comp3,0,0,3,0,0,0,6,6,0,0,3,38,0,19,13,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-13,comp4,0,0,4,0,0,0,18,5,0,0,3,46,0,22,17,shortage,출고 4,derived:synthetic_operations_v1
+2015-04-14,comp1,0,0,1,0,0,0,4,4,0,0,1,21,0,19,15,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-14,comp2,0,0,0,0,0,0,22,9,0,0,5,74,0,25,16,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-14,comp3,0,0,0,0,0,0,6,6,0,0,3,38,0,19,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-14,comp4,0,0,1,0,0,0,17,17,0,0,3,46,0,22,5,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-15,comp1,0,21,3,0,0,0,22,1,0,0,1,15,0,19,18,shortage,입고 21; 출고 3,derived:synthetic_operations_v1
+2015-04-15,comp2,0,0,1,0,0,0,21,8,0,0,6,85,0,25,17,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-15,comp3,0,6,5,0,0,0,7,1,0,0,3,44,0,19,18,shortage,입고 6; 출고 5,derived:synthetic_operations_v1
+2015-04-15,comp4,0,0,1,0,0,0,16,16,0,0,4,57,0,22,6,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-16,comp1,0,0,3,0,0,0,19,19,0,0,1,15,0,19,0,at_target,출고 3,derived:synthetic_operations_v1
+2015-04-16,comp2,0,0,2,0,0,0,19,6,0,0,6,85,0,25,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-16,comp3,0,0,1,0,0,0,6,0,0,0,3,44,3,19,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-16,comp4,0,0,3,0,0,0,13,13,0,0,4,57,0,22,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-17,comp1,0,0,0,0,0,0,19,19,0,0,1,15,0,19,0,at_target,변동 없음,derived:synthetic_operations_v1
+2015-04-17,comp2,0,0,2,0,0,0,17,4,0,0,6,85,0,25,21,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-17,comp3,0,0,6,0,0,0,0,0,0,0,3,44,4,19,19,shortage,출고 6,derived:synthetic_operations_v1
+2015-04-17,comp4,0,0,3,0,0,0,10,10,0,0,4,57,0,22,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-18,comp1,0,0,0,0,0,0,19,19,0,0,1,15,0,19,0,at_target,변동 없음,derived:synthetic_operations_v1
+2015-04-18,comp2,0,13,2,0,0,0,28,2,0,0,5,72,0,25,23,shortage,입고 13; 출고 2,derived:synthetic_operations_v1
+2015-04-18,comp3,0,0,0,0,0,0,0,0,0,0,3,44,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-18,comp4,0,0,2,0,0,0,8,8,0,0,4,57,0,22,14,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-19,comp1,0,0,3,0,0,0,16,16,0,0,1,15,0,19,3,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-19,comp2,0,0,0,0,0,0,28,2,0,0,5,72,0,25,23,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-19,comp3,0,12,0,0,0,0,12,0,0,0,2,32,10,19,19,shortage,입고 12,derived:synthetic_operations_v1
+2015-04-19,comp4,0,13,4,0,0,0,17,4,0,0,3,44,0,22,18,shortage,입고 13; 출고 4,derived:synthetic_operations_v1
+2015-04-20,comp1,0,0,2,0,0,0,14,14,0,0,1,15,0,19,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-20,comp2,0,0,6,0,0,0,22,9,0,0,5,72,0,25,16,shortage,출고 6,derived:synthetic_operations_v1
+2015-04-20,comp3,0,0,0,0,0,0,12,0,0,0,2,32,14,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-20,comp4,0,0,2,0,0,0,15,2,0,0,3,44,0,22,20,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-21,comp1,0,0,0,0,0,0,14,14,0,0,1,15,0,19,5,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-21,comp2,0,0,5,0,0,0,17,4,0,0,5,72,0,25,21,shortage,출고 5,derived:synthetic_operations_v1
+2015-04-21,comp3,0,0,12,0,0,0,0,0,0,0,2,32,4,19,19,shortage,출고 12,derived:synthetic_operations_v1
+2015-04-21,comp4,0,0,1,0,0,0,14,1,0,0,3,44,0,22,21,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-22,comp1,0,15,2,0,0,0,27,12,0,0,1,9,0,19,7,shortage,입고 15; 출고 2,derived:synthetic_operations_v1
+2015-04-22,comp2,0,0,1,1,0,0,16,3,0,0,6,92,0,25,22,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-04-22,comp3,0,20,0,0,0,0,20,0,0,0,2,44,9,19,19,shortage,입고 20,derived:synthetic_operations_v1
+2015-04-22,comp4,0,0,1,0,0,0,13,13,0,0,4,59,0,22,9,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-23,comp1,0,0,0,0,0,0,27,27,0,0,1,9,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-04-23,comp2,0,0,3,0,0,0,13,0,0,0,6,92,1,25,25,shortage,출고 3,derived:synthetic_operations_v1
+2015-04-23,comp3,0,0,0,0,0,0,20,0,0,0,2,44,9,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-23,comp4,0,0,2,0,0,0,11,11,0,0,4,59,0,22,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-24,comp1,0,0,1,0,0,0,26,26,0,0,1,9,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-04-24,comp2,0,0,0,0,0,0,13,0,0,0,6,92,3,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-24,comp3,0,0,10,0,0,0,10,10,0,0,2,44,0,19,9,shortage,출고 10,derived:synthetic_operations_v1
+2015-04-24,comp4,0,0,1,0,0,0,10,10,0,0,4,59,0,22,12,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-25,comp1,0,0,1,0,0,0,25,25,0,0,1,9,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-04-25,comp2,0,13,3,0,0,0,23,10,0,0,5,79,0,25,15,shortage,입고 13; 출고 3,derived:synthetic_operations_v1
+2015-04-25,comp3,0,0,1,0,0,0,9,9,0,0,2,44,0,19,10,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-25,comp4,0,13,1,0,0,0,22,9,0,0,3,46,0,22,13,shortage,입고 13; 출고 1,derived:synthetic_operations_v1
+2015-04-26,comp1,0,0,1,0,0,0,24,24,0,0,1,9,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-04-26,comp2,0,0,1,0,0,0,22,9,0,0,5,79,0,25,16,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-26,comp3,0,0,2,0,0,0,7,7,0,0,2,44,0,19,12,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-26,comp4,0,0,1,0,0,0,21,8,0,0,3,46,0,22,14,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-27,comp1,0,0,0,0,0,0,24,24,0,0,1,9,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-04-27,comp2,0,0,1,0,0,0,21,8,0,0,5,79,0,25,17,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-27,comp3,0,0,0,0,0,0,7,7,0,0,2,44,0,19,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-27,comp4,0,0,0,0,0,0,21,8,0,0,3,46,0,22,14,shortage,변동 없음,derived:synthetic_operations_v1
+2015-04-28,comp1,0,0,2,0,0,0,22,22,0,0,1,9,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-04-28,comp2,0,0,5,0,0,0,16,3,0,0,5,79,0,25,22,shortage,출고 5,derived:synthetic_operations_v1
+2015-04-28,comp3,0,0,1,0,0,0,6,6,0,0,2,44,0,19,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-28,comp4,0,0,2,0,0,0,19,19,0,0,3,46,0,22,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-29,comp1,0,9,0,0,0,0,31,22,0,0,1,4,0,19,0,above_target,입고 9,derived:synthetic_operations_v1
+2015-04-29,comp2,0,0,1,0,0,0,15,2,0,0,6,94,0,25,23,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-29,comp3,0,12,0,0,0,0,18,6,0,0,2,35,0,19,13,shortage,입고 12,derived:synthetic_operations_v1
+2015-04-29,comp4,0,20,1,0,0,0,38,18,0,0,3,33,0,22,4,shortage,입고 20; 출고 1,derived:synthetic_operations_v1
+2015-04-30,comp1,0,0,1,0,0,0,30,30,0,0,1,4,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-04-30,comp2,0,0,2,0,0,0,13,0,0,0,6,94,2,25,25,shortage,출고 2,derived:synthetic_operations_v1
+2015-04-30,comp3,0,0,1,0,0,0,17,5,0,0,2,35,0,19,14,shortage,출고 1,derived:synthetic_operations_v1
+2015-04-30,comp4,0,0,2,0,0,0,36,16,0,0,3,33,0,22,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-01,comp1,0,0,2,0,0,0,28,28,0,0,1,4,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-05-01,comp2,0,0,0,0,0,0,13,0,0,0,6,94,7,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-01,comp3,0,0,4,0,0,0,13,13,0,0,2,35,0,19,6,shortage,출고 4,derived:synthetic_operations_v1
+2015-05-01,comp4,0,0,1,0,0,0,35,15,0,0,3,33,0,22,7,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-02,comp1,0,0,2,0,0,0,26,26,0,0,1,4,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-05-02,comp2,0,13,12,0,0,0,14,1,0,0,5,81,0,25,24,shortage,입고 13; 출고 12,derived:synthetic_operations_v1
+2015-05-02,comp3,0,0,3,0,0,0,10,10,0,0,2,35,0,19,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-02,comp4,0,0,3,0,0,0,32,32,0,0,3,33,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-05-03,comp1,0,0,1,0,0,0,25,25,0,0,1,4,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-05-03,comp2,0,0,1,0,0,0,13,0,0,0,5,81,2,25,25,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-03,comp3,0,0,1,0,0,0,9,9,0,0,2,35,0,19,10,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-03,comp4,0,0,1,0,0,0,31,31,0,0,3,33,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-05-04,comp1,0,0,0,0,0,0,25,25,0,0,1,4,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-04,comp2,0,0,0,1,0,0,13,0,0,0,5,81,3,25,25,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-05-04,comp3,0,0,1,0,0,0,8,8,0,0,2,35,0,19,11,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-04,comp4,0,0,5,0,0,0,26,26,0,0,3,33,0,22,0,above_target,출고 5,derived:synthetic_operations_v1
+2015-05-05,comp1,0,0,4,0,0,0,21,21,0,0,1,4,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-05-05,comp2,0,0,0,0,0,0,13,0,0,0,5,81,6,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-05,comp3,0,0,3,0,0,0,5,5,0,0,2,35,0,19,14,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-05,comp4,0,0,5,0,0,0,21,21,0,0,3,33,0,22,1,shortage,출고 5,derived:synthetic_operations_v1
+2015-05-06,comp1,0,4,1,0,0,0,24,20,0,0,1,11,0,19,0,above_target,입고 4; 출고 1,derived:synthetic_operations_v1
+2015-05-06,comp2,0,20,0,0,0,0,33,0,0,0,5,88,9,25,25,shortage,입고 20,derived:synthetic_operations_v1
+2015-05-06,comp3,0,32,3,0,0,0,34,2,0,0,2,18,0,19,17,shortage,입고 32; 출고 3,derived:synthetic_operations_v1
+2015-05-06,comp4,0,11,4,0,0,0,28,17,0,0,3,45,0,22,5,shortage,입고 11; 출고 4,derived:synthetic_operations_v1
+2015-05-07,comp1,0,0,1,0,0,0,23,23,0,0,1,11,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-05-07,comp2,0,0,0,0,0,0,33,0,0,0,5,88,12,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-07,comp3,0,0,2,0,0,0,32,0,0,0,2,18,0,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-07,comp4,0,0,5,0,0,0,23,12,0,0,3,45,0,22,10,shortage,출고 5,derived:synthetic_operations_v1
+2015-05-08,comp1,0,0,4,0,0,0,19,19,0,0,1,11,0,19,0,at_target,출고 4,derived:synthetic_operations_v1
+2015-05-08,comp2,0,0,0,0,0,0,33,0,0,0,5,88,16,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-08,comp3,0,0,1,0,0,0,31,31,0,0,2,18,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-05-08,comp4,0,0,0,0,0,0,23,12,0,0,3,45,0,22,10,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-09,comp1,0,0,2,0,0,0,17,17,0,0,1,11,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-09,comp2,0,0,13,0,0,0,20,0,0,0,5,88,4,25,25,shortage,출고 13,derived:synthetic_operations_v1
+2015-05-09,comp3,0,0,0,0,0,0,31,31,0,0,2,18,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-09,comp4,0,0,4,0,0,0,19,19,0,0,3,45,0,22,3,shortage,출고 4,derived:synthetic_operations_v1
+2015-05-10,comp1,0,0,0,0,0,0,17,17,0,0,1,11,0,19,2,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-10,comp2,0,0,0,0,0,0,20,0,0,0,5,88,5,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-10,comp3,0,0,1,0,0,0,30,30,0,0,2,18,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-05-10,comp4,0,0,0,0,0,0,19,19,0,0,3,45,0,22,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-11,comp1,0,0,1,0,0,0,16,16,0,0,1,11,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-11,comp2,0,0,0,0,0,0,20,0,0,0,5,88,8,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-11,comp3,0,0,0,0,0,0,30,30,0,0,2,18,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-11,comp4,0,0,2,0,0,0,17,17,0,0,3,45,0,22,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-12,comp1,0,0,1,0,0,0,15,15,0,0,1,11,0,19,4,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-12,comp2,0,0,0,0,0,0,20,0,0,0,5,88,9,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-12,comp3,0,0,0,0,0,0,30,30,0,0,2,18,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-12,comp4,0,0,0,0,0,0,17,17,0,0,3,45,0,22,5,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-13,comp1,0,11,5,0,0,0,21,10,11,0,1,25,0,19,9,shortage,입고 11; 출고 5,derived:synthetic_operations_v1
+2015-05-13,comp2,0,0,12,1,0,0,8,8,0,0,6,108,0,25,17,shortage,출고 12; 기한초과 1,derived:synthetic_operations_v1
+2015-05-13,comp3,0,0,4,0,0,0,26,26,0,0,3,26,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-05-13,comp4,0,15,2,0,0,0,30,15,0,0,3,44,0,22,7,shortage,입고 15; 출고 2,derived:synthetic_operations_v1
+2015-05-14,comp1,0,0,0,0,0,0,21,10,11,0,1,25,0,19,9,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-14,comp2,0,0,1,0,0,0,7,7,0,0,6,108,0,25,18,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-14,comp3,0,0,0,0,0,0,26,26,0,0,3,26,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-14,comp4,0,0,0,0,0,0,30,15,0,0,3,44,0,22,7,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-15,comp1,0,0,3,0,0,0,18,7,11,0,1,25,0,19,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-15,comp2,0,0,4,0,0,0,3,3,0,0,6,108,0,25,22,shortage,출고 4,derived:synthetic_operations_v1
+2015-05-15,comp3,0,3,0,0,0,0,29,26,0,0,2,23,0,19,0,above_target,입고 3,derived:synthetic_operations_v1
+2015-05-15,comp4,0,0,3,0,0,0,27,12,0,0,3,44,0,22,10,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-16,comp1,0,0,5,0,0,1,13,13,0,0,1,25,0,19,6,shortage,출고 5; 검사해제 1,derived:synthetic_operations_v1
+2015-05-16,comp2,0,0,3,0,0,0,0,0,0,0,6,108,1,25,25,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-16,comp3,0,0,4,0,0,0,25,22,0,0,2,23,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-05-16,comp4,0,0,4,0,0,0,23,23,0,0,3,44,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-05-17,comp1,0,0,3,0,0,0,10,10,0,0,1,25,0,19,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-17,comp2,0,0,0,0,0,0,0,0,0,0,6,108,2,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-17,comp3,0,0,5,0,0,0,20,20,0,0,2,23,0,19,0,above_target,출고 5,derived:synthetic_operations_v1
+2015-05-17,comp4,0,0,3,0,0,0,20,20,0,0,3,44,0,22,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-18,comp1,0,0,3,0,0,0,7,7,0,0,1,25,0,19,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-18,comp2,0,0,0,1,0,0,0,0,0,0,6,108,2,25,25,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-05-18,comp3,0,0,0,0,0,0,20,20,0,0,2,23,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-18,comp4,0,0,1,0,0,0,19,19,0,0,3,44,0,22,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-19,comp1,0,0,3,0,0,0,4,4,0,0,1,25,0,19,15,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-19,comp2,0,0,0,0,0,0,0,0,0,0,6,108,4,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-19,comp3,0,0,3,0,0,0,17,17,0,0,2,23,0,19,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-19,comp4,0,0,1,0,0,0,18,18,0,0,3,44,0,22,4,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-20,comp1,0,0,1,0,0,0,3,3,0,0,2,32,0,19,16,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-20,comp2,0,0,0,0,0,0,0,0,0,0,7,129,9,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-20,comp3,0,0,4,0,0,0,13,13,0,0,3,38,0,19,6,shortage,출고 4,derived:synthetic_operations_v1
+2015-05-20,comp4,0,7,4,0,0,0,21,14,0,0,3,54,0,22,8,shortage,입고 7; 출고 4,derived:synthetic_operations_v1
+2015-05-21,comp1,0,0,1,0,0,0,2,2,0,0,2,32,0,19,17,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-21,comp2,0,11,0,0,0,0,11,0,0,0,6,118,12,25,25,shortage,입고 11,derived:synthetic_operations_v1
+2015-05-21,comp3,0,0,2,0,0,0,11,11,0,0,3,38,0,19,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-21,comp4,0,0,3,0,0,0,18,11,0,0,3,54,0,22,11,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-22,comp1,0,0,2,0,0,0,0,0,0,0,2,32,1,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-22,comp2,0,0,0,0,0,0,11,0,0,0,6,118,14,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-22,comp3,0,0,3,0,0,0,8,8,0,0,3,38,0,19,11,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-22,comp4,0,0,3,0,0,0,15,8,0,0,3,54,0,22,14,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-23,comp1,0,0,0,0,0,0,0,0,0,0,2,32,5,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-23,comp2,0,0,0,0,0,0,11,0,0,0,6,118,16,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-23,comp3,0,0,2,0,0,0,6,6,0,0,3,38,0,19,13,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-23,comp4,0,0,2,0,0,0,13,13,0,0,3,54,0,22,9,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-24,comp1,0,0,0,0,0,0,0,0,0,0,2,32,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-24,comp2,0,0,0,0,0,0,11,0,0,0,6,118,19,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-24,comp3,0,0,2,0,0,0,4,4,0,0,3,38,0,19,15,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-24,comp4,0,0,2,0,0,0,11,11,0,0,3,54,0,22,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-25,comp1,0,25,0,0,0,0,25,0,0,0,1,7,7,19,19,shortage,입고 25,derived:synthetic_operations_v1
+2015-05-25,comp2,0,0,0,1,0,0,11,0,0,0,6,118,19,25,25,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-05-25,comp3,0,0,1,0,0,0,3,3,0,0,3,38,0,19,16,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-25,comp4,0,0,0,0,0,0,11,11,0,0,3,54,0,22,11,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-26,comp1,0,0,8,0,0,0,17,17,0,0,1,7,0,19,2,shortage,출고 8,derived:synthetic_operations_v1
+2015-05-26,comp2,0,15,0,0,0,0,26,0,0,0,5,103,20,25,25,shortage,입고 15,derived:synthetic_operations_v1
+2015-05-26,comp3,0,0,0,0,0,0,3,3,0,0,3,38,0,19,16,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-26,comp4,0,0,2,0,0,0,9,9,0,0,3,54,0,22,13,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-27,comp1,0,7,1,0,0,0,23,16,0,0,1,12,0,19,3,shortage,입고 7; 출고 1,derived:synthetic_operations_v1
+2015-05-27,comp2,0,0,0,0,0,0,26,0,0,0,6,113,20,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-27,comp3,0,23,0,0,0,0,26,3,0,0,2,25,0,19,16,shortage,입고 23,derived:synthetic_operations_v1
+2015-05-27,comp4,0,0,0,0,0,0,9,9,0,0,4,65,0,22,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-28,comp1,0,0,2,0,0,0,21,21,0,0,1,12,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-05-28,comp2,0,0,11,0,0,0,15,0,0,0,6,113,13,25,25,shortage,출고 11,derived:synthetic_operations_v1
+2015-05-28,comp3,0,0,3,0,0,0,23,0,0,0,2,25,0,19,19,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-28,comp4,0,0,4,0,0,0,5,5,0,0,4,65,0,22,17,shortage,출고 4,derived:synthetic_operations_v1
+2015-05-29,comp1,0,0,1,0,0,0,20,20,0,0,1,12,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-05-29,comp2,0,0,0,0,0,0,15,0,0,0,6,113,13,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-29,comp3,0,0,0,0,0,0,23,23,0,0,2,25,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-05-29,comp4,0,23,1,0,0,0,27,4,0,0,3,42,0,22,18,shortage,입고 23; 출고 1,derived:synthetic_operations_v1
+2015-05-30,comp1,0,0,3,0,0,0,17,17,0,0,1,12,0,19,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-30,comp2,0,0,0,0,0,0,15,0,0,0,6,113,14,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-05-30,comp3,0,0,4,0,0,0,19,19,0,0,2,25,0,19,0,at_target,출고 4,derived:synthetic_operations_v1
+2015-05-30,comp4,0,0,1,0,0,0,26,3,0,0,3,42,0,22,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-05-31,comp1,0,0,3,0,0,0,14,14,0,0,1,12,0,19,5,shortage,출고 3,derived:synthetic_operations_v1
+2015-05-31,comp2,0,20,0,0,0,0,35,0,0,0,5,93,20,25,25,shortage,입고 20,derived:synthetic_operations_v1
+2015-05-31,comp3,0,0,2,0,0,0,17,17,0,0,2,25,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-05-31,comp4,0,0,3,0,0,0,23,0,0,0,3,42,2,22,22,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-01,comp1,0,0,1,0,0,0,13,13,0,0,1,12,0,19,6,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-01,comp2,0,0,0,1,0,0,35,0,0,0,5,93,25,25,25,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-06-01,comp3,0,0,2,0,0,0,15,15,0,0,2,25,0,19,4,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-01,comp4,0,0,7,0,0,0,16,16,0,0,3,42,0,22,6,shortage,출고 7,derived:synthetic_operations_v1
+2015-06-02,comp1,0,0,2,0,0,0,11,11,0,0,1,12,0,19,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-02,comp2,0,0,15,0,0,0,20,0,0,0,5,93,10,25,25,shortage,출고 15,derived:synthetic_operations_v1
+2015-06-02,comp3,0,0,2,0,0,0,13,13,0,0,2,25,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-02,comp4,0,0,2,0,0,0,14,14,0,0,3,42,0,22,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-03,comp1,0,12,3,0,0,0,20,8,0,0,1,16,0,19,11,shortage,입고 12; 출고 3,derived:synthetic_operations_v1
+2015-06-03,comp2,0,15,0,0,0,0,35,0,0,0,5,102,13,25,25,shortage,입고 15,derived:synthetic_operations_v1
+2015-06-03,comp3,0,15,1,0,0,0,27,12,0,0,2,24,0,19,7,shortage,입고 15; 출고 1,derived:synthetic_operations_v1
+2015-06-03,comp4,0,0,3,0,0,0,11,11,0,0,4,65,0,22,11,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-04,comp1,0,0,4,0,0,0,16,16,0,0,1,16,0,19,3,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-04,comp2,0,0,0,0,0,0,35,0,0,0,5,102,14,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-04,comp3,0,0,4,0,0,0,23,8,0,0,2,24,0,19,11,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-04,comp4,0,0,3,0,0,0,8,8,0,0,4,65,0,22,14,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-05,comp1,0,0,4,0,0,0,12,12,0,0,1,16,0,19,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-05,comp2,0,0,0,1,0,0,35,0,0,0,5,102,17,25,25,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-06-05,comp3,0,0,1,0,0,0,22,22,0,0,2,24,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-06-05,comp4,0,0,2,0,0,0,6,6,0,0,4,65,0,22,16,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-06,comp1,0,0,2,0,0,0,10,10,0,0,1,16,0,19,9,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-06,comp2,0,0,0,0,0,0,35,0,0,0,5,102,18,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-06,comp3,0,0,0,0,0,0,22,22,0,0,2,24,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-06-06,comp4,0,14,5,0,0,0,15,1,0,0,3,51,0,22,21,shortage,입고 14; 출고 5,derived:synthetic_operations_v1
+2015-06-07,comp1,0,0,2,0,0,0,8,8,0,0,1,16,0,19,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-07,comp2,0,0,20,0,0,0,15,0,0,0,5,102,4,25,25,shortage,출고 20,derived:synthetic_operations_v1
+2015-06-07,comp3,0,0,1,0,0,0,21,21,0,0,2,24,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-06-07,comp4,0,0,1,0,0,0,14,0,0,0,3,51,2,22,22,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-08,comp1,0,0,1,0,0,0,7,7,0,0,1,16,0,19,12,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-08,comp2,0,0,0,0,0,0,15,0,0,0,5,102,7,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-08,comp3,0,0,2,0,0,0,19,19,0,0,2,24,0,19,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-06-08,comp4,0,0,0,0,0,0,14,0,0,0,3,51,4,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-09,comp1,0,0,0,0,0,0,7,7,0,0,1,16,0,19,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-09,comp2,0,0,0,0,0,0,15,0,0,0,5,102,8,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-09,comp3,0,0,2,0,0,0,17,17,0,0,2,24,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-09,comp4,0,0,4,0,0,0,10,10,0,0,3,51,0,22,12,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-10,comp1,0,0,3,0,0,0,4,4,0,0,2,32,0,19,15,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-10,comp2,0,27,9,0,0,0,33,6,0,0,5,89,0,25,19,shortage,입고 27; 출고 9,derived:synthetic_operations_v1
+2015-06-10,comp3,0,10,1,0,0,0,26,16,0,0,2,25,0,19,3,shortage,입고 10; 출고 1,derived:synthetic_operations_v1
+2015-06-10,comp4,0,0,1,0,0,0,9,9,0,0,4,69,0,22,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-11,comp1,0,0,0,0,0,0,4,4,0,0,2,32,0,19,15,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-11,comp2,0,0,0,0,0,0,33,6,0,0,5,89,0,25,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-11,comp3,0,0,0,0,0,0,26,16,0,0,2,25,0,19,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-11,comp4,0,0,0,0,0,0,9,9,0,0,4,69,0,22,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-12,comp1,0,0,4,0,0,0,0,0,0,0,2,32,0,19,19,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-12,comp2,0,0,1,0,0,0,32,5,0,0,5,89,0,25,20,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-12,comp3,0,0,3,0,0,0,23,23,0,0,2,25,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-06-12,comp4,0,0,3,0,0,0,6,6,0,0,4,69,0,22,16,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-13,comp1,0,16,0,0,0,0,16,0,0,0,1,16,0,19,19,shortage,입고 16,derived:synthetic_operations_v1
+2015-06-13,comp2,0,0,0,0,0,0,32,5,0,0,5,89,0,25,20,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-13,comp3,0,0,1,0,0,0,22,22,0,0,2,25,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-06-13,comp4,0,0,1,0,0,0,5,5,0,0,4,69,0,22,17,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-14,comp1,0,0,1,0,0,0,15,15,0,0,1,16,0,19,4,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-14,comp2,0,0,4,0,0,0,28,1,0,0,5,89,0,25,24,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-14,comp3,0,0,1,0,0,0,21,21,0,0,2,25,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-06-14,comp4,0,0,1,0,0,0,4,4,0,0,4,69,0,22,18,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-15,comp1,0,0,2,0,0,0,13,13,0,0,1,16,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-15,comp2,0,0,1,0,0,0,27,0,0,0,5,89,4,25,25,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-15,comp3,0,0,4,0,0,0,17,17,0,0,2,25,0,19,2,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-15,comp4,0,0,4,0,0,0,0,0,0,0,4,69,0,22,22,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-16,comp1,0,0,5,0,0,0,8,8,0,0,1,16,0,19,11,shortage,출고 5,derived:synthetic_operations_v1
+2015-06-16,comp2,0,0,0,0,0,0,27,0,0,0,5,89,6,25,25,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-16,comp3,0,0,3,0,0,0,14,14,0,0,2,25,0,19,5,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-16,comp4,0,0,0,0,0,0,0,0,0,0,4,69,4,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-17,comp1,0,0,2,0,0,0,6,6,0,0,2,31,0,19,13,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-17,comp2,0,0,8,0,0,0,19,19,0,0,6,107,0,25,6,shortage,출고 8,derived:synthetic_operations_v1
+2015-06-17,comp3,0,14,1,0,0,0,27,13,0,0,2,23,0,19,6,shortage,입고 14; 출고 1,derived:synthetic_operations_v1
+2015-06-17,comp4,0,0,0,0,0,0,0,0,0,0,5,84,6,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-18,comp1,0,0,2,0,0,0,4,4,0,0,2,31,0,19,15,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-18,comp2,0,0,4,0,0,0,15,15,0,0,6,107,0,25,10,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-18,comp3,0,0,2,0,0,0,25,11,0,0,2,23,0,19,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-18,comp4,0,17,0,0,0,0,17,0,0,0,4,67,6,22,22,shortage,입고 17,derived:synthetic_operations_v1
+2015-06-19,comp1,0,0,3,0,0,0,1,1,0,0,2,31,0,19,18,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-19,comp2,0,20,3,0,0,0,32,12,20,0,5,87,0,25,13,shortage,입고 20; 출고 3,derived:synthetic_operations_v1
+2015-06-19,comp3,0,0,4,0,0,0,21,21,0,0,2,23,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-06-19,comp4,0,0,0,0,0,0,17,0,0,0,4,67,11,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-20,comp1,0,0,1,0,0,0,0,0,0,0,2,31,0,19,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-20,comp2,0,0,4,1,0,0,28,8,20,0,5,87,0,25,17,shortage,출고 4; 기한초과 1,derived:synthetic_operations_v1
+2015-06-20,comp3,0,0,3,0,0,0,18,18,0,0,2,23,0,19,1,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-20,comp4,0,0,0,0,0,0,17,0,0,0,4,67,13,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-21,comp1,0,0,0,0,0,0,0,0,0,0,2,31,3,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-21,comp2,0,0,1,0,0,0,27,7,20,0,5,87,0,25,18,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-21,comp3,0,0,4,0,0,0,14,14,0,0,2,23,0,19,5,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-21,comp4,0,0,16,0,0,0,1,1,0,0,4,67,0,22,21,shortage,출고 16,derived:synthetic_operations_v1
+2015-06-22,comp1,0,16,0,0,0,0,16,0,0,0,1,15,6,19,19,shortage,입고 16,derived:synthetic_operations_v1
+2015-06-22,comp2,0,0,4,0,0,1,23,3,0,0,5,87,0,25,22,shortage,출고 4; 검사해제 1,derived:synthetic_operations_v1
+2015-06-22,comp3,0,0,2,0,0,0,12,12,0,0,2,23,0,19,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-22,comp4,0,0,1,0,0,0,0,0,0,0,4,67,1,22,22,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-23,comp1,0,0,6,0,0,0,10,10,0,0,1,15,0,19,9,shortage,출고 6,derived:synthetic_operations_v1
+2015-06-23,comp2,0,0,2,0,0,0,21,1,0,0,5,87,0,25,24,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-23,comp3,0,0,3,0,0,0,9,9,0,0,2,23,0,19,10,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-23,comp4,0,0,0,0,0,0,0,0,0,0,4,67,1,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-24,comp1,0,15,0,0,0,0,25,10,0,0,1,10,0,19,9,shortage,입고 15,derived:synthetic_operations_v1
+2015-06-24,comp2,0,21,1,0,0,0,41,0,0,0,5,87,1,25,25,shortage,입고 21; 출고 1,derived:synthetic_operations_v1
+2015-06-24,comp3,0,11,0,0,0,0,20,9,0,0,2,33,0,19,10,shortage,입고 11,derived:synthetic_operations_v1
+2015-06-24,comp4,0,11,0,0,0,0,11,0,0,0,4,68,3,22,22,shortage,입고 11,derived:synthetic_operations_v1
+2015-06-25,comp1,0,0,1,0,0,0,24,24,0,0,1,10,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-06-25,comp2,0,0,0,1,0,0,41,0,0,0,5,87,1,25,25,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-06-25,comp3,0,0,3,0,0,0,17,6,0,0,2,33,0,19,13,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-25,comp4,0,23,0,0,0,0,34,0,0,0,3,45,4,22,22,shortage,입고 23,derived:synthetic_operations_v1
+2015-06-26,comp1,0,0,0,0,0,0,24,24,0,0,1,10,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-06-26,comp2,0,0,1,0,0,0,40,19,0,0,5,87,0,25,6,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-26,comp3,0,0,1,1,0,0,16,16,0,0,2,33,0,19,3,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-06-26,comp4,0,0,0,0,0,0,34,0,0,0,3,45,4,22,22,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-27,comp1,0,0,4,0,0,0,20,20,0,0,1,10,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-06-27,comp2,0,0,4,0,0,0,36,15,0,0,5,87,0,25,10,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-27,comp3,0,0,3,0,0,0,13,13,0,0,2,33,0,19,6,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-27,comp4,0,0,6,0,0,0,28,5,0,0,3,45,0,22,17,shortage,출고 6,derived:synthetic_operations_v1
+2015-06-28,comp1,0,0,0,0,0,0,20,20,0,0,1,10,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-06-28,comp2,0,0,0,0,0,0,36,15,0,0,5,87,0,25,10,shortage,변동 없음,derived:synthetic_operations_v1
+2015-06-28,comp3,0,0,1,0,0,0,12,12,0,0,2,33,0,19,7,shortage,출고 1,derived:synthetic_operations_v1
+2015-06-28,comp4,0,0,0,0,0,0,28,28,0,0,3,45,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-06-29,comp1,0,0,5,0,0,0,15,15,0,0,1,10,0,19,4,shortage,출고 5,derived:synthetic_operations_v1
+2015-06-29,comp2,0,0,3,0,0,0,33,12,0,0,5,87,0,25,13,shortage,출고 3,derived:synthetic_operations_v1
+2015-06-29,comp3,0,0,2,0,0,0,10,10,0,0,2,33,0,19,9,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-29,comp4,0,0,2,0,0,0,26,26,0,0,3,45,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-06-30,comp1,0,0,2,0,0,0,13,13,0,0,1,10,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-06-30,comp2,0,0,4,1,0,0,29,8,0,0,5,87,0,25,17,shortage,출고 4; 기한초과 1,derived:synthetic_operations_v1
+2015-06-30,comp3,0,0,4,0,0,0,6,6,0,0,2,33,0,19,13,shortage,출고 4,derived:synthetic_operations_v1
+2015-06-30,comp4,0,0,3,0,0,0,23,23,0,0,3,45,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-07-01,comp1,0,10,5,0,0,0,18,8,0,0,1,18,0,19,11,shortage,입고 10; 출고 5,derived:synthetic_operations_v1
+2015-07-01,comp2,0,10,3,0,0,0,36,26,0,0,5,93,0,25,0,above_target,입고 10; 출고 3,derived:synthetic_operations_v1
+2015-07-01,comp3,0,12,5,0,0,0,13,1,0,0,2,43,0,19,18,shortage,입고 12; 출고 5,derived:synthetic_operations_v1
+2015-07-01,comp4,0,18,1,0,0,0,40,22,0,0,3,35,0,22,0,at_target,입고 18; 출고 1,derived:synthetic_operations_v1
+2015-07-02,comp1,0,0,1,0,0,0,17,17,0,0,1,18,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-02,comp2,0,0,3,0,0,0,33,23,0,0,5,93,0,25,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-07-02,comp3,0,0,1,0,0,0,12,0,0,0,2,43,0,19,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-02,comp4,0,0,2,0,0,0,38,20,0,0,3,35,0,22,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-03,comp1,0,0,2,0,0,0,15,15,0,0,1,18,0,19,4,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-03,comp2,0,0,4,1,0,0,29,19,0,0,5,93,0,25,6,shortage,출고 4; 기한초과 1,derived:synthetic_operations_v1
+2015-07-03,comp3,0,0,2,1,0,0,10,10,0,0,2,43,0,19,9,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-07-03,comp4,0,0,1,0,0,0,37,19,0,0,3,35,0,22,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-04,comp1,0,0,3,0,0,0,12,12,0,0,1,18,0,19,7,shortage,출고 3,derived:synthetic_operations_v1
+2015-07-04,comp2,0,0,4,0,0,0,25,15,0,0,5,93,0,25,10,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-04,comp3,0,0,2,0,0,0,8,8,0,0,2,43,0,19,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-04,comp4,0,0,2,0,0,0,35,35,0,0,3,35,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-05,comp1,0,0,4,0,0,0,8,8,0,0,1,18,0,19,11,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-05,comp2,0,0,2,0,0,0,23,13,0,0,5,93,0,25,12,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-05,comp3,0,0,3,0,0,0,5,5,0,0,2,43,0,19,14,shortage,출고 3,derived:synthetic_operations_v1
+2015-07-05,comp4,0,0,1,0,0,0,34,34,0,0,3,35,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-07-06,comp1,0,0,4,0,0,0,4,4,0,0,1,18,0,19,15,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-06,comp2,0,0,4,0,0,0,19,9,0,0,5,93,0,25,16,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-06,comp3,0,0,4,0,0,0,1,1,0,0,2,43,0,19,18,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-06,comp4,0,0,3,0,0,0,31,31,0,0,3,35,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-07-07,comp1,0,0,2,0,0,0,2,2,0,0,1,18,0,19,17,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-07,comp2,0,0,5,0,0,0,14,4,0,0,5,93,0,25,21,shortage,출고 5,derived:synthetic_operations_v1
+2015-07-07,comp3,0,0,1,0,0,0,0,0,0,0,2,43,1,19,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-07,comp4,0,0,2,0,0,0,29,29,0,0,3,35,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-08,comp1,0,0,0,0,0,0,2,2,0,0,2,33,0,19,17,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-08,comp2,0,24,4,0,0,0,34,10,0,0,5,102,0,25,15,shortage,입고 24; 출고 4,derived:synthetic_operations_v1
+2015-07-08,comp3,0,21,0,0,0,0,21,0,0,0,2,37,2,19,19,shortage,입고 21,derived:synthetic_operations_v1
+2015-07-08,comp4,0,15,1,0,0,0,43,28,0,0,3,30,0,22,0,above_target,입고 15; 출고 1,derived:synthetic_operations_v1
+2015-07-09,comp1,0,0,1,0,0,0,1,1,0,0,2,33,0,19,18,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-09,comp2,0,0,1,0,0,0,33,9,0,0,5,102,0,25,16,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-09,comp3,0,0,0,0,0,0,21,0,0,0,2,37,4,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-09,comp4,0,0,0,0,0,0,43,28,0,0,3,30,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-07-10,comp1,0,0,1,0,0,0,0,0,0,0,2,33,1,19,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-10,comp2,0,0,2,1,0,0,31,7,0,0,5,102,0,25,18,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-07-10,comp3,0,0,5,0,0,0,16,16,0,0,2,37,0,19,3,shortage,출고 5,derived:synthetic_operations_v1
+2015-07-10,comp4,0,0,0,0,0,0,43,28,0,0,3,30,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-07-11,comp1,0,0,0,0,0,0,0,0,0,0,2,33,1,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-11,comp2,0,0,0,0,0,0,31,7,0,0,5,102,0,25,18,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-11,comp3,0,0,0,0,0,0,16,16,0,0,2,37,0,19,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-11,comp4,0,0,0,0,0,0,43,43,0,0,3,30,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-07-12,comp1,0,0,0,0,0,0,0,0,0,0,2,33,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-12,comp2,0,0,2,0,0,0,29,5,0,0,5,102,0,25,20,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-12,comp3,0,0,4,0,0,0,12,12,0,0,2,37,0,19,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-12,comp4,0,0,1,0,0,0,42,42,0,0,3,30,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-07-13,comp1,0,0,0,0,0,0,0,0,0,0,2,33,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-13,comp2,0,0,0,0,0,0,29,5,0,0,5,102,0,25,20,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-13,comp3,0,0,1,0,0,0,11,11,0,0,2,37,0,19,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-13,comp4,0,0,1,0,0,0,41,41,0,0,3,30,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-07-14,comp1,0,0,0,0,0,0,0,0,0,0,2,33,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-14,comp2,0,0,1,0,0,0,28,4,0,0,5,102,0,25,21,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-14,comp3,0,0,5,1,0,0,6,6,0,0,2,37,0,19,13,shortage,출고 5; 기한초과 1,derived:synthetic_operations_v1
+2015-07-14,comp4,0,0,2,0,0,0,39,39,0,0,3,30,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-15,comp1,0,15,0,0,0,0,15,0,0,0,2,27,8,19,19,shortage,입고 15,derived:synthetic_operations_v1
+2015-07-15,comp2,0,14,5,0,0,0,37,23,0,0,5,100,0,25,2,shortage,입고 14; 출고 5,derived:synthetic_operations_v1
+2015-07-15,comp3,0,22,3,0,0,0,25,3,0,0,2,32,0,19,16,shortage,입고 22; 출고 3,derived:synthetic_operations_v1
+2015-07-15,comp4,0,12,4,0,0,0,47,35,0,0,3,26,0,22,0,above_target,입고 12; 출고 4,derived:synthetic_operations_v1
+2015-07-16,comp1,0,18,13,0,0,0,20,2,18,0,1,9,0,19,17,shortage,입고 18; 출고 13,derived:synthetic_operations_v1
+2015-07-16,comp2,0,0,2,0,0,0,35,21,0,0,5,100,0,25,4,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-16,comp3,0,0,3,0,0,0,22,0,0,0,2,32,2,19,19,shortage,출고 3,derived:synthetic_operations_v1
+2015-07-16,comp4,0,0,3,0,0,0,44,32,0,0,3,26,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-07-17,comp1,0,0,2,0,0,0,18,0,18,0,1,9,1,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-17,comp2,0,0,2,0,0,0,33,19,0,0,5,100,0,25,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-17,comp3,0,0,4,0,0,0,18,18,0,0,2,32,0,19,1,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-17,comp4,0,0,1,0,0,0,43,31,0,0,3,26,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-07-18,comp1,0,0,0,0,0,0,18,0,18,0,1,9,3,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-18,comp2,0,0,2,0,0,0,31,17,0,0,5,100,0,25,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-18,comp3,0,0,2,1,0,0,16,16,0,0,2,32,0,19,3,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-07-18,comp4,0,0,4,0,0,0,39,39,0,0,3,26,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-07-19,comp1,0,0,7,0,0,1,11,11,0,0,1,9,0,19,8,shortage,출고 7; 검사해제 1,derived:synthetic_operations_v1
+2015-07-19,comp2,0,0,2,1,0,0,29,15,0,0,5,100,0,25,10,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-07-19,comp3,0,0,2,0,0,0,14,14,0,0,2,32,0,19,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-19,comp4,0,0,2,0,0,0,37,37,0,0,3,26,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-20,comp1,0,0,2,0,0,0,9,9,0,0,1,9,0,19,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-20,comp2,0,0,1,0,0,0,28,14,0,0,5,100,0,25,11,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-20,comp3,0,0,2,0,0,0,12,12,0,0,2,32,0,19,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-20,comp4,0,0,4,0,0,0,33,33,0,0,3,26,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-07-21,comp1,0,0,0,0,0,0,9,9,0,0,1,9,0,19,10,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-21,comp2,0,0,4,0,0,0,24,10,0,0,5,100,0,25,15,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-21,comp3,0,0,3,1,0,0,9,9,0,0,2,32,0,19,10,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-07-21,comp4,0,0,2,0,0,0,31,31,0,0,3,26,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-22,comp1,0,9,1,0,0,0,17,8,0,0,1,19,0,19,11,shortage,입고 9; 출고 1,derived:synthetic_operations_v1
+2015-07-22,comp2,0,18,4,0,0,0,38,20,0,0,5,99,0,25,5,shortage,입고 18; 출고 4,derived:synthetic_operations_v1
+2015-07-22,comp3,0,0,2,0,0,0,7,7,0,0,3,47,0,19,12,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-22,comp4,0,0,2,0,0,0,29,29,0,0,4,45,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-23,comp1,0,0,1,0,0,0,16,16,0,0,1,19,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-23,comp2,0,0,2,0,0,0,36,18,0,0,5,99,0,25,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-23,comp3,0,0,1,0,0,0,6,6,0,0,3,47,0,19,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-23,comp4,0,0,2,0,0,0,27,27,0,0,4,45,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-24,comp1,0,0,0,0,0,0,16,16,0,0,1,19,0,19,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-24,comp2,0,0,1,1,0,0,35,17,0,0,5,99,0,25,8,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-07-24,comp3,0,0,0,0,0,0,6,6,0,0,3,47,0,19,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-24,comp4,0,0,0,0,0,0,27,27,0,0,4,45,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-07-25,comp1,0,0,1,0,0,0,15,15,0,0,1,19,0,19,4,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-25,comp2,0,0,1,0,0,0,34,16,0,0,5,99,0,25,9,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-25,comp3,0,0,1,0,0,0,5,5,0,0,3,47,0,19,14,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-25,comp4,0,0,3,1,0,0,24,24,0,0,4,45,0,22,0,above_target,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-07-26,comp1,0,0,0,0,0,0,15,15,0,0,1,19,0,19,4,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-26,comp2,0,0,1,0,0,0,33,15,0,0,5,99,0,25,10,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-26,comp3,0,0,0,0,0,0,5,5,0,0,3,47,0,19,14,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-26,comp4,0,0,1,0,0,0,23,23,0,0,4,45,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-07-27,comp1,0,0,2,0,0,0,13,13,0,0,1,19,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-27,comp2,0,0,1,0,0,0,32,14,0,0,5,99,0,25,11,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-27,comp3,0,0,4,0,0,0,1,1,0,0,3,47,0,19,18,shortage,출고 4,derived:synthetic_operations_v1
+2015-07-27,comp4,0,8,4,0,0,0,27,19,0,0,3,37,0,22,3,shortage,입고 8; 출고 4,derived:synthetic_operations_v1
+2015-07-28,comp1,0,0,0,0,0,0,13,13,0,0,1,19,0,19,6,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-28,comp2,0,0,0,0,0,0,32,14,0,0,5,99,0,25,11,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-28,comp3,0,0,0,1,0,0,1,1,0,0,3,47,0,19,18,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-07-28,comp4,0,0,0,0,0,0,27,19,0,0,3,37,0,22,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-29,comp1,0,0,1,0,0,0,12,12,0,0,2,24,0,19,7,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-29,comp2,0,21,6,0,0,0,47,26,0,0,5,89,0,25,0,above_target,입고 21; 출고 6,derived:synthetic_operations_v1
+2015-07-29,comp3,0,0,1,0,0,0,0,0,0,0,4,63,6,19,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-07-29,comp4,0,10,1,0,0,0,36,18,0,0,3,39,0,22,4,shortage,입고 10; 출고 1,derived:synthetic_operations_v1
+2015-07-30,comp1,0,0,5,0,0,0,7,7,0,0,2,24,0,19,12,shortage,출고 5,derived:synthetic_operations_v1
+2015-07-30,comp2,0,0,6,0,0,0,41,20,0,0,5,89,0,25,5,shortage,출고 6,derived:synthetic_operations_v1
+2015-07-30,comp3,0,0,0,0,0,0,0,0,0,0,4,63,10,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-30,comp4,0,0,2,0,0,0,34,24,0,0,3,39,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-07-31,comp1,0,0,2,0,0,0,5,5,0,0,2,24,0,19,14,shortage,출고 2,derived:synthetic_operations_v1
+2015-07-31,comp2,0,0,1,1,0,0,40,19,0,0,5,89,0,25,6,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-07-31,comp3,0,0,0,0,0,0,0,0,0,0,4,63,14,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-07-31,comp4,0,0,5,0,0,0,29,19,0,0,3,39,0,22,3,shortage,출고 5,derived:synthetic_operations_v1
+2015-08-01,comp1,0,19,3,0,0,0,21,2,0,0,1,5,0,19,17,shortage,입고 19; 출고 3,derived:synthetic_operations_v1
+2015-08-01,comp2,0,0,3,0,0,0,37,16,0,0,5,89,0,25,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-08-01,comp3,0,0,0,0,0,0,0,0,0,0,4,63,14,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-01,comp4,0,0,1,0,0,0,28,28,0,0,3,39,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-02,comp1,0,0,3,0,0,0,18,18,0,0,1,5,0,19,1,shortage,출고 3,derived:synthetic_operations_v1
+2015-08-02,comp2,0,0,3,0,0,0,34,13,0,0,5,89,0,25,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-08-02,comp3,0,0,0,0,0,0,0,0,0,0,4,63,16,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-02,comp4,0,0,2,1,0,0,26,26,0,0,3,39,0,22,0,above_target,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-08-03,comp1,0,0,5,0,0,0,13,13,0,0,1,5,0,19,6,shortage,출고 5,derived:synthetic_operations_v1
+2015-08-03,comp2,0,0,6,0,0,0,28,7,0,0,5,89,0,25,18,shortage,출고 6,derived:synthetic_operations_v1
+2015-08-03,comp3,0,17,0,0,0,0,17,0,0,0,3,46,18,19,19,shortage,입고 17,derived:synthetic_operations_v1
+2015-08-03,comp4,0,0,1,0,0,0,25,25,0,0,3,39,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-04,comp1,0,0,2,0,0,0,11,11,0,0,1,5,0,19,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-04,comp2,0,0,1,0,0,0,27,6,0,0,5,89,0,25,19,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-04,comp3,0,0,0,1,0,0,17,0,0,0,3,46,19,19,19,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-08-04,comp4,0,0,4,0,0,0,21,21,0,0,3,39,0,22,1,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-05,comp1,0,0,2,0,0,0,9,9,0,0,2,29,0,19,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-05,comp2,0,16,1,0,0,0,42,26,0,0,5,92,0,25,0,above_target,입고 16; 출고 1,derived:synthetic_operations_v1
+2015-08-05,comp3,0,30,17,0,0,0,30,0,0,0,2,29,3,19,19,shortage,입고 30; 출고 17,derived:synthetic_operations_v1
+2015-08-05,comp4,0,0,4,0,0,0,17,17,0,0,4,57,0,22,5,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-06,comp1,0,5,2,0,0,0,12,7,0,0,1,24,0,19,12,shortage,입고 5; 출고 2,derived:synthetic_operations_v1
+2015-08-06,comp2,0,0,4,0,0,0,38,22,0,0,5,92,0,25,3,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-06,comp3,0,0,0,0,0,0,30,0,0,0,2,29,5,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-06,comp4,0,0,2,0,0,0,15,15,0,0,4,57,0,22,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-07,comp1,0,0,1,0,0,0,11,11,0,0,1,24,0,19,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-07,comp2,0,0,2,1,0,0,36,20,0,0,5,92,0,25,5,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-08-07,comp3,0,0,6,0,0,0,24,24,0,0,2,29,0,19,0,above_target,출고 6,derived:synthetic_operations_v1
+2015-08-07,comp4,0,0,1,0,0,0,14,14,0,0,4,57,0,22,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-08,comp1,0,0,2,0,0,0,9,9,0,0,1,24,0,19,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-08,comp2,0,0,0,0,0,0,36,20,0,0,5,92,0,25,5,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-08,comp3,0,0,0,0,0,0,24,24,0,0,2,29,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-08-08,comp4,0,0,1,0,0,0,13,13,0,0,4,57,0,22,9,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-09,comp1,0,0,1,0,0,0,8,8,0,0,1,24,0,19,11,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-09,comp2,0,0,2,0,0,0,34,18,0,0,5,92,0,25,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-09,comp3,0,0,1,0,0,0,23,23,0,0,2,29,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-09,comp4,0,0,0,1,0,0,13,13,0,0,4,57,0,22,9,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-08-10,comp1,0,0,1,0,0,0,7,7,0,0,1,24,0,19,12,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-10,comp2,0,0,0,0,0,0,34,18,0,0,5,92,0,25,7,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-10,comp3,0,0,0,0,0,0,23,23,0,0,2,29,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-08-10,comp4,0,0,0,0,0,0,13,13,0,0,4,57,0,22,9,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-11,comp1,0,0,6,0,0,0,1,1,0,0,1,24,0,19,18,shortage,출고 6,derived:synthetic_operations_v1
+2015-08-11,comp2,0,0,1,0,0,0,33,17,0,0,5,92,0,25,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-11,comp3,0,0,2,0,0,0,21,21,0,0,2,29,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-08-11,comp4,0,0,3,0,0,0,10,10,0,0,4,57,0,22,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-08-12,comp1,0,24,0,0,0,0,25,1,0,0,1,13,0,19,18,shortage,입고 24,derived:synthetic_operations_v1
+2015-08-12,comp2,0,0,0,0,0,0,33,33,0,0,6,96,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-08-12,comp3,0,16,0,0,0,0,37,21,0,0,2,18,0,19,0,above_target,입고 16,derived:synthetic_operations_v1
+2015-08-12,comp4,0,19,0,0,0,0,29,10,0,0,4,43,0,22,12,shortage,입고 19,derived:synthetic_operations_v1
+2015-08-13,comp1,0,0,3,0,0,0,22,22,0,0,1,13,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-08-13,comp2,0,0,2,0,0,0,31,31,0,0,6,96,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-08-13,comp3,0,0,2,1,0,0,35,19,0,0,2,18,0,19,0,at_target,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-08-13,comp4,0,8,3,0,0,0,34,7,0,0,3,35,0,22,15,shortage,입고 8; 출고 3,derived:synthetic_operations_v1
+2015-08-14,comp1,0,0,5,0,0,0,17,17,0,0,1,13,0,19,2,shortage,출고 5,derived:synthetic_operations_v1
+2015-08-14,comp2,0,0,5,1,0,0,26,26,0,0,6,96,0,25,0,above_target,출고 5; 기한초과 1,derived:synthetic_operations_v1
+2015-08-14,comp3,0,0,5,0,0,0,30,30,0,0,2,18,0,19,0,above_target,출고 5,derived:synthetic_operations_v1
+2015-08-14,comp4,0,0,1,0,0,0,33,6,0,0,3,35,0,22,16,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-15,comp1,0,0,4,0,0,0,13,13,0,0,1,13,0,19,6,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-15,comp2,0,0,4,0,0,0,22,22,0,0,6,96,0,25,3,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-15,comp3,0,0,4,0,0,0,26,26,0,0,2,18,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-08-15,comp4,0,0,0,0,0,0,33,25,0,0,3,35,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-08-16,comp1,0,0,0,0,0,0,13,13,0,0,1,13,0,19,6,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-16,comp2,0,0,2,0,0,0,20,20,0,0,6,96,0,25,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-16,comp3,0,0,1,0,0,0,25,25,0,0,2,18,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-16,comp4,0,0,2,0,0,0,31,31,0,0,3,35,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-08-17,comp1,0,0,0,0,0,0,13,13,0,0,1,13,0,19,6,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-17,comp2,0,0,4,0,0,0,16,16,0,0,6,96,0,25,9,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-17,comp3,0,0,2,0,0,0,23,23,0,0,2,18,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-08-17,comp4,0,0,4,1,0,0,27,27,0,0,3,35,0,22,0,above_target,출고 4; 기한초과 1,derived:synthetic_operations_v1
+2015-08-18,comp1,0,0,4,0,0,0,9,9,0,0,1,13,0,19,10,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-18,comp2,0,0,2,0,0,0,14,14,0,0,6,96,0,25,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-18,comp3,0,0,7,0,0,0,16,16,0,0,2,18,0,19,3,shortage,출고 7,derived:synthetic_operations_v1
+2015-08-18,comp4,0,0,4,0,0,0,23,23,0,0,3,35,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-08-19,comp1,0,13,1,0,0,0,21,8,0,0,1,17,0,19,11,shortage,입고 13; 출고 1,derived:synthetic_operations_v1
+2015-08-19,comp2,0,12,4,0,0,0,22,10,0,0,6,111,0,25,15,shortage,입고 12; 출고 4,derived:synthetic_operations_v1
+2015-08-19,comp3,0,13,1,0,0,0,28,15,0,0,2,29,0,19,4,shortage,입고 13; 출고 1,derived:synthetic_operations_v1
+2015-08-19,comp4,0,12,2,0,0,0,33,21,0,0,3,39,0,22,1,shortage,입고 12; 출고 2,derived:synthetic_operations_v1
+2015-08-20,comp1,0,0,2,0,0,0,19,19,0,0,1,17,0,19,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-08-20,comp2,0,33,3,0,0,0,52,7,0,0,5,78,0,25,18,shortage,입고 33; 출고 3,derived:synthetic_operations_v1
+2015-08-20,comp3,0,0,3,0,0,0,25,12,0,0,2,29,0,19,7,shortage,출고 3,derived:synthetic_operations_v1
+2015-08-20,comp4,0,0,2,0,0,0,31,19,0,0,3,39,0,22,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-21,comp1,0,0,1,0,0,0,18,18,0,0,1,17,0,19,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-21,comp2,0,0,2,1,0,0,50,5,0,0,5,78,0,25,20,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-08-21,comp3,0,0,3,0,0,0,22,22,0,0,2,29,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-08-21,comp4,0,0,4,0,0,0,27,15,0,0,3,39,0,22,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-22,comp1,0,0,1,0,0,0,17,17,0,0,1,17,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-22,comp2,0,0,1,0,0,0,49,4,0,0,5,78,0,25,21,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-22,comp3,0,0,1,0,0,0,21,21,0,0,2,29,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-22,comp4,0,0,3,0,0,0,24,24,0,0,3,39,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-08-23,comp1,0,0,0,0,0,0,17,17,0,0,1,17,0,19,2,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-23,comp2,0,0,1,0,0,0,48,3,0,0,5,78,0,25,22,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-23,comp3,0,0,1,0,0,0,20,20,0,0,2,29,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-23,comp4,0,0,0,1,0,0,24,24,0,0,3,39,0,22,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-08-24,comp1,0,0,2,0,0,0,15,15,0,0,1,17,0,19,4,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-24,comp2,0,0,2,0,0,0,46,1,0,0,5,78,0,25,24,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-24,comp3,0,0,1,0,0,0,19,19,0,0,2,29,0,19,0,at_target,출고 1,derived:synthetic_operations_v1
+2015-08-24,comp4,0,0,2,0,0,0,22,22,0,0,3,39,0,22,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-08-25,comp1,0,0,0,0,0,0,15,15,0,0,1,17,0,19,4,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-25,comp2,0,0,0,0,0,0,46,1,0,0,5,78,0,25,24,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-25,comp3,0,0,1,2,0,0,18,18,0,0,2,29,0,19,1,shortage,출고 1; 기한초과 2,derived:synthetic_operations_v1
+2015-08-25,comp4,0,0,0,0,0,0,22,22,0,0,3,39,0,22,0,at_target,변동 없음,derived:synthetic_operations_v1
+2015-08-26,comp1,0,17,2,0,0,0,30,13,0,0,1,7,0,19,6,shortage,입고 17; 출고 2,derived:synthetic_operations_v1
+2015-08-26,comp2,0,0,1,0,0,0,45,12,0,0,6,87,0,25,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-26,comp3,0,5,5,0,0,0,18,13,0,0,2,41,0,19,6,shortage,입고 5; 출고 5,derived:synthetic_operations_v1
+2015-08-26,comp4,0,18,2,0,0,0,38,20,0,0,3,34,0,22,2,shortage,입고 18; 출고 2,derived:synthetic_operations_v1
+2015-08-27,comp1,0,0,0,0,0,0,30,30,0,0,1,7,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-08-27,comp2,0,0,0,0,0,0,45,45,0,0,6,87,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-08-27,comp3,0,0,0,0,0,0,18,13,0,0,2,41,0,19,6,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-27,comp4,0,0,1,1,0,0,37,19,0,0,3,34,0,22,3,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-08-28,comp1,0,0,3,0,0,0,27,27,0,0,1,7,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-08-28,comp2,0,0,3,1,0,0,42,42,0,0,6,87,0,25,0,above_target,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-08-28,comp3,0,0,1,0,0,0,17,17,0,0,2,41,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-08-28,comp4,0,0,4,0,0,0,33,15,0,0,3,34,0,22,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-08-29,comp1,0,0,6,0,0,0,21,21,0,0,1,7,0,19,0,above_target,출고 6,derived:synthetic_operations_v1
+2015-08-29,comp2,0,0,1,0,0,0,41,41,0,0,6,87,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-08-29,comp3,0,0,5,0,0,0,12,12,0,0,2,41,0,19,7,shortage,출고 5,derived:synthetic_operations_v1
+2015-08-29,comp4,0,0,4,0,0,0,29,29,0,0,3,34,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-08-30,comp1,0,0,3,0,0,0,18,18,0,0,1,7,0,19,1,shortage,출고 3,derived:synthetic_operations_v1
+2015-08-30,comp2,0,17,2,0,0,0,56,39,0,0,5,70,0,25,0,above_target,입고 17; 출고 2,derived:synthetic_operations_v1
+2015-08-30,comp3,0,0,2,0,0,0,10,10,0,0,2,41,0,19,9,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-30,comp4,0,0,3,0,0,0,26,26,0,0,3,34,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-08-31,comp1,0,0,0,0,0,0,18,18,0,0,1,7,0,19,1,shortage,변동 없음,derived:synthetic_operations_v1
+2015-08-31,comp2,0,0,4,0,0,0,52,35,0,0,5,70,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-08-31,comp3,0,0,2,0,0,0,8,8,0,0,2,41,0,19,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-08-31,comp4,0,0,2,0,0,0,24,24,0,0,3,34,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-09-01,comp1,0,0,2,0,0,0,16,16,0,0,1,7,0,19,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-01,comp2,0,0,1,0,0,0,51,34,0,0,5,70,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-01,comp3,0,0,3,1,0,0,5,5,0,0,2,41,0,19,14,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-09-01,comp4,0,0,4,0,0,0,20,20,0,0,3,34,0,22,2,shortage,출고 4,derived:synthetic_operations_v1
+2015-09-02,comp1,0,7,4,0,0,0,19,12,0,0,1,18,0,19,7,shortage,입고 7; 출고 4,derived:synthetic_operations_v1
+2015-09-02,comp2,0,0,4,0,0,0,47,30,0,0,6,83,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-09-02,comp3,0,24,2,0,0,0,27,3,0,0,2,32,0,19,16,shortage,입고 24; 출고 2,derived:synthetic_operations_v1
+2015-09-02,comp4,0,0,6,0,0,0,14,14,0,0,4,59,0,22,8,shortage,출고 6,derived:synthetic_operations_v1
+2015-09-03,comp1,0,0,3,0,0,0,16,16,0,0,1,18,0,19,3,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-03,comp2,0,11,2,0,0,0,56,28,0,0,5,72,0,25,0,above_target,입고 11; 출고 2,derived:synthetic_operations_v1
+2015-09-03,comp3,0,0,0,0,0,0,27,3,0,0,2,32,0,19,16,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-03,comp4,0,0,1,1,0,0,13,13,0,0,4,59,0,22,9,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-09-04,comp1,0,0,4,0,0,0,12,12,0,0,1,18,0,19,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-09-04,comp2,0,0,1,1,0,0,55,27,0,0,5,72,0,25,0,above_target,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-09-04,comp3,0,0,2,0,0,0,25,25,0,0,2,32,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-09-04,comp4,0,0,2,0,0,0,11,11,0,0,4,59,0,22,11,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-05,comp1,0,0,5,0,0,0,7,7,0,0,1,18,0,19,12,shortage,출고 5,derived:synthetic_operations_v1
+2015-09-05,comp2,0,0,2,0,0,0,53,25,0,0,5,72,0,25,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-09-05,comp3,0,0,1,0,0,0,24,24,0,0,2,32,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-05,comp4,0,5,1,0,0,0,15,10,5,0,3,54,0,22,12,shortage,입고 5; 출고 1,derived:synthetic_operations_v1
+2015-09-06,comp1,0,0,2,0,0,0,5,5,0,0,1,18,0,19,14,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-06,comp2,0,0,3,0,0,0,50,39,0,0,5,72,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-06,comp3,0,0,1,0,0,0,23,23,0,0,2,32,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-06,comp4,0,0,2,0,0,0,13,8,5,0,3,54,0,22,14,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-07,comp1,0,0,1,0,0,0,4,4,0,0,1,18,0,19,15,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-07,comp2,0,0,1,0,0,0,49,38,0,0,5,72,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-07,comp3,0,0,1,0,0,0,22,22,0,0,2,32,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-07,comp4,0,0,0,0,0,0,13,8,5,0,3,54,0,22,14,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-08,comp1,0,0,2,0,0,0,2,2,0,0,1,18,0,19,17,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-08,comp2,0,0,2,0,0,0,47,36,0,0,5,72,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-09-08,comp3,0,0,0,1,0,0,22,22,0,0,2,32,0,19,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-09-08,comp4,0,0,0,0,0,1,13,13,0,0,3,54,0,22,9,shortage,검사해제 1,derived:synthetic_operations_v1
+2015-09-09,comp1,0,18,0,0,0,0,20,2,0,0,1,18,0,19,17,shortage,입고 18,derived:synthetic_operations_v1
+2015-09-09,comp2,0,19,1,0,0,0,65,35,0,0,5,62,0,25,0,above_target,입고 19; 출고 1,derived:synthetic_operations_v1
+2015-09-09,comp3,0,0,0,0,0,0,22,22,0,0,3,35,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-09-09,comp4,0,16,0,0,0,0,29,13,0,0,3,40,0,22,9,shortage,입고 16,derived:synthetic_operations_v1
+2015-09-10,comp1,0,0,3,0,0,0,17,17,0,0,1,18,0,19,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-10,comp2,0,0,3,0,0,0,62,43,0,0,5,62,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-10,comp3,0,0,1,0,0,0,21,21,0,0,3,35,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-10,comp4,0,0,3,1,0,0,26,10,0,0,3,40,0,22,12,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-09-11,comp1,0,0,1,0,0,0,16,16,0,0,1,18,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-11,comp2,0,0,0,0,0,0,62,43,0,0,5,62,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-09-11,comp3,0,0,0,0,0,0,21,21,0,0,3,35,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-09-11,comp4,0,0,0,0,0,0,26,10,0,0,3,40,0,22,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-12,comp1,0,0,1,0,0,0,15,15,0,0,1,18,0,19,4,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-12,comp2,0,0,6,0,0,0,56,37,0,0,5,62,0,25,0,above_target,출고 6,derived:synthetic_operations_v1
+2015-09-12,comp3,0,0,3,0,0,0,18,18,0,0,3,35,0,19,1,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-12,comp4,0,0,4,0,0,0,22,22,0,0,3,40,0,22,0,at_target,출고 4,derived:synthetic_operations_v1
+2015-09-13,comp1,0,0,0,0,0,0,15,15,0,0,1,18,0,19,4,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-13,comp2,0,0,7,0,0,0,49,30,0,0,5,62,0,25,0,above_target,출고 7,derived:synthetic_operations_v1
+2015-09-13,comp3,0,0,2,0,0,0,16,16,0,0,3,35,0,19,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-13,comp4,0,0,4,0,0,0,18,18,0,0,3,40,0,22,4,shortage,출고 4,derived:synthetic_operations_v1
+2015-09-14,comp1,0,0,4,0,0,0,11,11,0,0,1,18,0,19,8,shortage,출고 4,derived:synthetic_operations_v1
+2015-09-14,comp2,0,0,3,0,0,0,46,27,0,0,5,62,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-14,comp3,0,0,3,0,0,0,13,13,0,0,3,35,0,19,6,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-14,comp4,0,0,4,0,0,0,14,14,0,0,3,40,0,22,8,shortage,출고 4,derived:synthetic_operations_v1
+2015-09-15,comp1,0,0,2,0,0,0,9,9,0,0,1,18,0,19,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-15,comp2,0,0,1,0,0,0,45,26,0,0,5,62,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-15,comp3,0,0,2,1,0,0,11,11,0,0,3,35,0,19,8,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-09-15,comp4,0,0,2,0,0,0,12,12,0,0,3,40,0,22,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-16,comp1,0,0,5,0,0,0,4,4,0,0,2,34,0,19,15,shortage,출고 5,derived:synthetic_operations_v1
+2015-09-16,comp2,0,4,2,0,0,0,47,43,0,0,5,85,0,25,0,above_target,입고 4; 출고 2,derived:synthetic_operations_v1
+2015-09-16,comp3,0,0,3,0,0,0,8,8,0,0,4,49,0,19,11,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-16,comp4,0,13,2,0,0,0,23,10,0,0,3,48,0,22,12,shortage,입고 13; 출고 2,derived:synthetic_operations_v1
+2015-09-17,comp1,0,18,4,0,0,0,18,0,0,0,1,16,0,19,19,shortage,입고 18; 출고 4,derived:synthetic_operations_v1
+2015-09-17,comp2,0,0,4,0,0,0,43,39,0,0,5,85,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-09-17,comp3,0,0,1,0,0,0,7,7,0,0,4,49,0,19,12,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-17,comp4,0,0,2,1,0,0,21,8,0,0,3,48,0,22,14,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-09-18,comp1,0,0,3,0,0,0,15,15,0,0,1,16,0,19,4,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-18,comp2,0,0,1,1,0,0,42,38,0,0,5,85,0,25,0,above_target,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-09-18,comp3,0,15,3,0,0,0,19,4,15,0,3,34,0,19,15,shortage,입고 15; 출고 3,derived:synthetic_operations_v1
+2015-09-18,comp4,0,0,2,0,0,0,19,6,0,0,3,48,0,22,16,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-19,comp1,0,0,2,0,0,0,13,13,0,0,1,16,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-19,comp2,0,0,2,1,0,0,40,36,0,0,5,85,0,25,0,above_target,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-09-19,comp3,0,17,2,0,0,0,34,2,15,0,2,17,0,19,17,shortage,입고 17; 출고 2,derived:synthetic_operations_v1
+2015-09-19,comp4,0,0,3,0,0,0,16,16,0,0,3,48,0,22,6,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-20,comp1,0,0,3,0,0,0,10,10,0,0,1,16,0,19,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-20,comp2,0,0,2,0,0,0,38,34,0,0,5,85,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-09-20,comp3,0,0,0,0,0,0,34,2,15,0,2,17,0,19,17,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-20,comp4,0,0,3,0,0,0,13,13,0,0,3,48,0,22,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-21,comp1,0,0,3,0,0,0,7,7,0,0,1,16,0,19,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-21,comp2,0,0,0,0,0,0,38,34,0,0,5,85,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-09-21,comp3,0,0,1,0,0,1,33,33,0,0,2,17,0,19,0,above_target,출고 1; 검사해제 1,derived:synthetic_operations_v1
+2015-09-21,comp4,0,0,3,0,0,0,10,10,0,0,3,48,0,22,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-22,comp1,0,0,0,0,0,0,7,7,0,0,1,16,0,19,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-22,comp2,0,0,1,0,0,0,37,33,0,0,5,85,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-22,comp3,0,0,2,1,0,0,31,31,0,0,2,17,0,19,0,above_target,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-09-22,comp4,0,0,1,0,0,0,9,9,0,0,3,48,0,22,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-23,comp1,0,0,0,0,0,0,7,7,0,0,2,32,0,19,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-23,comp2,0,27,3,0,0,0,61,34,0,0,5,67,0,25,0,above_target,입고 27; 출고 3,derived:synthetic_operations_v1
+2015-09-23,comp3,0,3,2,0,0,0,32,29,0,0,2,23,0,19,0,above_target,입고 3; 출고 2,derived:synthetic_operations_v1
+2015-09-23,comp4,0,0,1,0,0,0,8,8,0,0,4,63,0,22,14,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-24,comp1,0,0,0,0,0,0,7,7,0,0,2,32,0,19,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-24,comp2,0,0,1,0,0,0,60,33,0,0,5,67,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-24,comp3,0,0,0,0,0,0,32,29,0,0,2,23,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-09-24,comp4,0,0,0,0,0,0,8,8,0,0,4,63,0,22,14,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-25,comp1,0,0,1,1,0,0,6,6,0,0,2,32,0,19,13,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-09-25,comp2,0,0,3,0,0,0,57,30,0,0,5,67,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-25,comp3,0,0,3,0,0,0,29,29,0,0,2,23,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-25,comp4,0,25,1,0,0,0,32,7,0,0,3,38,0,22,15,shortage,입고 25; 출고 1,derived:synthetic_operations_v1
+2015-09-26,comp1,0,0,0,0,0,0,6,6,0,0,2,32,0,19,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-09-26,comp2,0,0,1,0,0,0,56,29,0,0,5,67,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-26,comp3,0,0,1,0,0,0,28,28,0,0,2,23,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-09-26,comp4,0,0,0,1,0,0,32,7,0,0,3,38,0,22,15,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-09-27,comp1,0,16,2,0,0,0,20,4,0,0,1,16,0,19,15,shortage,입고 16; 출고 2,derived:synthetic_operations_v1
+2015-09-27,comp2,0,0,3,0,0,0,53,26,0,0,5,67,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-27,comp3,0,0,0,0,0,0,28,28,0,0,2,23,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-09-27,comp4,0,0,2,0,0,0,30,5,0,0,3,38,0,22,17,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-28,comp1,0,0,2,0,0,0,18,18,0,0,1,16,0,19,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-28,comp2,0,0,3,0,0,0,50,23,0,0,5,67,0,25,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-09-28,comp3,0,0,3,0,0,0,25,25,0,0,2,23,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-28,comp4,0,0,4,0,0,0,26,26,0,0,3,38,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-09-29,comp1,0,0,1,0,0,0,17,17,0,0,1,16,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-29,comp2,0,0,2,1,0,0,48,21,0,0,5,67,0,25,4,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-09-29,comp3,0,0,6,1,0,0,19,19,0,0,2,23,0,19,0,at_target,출고 6; 기한초과 1,derived:synthetic_operations_v1
+2015-09-29,comp4,0,0,3,0,0,0,23,23,0,0,3,38,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-09-30,comp1,0,0,1,0,0,0,16,16,0,0,2,21,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-09-30,comp2,0,9,0,0,0,0,57,48,0,0,5,70,0,25,0,above_target,입고 9,derived:synthetic_operations_v1
+2015-09-30,comp3,0,0,2,0,0,0,17,17,0,0,3,37,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-09-30,comp4,0,0,2,0,0,0,21,21,0,0,4,51,0,22,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-01,comp1,0,0,3,0,0,0,13,13,0,0,2,21,0,19,6,shortage,출고 3,derived:synthetic_operations_v1
+2015-10-01,comp2,0,0,3,0,0,0,54,45,0,0,5,70,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-01,comp3,0,14,2,0,0,0,29,15,0,0,2,23,0,19,4,shortage,입고 14; 출고 2,derived:synthetic_operations_v1
+2015-10-01,comp4,0,0,2,0,0,0,19,19,0,0,4,51,0,22,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-02,comp1,0,0,6,1,0,0,7,7,0,0,2,21,0,19,12,shortage,출고 6; 기한초과 1,derived:synthetic_operations_v1
+2015-10-02,comp2,0,0,3,0,0,0,51,42,0,0,5,70,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-02,comp3,0,0,4,0,0,0,25,11,0,0,2,23,0,19,8,shortage,출고 4,derived:synthetic_operations_v1
+2015-10-02,comp4,0,0,2,0,0,0,17,17,0,0,4,51,0,22,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-03,comp1,0,0,3,0,0,0,4,4,0,0,2,21,0,19,15,shortage,출고 3,derived:synthetic_operations_v1
+2015-10-03,comp2,0,0,0,1,0,0,51,42,0,0,5,70,0,25,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-10-03,comp3,0,0,1,0,0,0,24,24,0,0,2,23,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-03,comp4,0,0,3,0,0,0,14,14,0,0,4,51,0,22,8,shortage,출고 3,derived:synthetic_operations_v1
+2015-10-04,comp1,0,0,0,0,0,0,4,4,0,0,2,21,0,19,15,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-04,comp2,0,0,3,0,0,0,48,39,0,0,5,70,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-04,comp3,0,0,2,0,0,0,22,22,0,0,2,23,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-04,comp4,0,2,1,1,0,0,15,13,0,0,3,49,0,22,9,shortage,입고 2; 출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-05,comp1,0,0,1,1,0,0,3,3,0,0,2,21,0,19,16,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-05,comp2,0,0,1,0,0,0,47,38,0,0,5,70,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-05,comp3,0,0,3,0,0,0,19,19,0,0,2,23,0,19,0,at_target,출고 3,derived:synthetic_operations_v1
+2015-10-05,comp4,0,0,3,0,0,0,12,10,0,0,3,49,0,22,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-10-06,comp1,0,0,2,0,0,0,1,1,0,0,2,21,0,19,18,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-06,comp2,0,0,1,0,0,0,46,37,0,0,5,70,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-06,comp3,0,0,2,1,0,0,17,17,0,0,2,23,0,19,2,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-10-06,comp4,0,0,2,0,0,0,10,8,0,0,3,49,0,22,14,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-07,comp1,0,21,0,0,0,0,22,1,0,0,1,14,0,19,18,shortage,입고 21,derived:synthetic_operations_v1
+2015-10-07,comp2,0,13,1,0,0,0,58,45,0,0,5,61,0,25,0,above_target,입고 13; 출고 1,derived:synthetic_operations_v1
+2015-10-07,comp3,0,9,0,0,0,0,26,17,0,0,2,28,0,19,2,shortage,입고 9,derived:synthetic_operations_v1
+2015-10-07,comp4,0,21,1,0,0,0,30,9,0,0,3,43,0,22,13,shortage,입고 21; 출고 1,derived:synthetic_operations_v1
+2015-10-08,comp1,0,0,1,0,0,0,21,21,0,0,1,14,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-08,comp2,0,0,1,0,0,0,57,44,0,0,5,61,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-08,comp3,0,0,1,0,0,0,25,16,0,0,2,28,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-08,comp4,0,0,2,0,0,0,28,7,0,0,3,43,0,22,15,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-09,comp1,0,0,0,0,0,0,21,21,0,0,1,14,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-09,comp2,0,0,1,1,0,0,56,40,0,3,5,61,0,25,0,above_target,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-09,comp3,0,0,0,0,0,0,25,25,0,0,2,28,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-09,comp4,0,0,0,0,0,0,28,7,0,0,3,43,0,22,15,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-10,comp1,0,0,4,0,0,0,17,17,0,0,1,14,0,19,2,shortage,출고 4,derived:synthetic_operations_v1
+2015-10-10,comp2,0,0,2,0,0,0,54,38,0,3,5,61,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-10,comp3,0,0,7,0,0,0,18,18,0,0,2,28,0,19,1,shortage,출고 7,derived:synthetic_operations_v1
+2015-10-10,comp4,0,0,1,0,0,0,27,27,0,0,3,43,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-11,comp1,0,0,0,0,0,0,17,17,0,0,1,14,0,19,2,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-11,comp2,0,0,0,0,0,0,54,38,0,3,5,61,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-11,comp3,0,0,0,0,0,0,18,18,0,0,2,28,0,19,1,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-11,comp4,0,0,1,0,0,0,26,26,0,0,3,43,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-12,comp1,0,0,1,1,0,0,16,16,0,0,1,14,0,19,3,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-12,comp2,0,0,2,0,0,0,52,36,0,3,5,61,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-12,comp3,0,0,2,0,0,0,16,16,0,0,2,28,0,19,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-12,comp4,0,0,4,0,0,0,22,22,0,0,3,43,0,22,0,at_target,출고 4,derived:synthetic_operations_v1
+2015-10-13,comp1,0,0,5,0,0,0,11,11,0,0,1,14,0,19,8,shortage,출고 5,derived:synthetic_operations_v1
+2015-10-13,comp2,0,0,3,0,0,0,49,33,0,3,5,61,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-13,comp3,0,0,2,1,0,0,14,14,0,0,2,28,0,19,5,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-10-13,comp4,0,0,1,0,0,0,21,21,0,0,3,43,0,22,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-14,comp1,0,0,1,0,0,0,10,10,0,0,2,27,0,19,9,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-14,comp2,0,0,4,0,0,0,45,42,0,3,6,78,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-10-14,comp3,0,0,6,0,0,0,8,8,0,0,3,46,0,19,11,shortage,출고 6,derived:synthetic_operations_v1
+2015-10-14,comp4,0,15,4,0,0,0,32,17,0,0,3,43,0,22,5,shortage,입고 15; 출고 4,derived:synthetic_operations_v1
+2015-10-15,comp1,0,0,1,0,0,0,9,9,0,0,2,27,0,19,10,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-15,comp2,0,0,2,0,0,0,43,40,0,3,6,78,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-15,comp3,0,0,0,0,0,0,8,8,0,0,3,46,0,19,11,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-15,comp4,0,0,3,0,0,0,29,14,0,0,3,43,0,22,8,shortage,출고 3,derived:synthetic_operations_v1
+2015-10-16,comp1,0,0,4,0,0,0,5,5,0,0,2,27,0,19,14,shortage,출고 4,derived:synthetic_operations_v1
+2015-10-16,comp2,0,0,2,1,3,0,38,38,0,0,6,78,0,25,0,above_target,출고 2; 기한초과 1; 폐기 3,derived:synthetic_operations_v1
+2015-10-16,comp3,0,14,1,0,0,0,21,7,0,0,2,32,0,19,12,shortage,입고 14; 출고 1,derived:synthetic_operations_v1
+2015-10-16,comp4,0,0,1,1,0,0,28,13,0,0,3,43,0,22,9,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-17,comp1,0,0,2,0,0,0,3,3,0,0,2,27,0,19,16,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-17,comp2,0,9,4,0,0,0,43,34,0,0,5,69,0,25,0,above_target,입고 9; 출고 4,derived:synthetic_operations_v1
+2015-10-17,comp3,0,0,1,0,0,0,20,6,0,0,2,32,0,19,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-17,comp4,0,0,5,0,0,0,23,23,0,0,3,43,0,22,0,above_target,출고 5,derived:synthetic_operations_v1
+2015-10-18,comp1,0,0,0,0,0,0,3,3,0,0,2,27,0,19,16,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-18,comp2,0,0,2,0,0,0,41,32,0,0,5,69,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-18,comp3,0,0,4,0,0,0,16,16,0,0,2,32,0,19,3,shortage,출고 4,derived:synthetic_operations_v1
+2015-10-18,comp4,0,0,2,0,0,0,21,21,0,0,3,43,0,22,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-19,comp1,0,0,1,1,0,0,2,2,0,0,2,27,0,19,17,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-19,comp2,0,0,5,0,0,0,36,27,0,0,5,69,0,25,0,above_target,출고 5,derived:synthetic_operations_v1
+2015-10-19,comp3,0,0,1,0,0,0,15,15,0,0,2,32,0,19,4,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-19,comp4,0,0,2,0,0,0,19,19,0,0,3,43,0,22,3,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-20,comp1,0,0,2,0,0,0,0,0,0,0,2,27,1,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-20,comp2,0,0,2,0,0,0,34,25,0,0,5,69,0,25,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-10-20,comp3,0,0,2,0,0,0,13,13,0,0,2,32,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-20,comp4,0,0,2,0,0,0,17,17,0,0,3,43,0,22,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-21,comp1,0,0,0,0,0,0,0,0,0,0,3,38,2,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-21,comp2,0,27,3,0,0,0,58,22,0,0,5,64,0,25,3,shortage,입고 27; 출고 3,derived:synthetic_operations_v1
+2015-10-21,comp3,0,14,2,0,0,0,25,11,0,0,2,27,0,19,8,shortage,입고 14; 출고 2,derived:synthetic_operations_v1
+2015-10-21,comp4,0,0,2,0,0,0,15,15,0,0,4,60,0,22,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-22,comp1,0,0,0,0,0,0,0,0,0,0,3,38,3,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-22,comp2,0,0,0,0,0,0,58,22,0,0,5,64,0,25,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-22,comp3,0,0,0,0,0,0,25,11,0,0,2,27,0,19,8,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-22,comp4,0,0,1,1,0,0,14,14,0,0,4,60,0,22,8,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-23,comp1,0,0,0,0,0,0,0,0,0,0,3,38,4,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-23,comp2,0,0,1,1,0,0,57,21,0,0,5,64,0,25,4,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-23,comp3,0,0,2,0,0,0,23,23,0,0,2,27,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-23,comp4,0,13,0,1,0,0,27,14,0,0,3,47,0,22,8,shortage,입고 13; 기한초과 1,derived:synthetic_operations_v1
+2015-10-24,comp1,0,0,0,0,0,0,0,0,0,0,3,38,4,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-24,comp2,0,0,0,0,0,0,57,30,0,0,5,64,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-24,comp3,0,0,1,0,0,0,22,22,0,0,2,27,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-24,comp4,0,0,0,0,0,0,27,14,0,0,3,47,0,22,8,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-25,comp1,0,0,0,0,0,0,0,0,0,0,3,38,7,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-25,comp2,0,0,2,0,0,0,55,28,0,0,5,64,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-10-25,comp3,0,0,3,0,0,0,19,19,0,0,2,27,0,19,0,at_target,출고 3,derived:synthetic_operations_v1
+2015-10-25,comp4,0,0,2,0,0,0,25,12,0,0,3,47,0,22,10,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-26,comp1,0,0,0,1,0,0,0,0,0,0,3,38,7,19,19,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-10-26,comp2,0,0,0,0,0,0,55,28,0,0,5,64,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-26,comp3,0,0,1,0,0,0,18,18,0,0,2,27,0,19,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-26,comp4,0,0,0,0,0,0,25,25,0,0,3,47,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-27,comp1,0,0,0,0,0,0,0,0,0,0,3,38,8,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-10-27,comp2,0,0,3,0,0,0,52,25,0,0,5,64,0,25,0,at_target,출고 3,derived:synthetic_operations_v1
+2015-10-27,comp3,0,0,1,0,0,0,17,17,0,0,2,27,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-10-27,comp4,0,0,1,0,0,0,24,24,0,0,3,47,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-10-28,comp1,0,25,0,0,0,0,25,0,0,0,2,20,9,19,19,shortage,입고 25,derived:synthetic_operations_v1
+2015-10-28,comp2,0,0,3,0,0,0,49,49,0,0,6,71,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-28,comp3,0,18,5,0,0,0,30,12,0,0,2,22,0,19,7,shortage,입고 18; 출고 5,derived:synthetic_operations_v1
+2015-10-28,comp4,0,15,3,0,0,0,36,21,0,0,3,37,0,22,1,shortage,입고 15; 출고 3,derived:synthetic_operations_v1
+2015-10-29,comp1,0,13,12,0,0,0,26,13,0,0,1,7,0,19,6,shortage,입고 13; 출고 12,derived:synthetic_operations_v1
+2015-10-29,comp2,0,0,3,0,0,0,46,46,0,0,6,71,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-29,comp3,0,0,3,0,0,0,27,9,0,0,2,22,0,19,10,shortage,출고 3,derived:synthetic_operations_v1
+2015-10-29,comp4,0,0,5,1,0,0,31,16,0,0,3,37,0,22,6,shortage,출고 5; 기한초과 1,derived:synthetic_operations_v1
+2015-10-30,comp1,0,0,3,0,0,0,23,23,0,0,1,7,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-30,comp2,0,0,1,1,0,0,45,45,0,0,6,71,0,25,0,above_target,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-10-30,comp3,0,0,0,0,0,0,27,27,0,0,2,22,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-10-30,comp4,0,0,2,0,0,0,29,14,0,0,3,37,0,22,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-10-31,comp1,0,0,3,0,0,0,20,20,0,0,1,7,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-31,comp2,0,0,4,0,0,0,41,41,0,0,6,71,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-10-31,comp3,0,0,3,0,0,0,24,24,0,0,2,22,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-10-31,comp4,0,0,1,0,0,0,28,28,0,0,3,37,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-01,comp1,0,0,2,0,0,0,18,18,0,0,1,7,0,19,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-01,comp2,0,0,5,0,0,0,36,36,0,0,6,71,0,25,0,above_target,출고 5,derived:synthetic_operations_v1
+2015-11-01,comp3,0,0,3,1,0,0,21,21,0,0,2,22,0,19,0,above_target,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-11-01,comp4,0,0,4,0,0,0,24,24,0,0,3,37,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-11-02,comp1,0,0,3,1,0,0,15,15,0,0,1,7,0,19,4,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-11-02,comp2,0,0,0,0,0,0,36,36,0,0,6,71,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-02,comp3,0,0,1,0,0,0,20,20,0,0,2,22,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-02,comp4,0,0,5,0,0,0,19,19,0,0,3,37,0,22,3,shortage,출고 5,derived:synthetic_operations_v1
+2015-11-03,comp1,0,0,2,0,0,0,13,13,0,0,1,7,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-03,comp2,0,0,4,0,0,0,32,32,0,0,6,71,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-11-03,comp3,0,0,3,2,0,0,17,17,0,0,2,22,0,19,2,shortage,출고 3; 기한초과 2,derived:synthetic_operations_v1
+2015-11-03,comp4,0,0,2,0,0,0,17,17,0,0,3,37,0,22,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-04,comp1,0,7,5,0,0,0,15,8,0,0,1,21,0,19,11,shortage,입고 7; 출고 5,derived:synthetic_operations_v1
+2015-11-04,comp2,0,0,0,0,0,0,32,32,0,0,7,85,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-04,comp3,0,9,2,0,0,0,24,15,0,0,2,29,0,19,4,shortage,입고 9; 출고 2,derived:synthetic_operations_v1
+2015-11-04,comp4,0,15,1,0,0,0,31,16,0,0,3,43,0,22,6,shortage,입고 15; 출고 1,derived:synthetic_operations_v1
+2015-11-05,comp1,0,0,1,0,0,0,14,14,0,0,1,21,0,19,5,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-05,comp2,0,0,2,0,0,0,30,30,0,0,7,85,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-11-05,comp3,0,0,1,0,0,0,23,14,0,0,2,29,0,19,5,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-05,comp4,0,0,3,1,0,0,28,13,0,0,3,43,0,22,9,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-11-06,comp1,0,0,2,0,0,0,12,12,0,0,1,21,0,19,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-06,comp2,0,0,0,1,0,0,30,30,0,0,7,85,0,25,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-11-06,comp3,0,0,1,0,0,0,22,22,0,0,2,29,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-06,comp4,0,0,0,0,0,0,28,13,0,0,3,43,0,22,9,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-07,comp1,0,0,2,0,0,0,10,10,0,0,1,21,0,19,9,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-07,comp2,0,0,2,0,0,0,28,28,0,0,7,85,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-11-07,comp3,0,0,2,0,0,0,20,20,0,0,2,29,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-11-07,comp4,0,0,0,0,0,0,28,28,0,0,3,43,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-08,comp1,0,0,0,0,0,0,10,10,0,0,1,21,0,19,9,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-08,comp2,0,9,0,0,0,0,37,28,0,0,6,76,0,25,0,above_target,입고 9,derived:synthetic_operations_v1
+2015-11-08,comp3,0,0,0,0,0,0,20,20,0,0,2,29,0,19,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-08,comp4,0,0,1,0,0,0,27,27,0,0,3,43,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-09,comp1,0,0,3,1,0,0,7,7,0,0,1,21,0,19,12,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-11-09,comp2,0,0,4,0,0,0,33,24,0,0,6,76,0,25,1,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-09,comp3,0,0,1,0,0,0,19,19,0,0,2,29,0,19,0,at_target,출고 1,derived:synthetic_operations_v1
+2015-11-09,comp4,0,0,1,0,0,0,26,26,0,0,3,43,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-10,comp1,0,0,1,0,0,0,6,6,0,0,1,21,0,19,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-10,comp2,0,0,0,0,0,0,33,24,0,0,6,76,0,25,1,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-10,comp3,0,0,0,1,0,0,19,19,0,0,2,29,0,19,0,at_target,기한초과 1,derived:synthetic_operations_v1
+2015-11-10,comp4,0,0,0,0,0,0,26,26,0,0,3,43,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-11,comp1,0,21,2,0,0,0,25,4,21,0,1,32,0,19,15,shortage,입고 21; 출고 2,derived:synthetic_operations_v1
+2015-11-11,comp2,0,4,2,0,0,0,35,22,4,0,6,87,0,25,3,shortage,입고 4; 출고 2,derived:synthetic_operations_v1
+2015-11-11,comp3,0,0,2,0,0,0,17,17,0,0,3,36,0,19,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-11,comp4,0,17,3,0,0,0,40,23,0,0,3,34,0,22,0,above_target,입고 17; 출고 3,derived:synthetic_operations_v1
+2015-11-12,comp1,0,0,2,0,0,0,23,2,21,0,1,32,0,19,17,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-12,comp2,0,0,4,0,0,0,31,18,4,0,6,87,0,25,7,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-12,comp3,0,0,7,0,0,0,10,10,0,0,3,36,0,19,9,shortage,출고 7,derived:synthetic_operations_v1
+2015-11-12,comp4,0,0,1,1,0,0,39,22,0,0,3,34,0,22,0,at_target,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-11-13,comp1,0,0,2,0,0,0,21,0,21,0,1,32,3,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-13,comp2,0,0,1,0,0,0,30,17,4,0,6,87,0,25,8,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-13,comp3,0,0,5,0,0,0,5,5,0,0,3,36,0,19,14,shortage,출고 5,derived:synthetic_operations_v1
+2015-11-13,comp4,0,0,5,0,0,0,34,17,0,0,3,34,0,22,5,shortage,출고 5,derived:synthetic_operations_v1
+2015-11-14,comp1,0,0,6,0,0,1,15,15,0,0,1,32,0,19,4,shortage,출고 6; 검사해제 1,derived:synthetic_operations_v1
+2015-11-14,comp2,0,0,2,0,0,1,28,15,0,0,6,87,0,25,10,shortage,출고 2; 검사해제 1,derived:synthetic_operations_v1
+2015-11-14,comp3,0,0,0,0,0,0,5,5,0,0,3,36,0,19,14,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-14,comp4,0,0,0,0,0,0,34,34,0,0,3,34,0,22,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-15,comp1,0,0,1,0,0,0,14,14,0,0,1,32,0,19,5,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-15,comp2,0,0,4,0,0,0,24,20,0,0,6,87,0,25,5,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-15,comp3,0,0,3,0,0,0,2,2,0,0,3,36,0,19,17,shortage,출고 3,derived:synthetic_operations_v1
+2015-11-15,comp4,0,0,1,0,0,0,33,33,0,0,3,34,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-16,comp1,0,0,2,0,0,0,12,12,0,0,1,32,0,19,7,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-16,comp2,0,12,2,1,0,0,34,18,0,0,5,75,0,25,7,shortage,입고 12; 출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-11-16,comp3,0,0,2,0,0,0,0,0,0,0,3,36,2,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-16,comp4,0,0,4,0,0,0,29,29,0,0,3,34,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-11-17,comp1,0,0,0,0,0,0,12,12,0,0,1,32,0,19,7,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-17,comp2,0,0,4,0,0,0,30,14,0,0,5,75,0,25,11,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-17,comp3,0,0,0,1,0,0,0,0,0,0,3,36,4,19,19,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-11-17,comp4,0,0,2,0,0,0,27,27,0,0,3,34,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-11-18,comp1,0,0,5,0,0,0,7,7,0,0,1,32,0,19,12,shortage,출고 5,derived:synthetic_operations_v1
+2015-11-18,comp2,0,17,2,0,0,0,45,16,0,0,5,71,0,25,9,shortage,입고 17; 출고 2,derived:synthetic_operations_v1
+2015-11-18,comp3,0,0,0,0,0,0,0,0,0,0,4,59,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-18,comp4,0,5,5,0,0,0,27,22,0,0,3,48,0,22,0,at_target,입고 5; 출고 5,derived:synthetic_operations_v1
+2015-11-19,comp1,0,0,0,0,0,0,7,7,0,0,1,32,0,19,12,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-19,comp2,0,0,4,0,0,0,41,12,0,0,5,71,0,25,13,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-19,comp3,0,0,0,0,0,0,0,0,0,0,4,59,6,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-19,comp4,0,0,4,0,0,0,23,18,0,0,3,48,0,22,4,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-20,comp1,0,0,1,0,0,0,6,6,0,0,1,32,0,19,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-20,comp2,0,0,2,1,0,0,39,10,0,0,5,71,0,25,15,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-11-20,comp3,0,0,0,0,0,0,0,0,0,0,4,59,8,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-20,comp4,0,0,1,0,0,0,22,17,0,0,3,48,0,22,5,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-21,comp1,0,0,1,1,0,0,5,5,0,0,1,32,0,19,14,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-11-21,comp2,0,0,0,0,0,0,39,10,0,0,5,71,0,25,15,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-21,comp3,0,16,0,0,0,0,16,0,0,0,3,43,8,19,19,shortage,입고 16,derived:synthetic_operations_v1
+2015-11-21,comp4,0,0,1,0,0,0,21,21,0,0,3,48,0,22,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-22,comp1,0,0,0,0,0,0,5,5,0,0,1,32,0,19,14,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-22,comp2,0,0,0,0,0,0,39,10,0,0,5,71,0,25,15,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-22,comp3,0,0,0,0,0,0,16,0,0,0,3,43,11,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-22,comp4,0,0,0,0,0,0,21,21,0,0,3,48,0,22,1,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-23,comp1,0,0,0,1,0,0,5,5,0,0,1,32,0,19,14,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-11-23,comp2,0,0,0,0,0,0,39,22,0,0,5,71,0,25,3,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-23,comp3,0,0,11,0,0,0,5,5,0,0,3,43,0,19,14,shortage,출고 11,derived:synthetic_operations_v1
+2015-11-23,comp4,0,0,1,0,0,0,20,20,0,0,3,48,0,22,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-24,comp1,0,0,1,0,0,0,4,4,0,0,1,32,0,19,15,shortage,출고 1,derived:synthetic_operations_v1
+2015-11-24,comp2,0,0,2,0,0,0,37,20,0,0,5,71,0,25,5,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-24,comp3,0,0,3,1,0,0,2,2,0,0,3,43,0,19,17,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-11-24,comp4,0,0,2,1,0,0,18,18,0,0,3,48,0,22,4,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-11-25,comp1,0,0,0,0,0,0,4,4,0,0,1,32,0,19,15,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-25,comp2,0,22,1,0,0,0,58,36,0,0,5,57,0,25,0,above_target,입고 22; 출고 1,derived:synthetic_operations_v1
+2015-11-25,comp3,0,20,0,0,0,0,22,2,0,0,2,29,0,19,17,shortage,입고 20,derived:synthetic_operations_v1
+2015-11-25,comp4,0,0,0,0,0,0,18,18,0,0,4,55,0,22,4,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-26,comp1,0,32,1,0,0,0,35,3,0,0,0,0,0,19,16,shortage,입고 32; 출고 1,derived:synthetic_operations_v1
+2015-11-26,comp2,0,0,3,0,0,0,55,33,0,0,5,57,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-11-26,comp3,0,0,2,0,0,0,20,0,0,0,2,29,3,19,19,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-26,comp4,0,0,0,1,0,0,18,18,0,0,4,55,0,22,4,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-11-27,comp1,0,0,1,0,0,0,34,34,0,0,0,0,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-27,comp2,0,0,4,0,0,0,51,29,0,0,5,57,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-11-27,comp3,0,0,11,0,0,0,9,9,0,0,2,29,0,19,10,shortage,출고 11,derived:synthetic_operations_v1
+2015-11-27,comp4,0,21,5,0,0,0,34,13,0,0,3,34,0,22,9,shortage,입고 21; 출고 5,derived:synthetic_operations_v1
+2015-11-28,comp1,0,0,6,0,0,0,28,28,0,0,0,0,0,19,0,above_target,출고 6,derived:synthetic_operations_v1
+2015-11-28,comp2,0,0,2,0,0,0,49,27,0,0,5,57,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-11-28,comp3,0,0,2,0,0,0,7,7,0,0,2,29,0,19,12,shortage,출고 2,derived:synthetic_operations_v1
+2015-11-28,comp4,0,0,4,0,0,0,30,9,0,0,3,34,0,22,13,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-29,comp1,0,0,3,0,0,0,25,25,0,0,0,0,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-11-29,comp2,0,0,0,0,0,0,49,27,0,0,5,57,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-11-29,comp3,0,0,3,0,0,0,4,4,0,0,2,29,0,19,15,shortage,출고 3,derived:synthetic_operations_v1
+2015-11-29,comp4,0,0,0,0,0,0,30,9,0,0,3,34,0,22,13,shortage,변동 없음,derived:synthetic_operations_v1
+2015-11-30,comp1,0,0,1,1,0,0,24,24,0,0,0,0,0,19,0,above_target,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-11-30,comp2,0,0,1,0,0,0,48,26,0,0,5,57,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-11-30,comp3,0,0,4,0,0,0,0,0,0,0,2,29,0,19,19,shortage,출고 4,derived:synthetic_operations_v1
+2015-11-30,comp4,0,0,3,0,0,0,27,27,0,0,3,34,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-01,comp1,0,0,3,0,0,0,21,21,0,0,0,0,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-01,comp2,0,0,2,0,0,0,46,24,0,0,5,57,0,25,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-01,comp3,0,0,0,1,0,0,0,0,0,0,2,29,3,19,19,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-12-01,comp4,0,0,3,0,0,0,24,24,0,0,3,34,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-02,comp1,0,0,3,0,0,0,18,18,0,0,1,17,0,19,1,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-02,comp2,0,7,3,0,0,0,50,43,0,0,5,65,0,25,0,above_target,입고 7; 출고 3,derived:synthetic_operations_v1
+2015-12-02,comp3,0,23,0,0,0,0,23,0,0,0,2,35,4,19,19,shortage,입고 23,derived:synthetic_operations_v1
+2015-12-02,comp4,0,8,1,0,0,0,31,23,0,0,3,39,0,22,0,above_target,입고 8; 출고 1,derived:synthetic_operations_v1
+2015-12-03,comp1,0,0,1,0,0,0,17,17,0,0,1,17,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-03,comp2,0,0,3,0,0,0,47,40,0,0,5,65,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-03,comp3,0,0,0,0,0,0,23,0,0,0,2,35,7,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-03,comp4,0,0,1,0,0,0,30,22,0,0,3,39,0,22,0,at_target,출고 1,derived:synthetic_operations_v1
+2015-12-04,comp1,0,0,4,0,0,0,13,13,0,0,1,17,0,19,6,shortage,출고 4,derived:synthetic_operations_v1
+2015-12-04,comp2,0,0,2,0,0,0,45,38,0,0,5,65,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-04,comp3,0,0,8,0,0,0,15,15,0,0,2,35,0,19,4,shortage,출고 8,derived:synthetic_operations_v1
+2015-12-04,comp4,0,0,4,0,0,0,26,18,0,0,3,39,0,22,4,shortage,출고 4,derived:synthetic_operations_v1
+2015-12-05,comp1,0,0,2,0,0,0,11,11,0,0,1,17,0,19,8,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-05,comp2,0,0,2,0,0,0,43,36,0,0,5,65,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-05,comp3,0,0,0,0,0,0,15,15,0,0,2,35,0,19,4,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-05,comp4,0,0,2,0,0,0,24,24,0,0,3,39,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-06,comp1,0,0,0,0,0,0,11,11,0,0,1,17,0,19,8,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-06,comp2,0,0,0,0,0,0,43,36,0,0,5,65,0,25,0,above_target,변동 없음,derived:synthetic_operations_v1
+2015-12-06,comp3,0,0,2,0,0,0,13,13,0,0,2,35,0,19,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-06,comp4,0,0,1,0,0,0,23,23,0,0,3,39,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-07,comp1,0,0,0,0,0,0,11,11,0,0,1,17,0,19,8,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-07,comp2,0,0,1,0,0,0,42,35,0,0,5,65,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-07,comp3,0,0,3,0,0,0,10,10,0,0,2,35,0,19,9,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-07,comp4,0,0,1,0,0,0,22,22,0,0,3,39,0,22,0,at_target,출고 1,derived:synthetic_operations_v1
+2015-12-08,comp1,0,0,1,0,0,0,10,10,0,0,1,17,0,19,9,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-08,comp2,0,0,0,1,0,0,42,35,0,0,5,65,0,25,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-12-08,comp3,0,0,0,0,0,0,10,10,0,0,2,35,0,19,9,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-08,comp4,0,0,0,0,0,0,22,22,0,0,3,39,0,22,0,at_target,변동 없음,derived:synthetic_operations_v1
+2015-12-09,comp1,0,17,2,0,0,0,25,8,0,0,1,8,0,19,11,shortage,입고 17; 출고 2,derived:synthetic_operations_v1
+2015-12-09,comp2,0,14,6,0,0,0,50,36,0,0,5,66,0,25,0,above_target,입고 14; 출고 6,derived:synthetic_operations_v1
+2015-12-09,comp3,0,6,1,0,0,0,15,9,0,0,2,41,0,19,10,shortage,입고 6; 출고 1,derived:synthetic_operations_v1
+2015-12-09,comp4,0,19,3,0,0,0,38,19,0,0,3,34,0,22,3,shortage,입고 19; 출고 3,derived:synthetic_operations_v1
+2015-12-10,comp1,0,0,0,1,0,0,25,25,0,0,1,8,0,19,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-12-10,comp2,0,0,1,0,0,0,49,35,0,0,5,66,0,25,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-10,comp3,0,0,0,0,0,0,15,9,0,0,2,41,0,19,10,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-10,comp4,0,0,0,1,0,0,38,19,0,0,3,34,0,22,3,shortage,기한초과 1,derived:synthetic_operations_v1
+2015-12-11,comp1,0,0,1,0,0,0,24,24,0,0,1,8,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-11,comp2,0,0,2,1,0,0,47,33,0,0,5,66,0,25,0,above_target,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-12-11,comp3,0,0,3,0,0,0,12,12,0,0,2,41,0,19,7,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-11,comp4,0,0,2,1,0,0,36,17,0,0,3,34,0,22,5,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-12-12,comp1,0,0,2,0,0,0,22,22,0,0,1,8,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-12,comp2,0,0,6,0,0,0,41,27,0,0,5,66,0,25,0,above_target,출고 6,derived:synthetic_operations_v1
+2015-12-12,comp3,0,0,2,0,0,0,10,10,0,0,2,41,0,19,9,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-12,comp4,0,0,2,0,0,0,34,34,0,0,3,34,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-13,comp1,0,0,3,0,0,0,19,19,0,0,1,8,0,19,0,at_target,출고 3,derived:synthetic_operations_v1
+2015-12-13,comp2,0,0,3,0,0,0,38,24,0,0,5,66,0,25,1,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-13,comp3,0,0,3,0,0,0,7,7,0,0,2,41,0,19,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-13,comp4,0,0,4,0,0,0,30,30,0,0,3,34,0,22,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-12-14,comp1,0,0,1,0,0,0,18,18,0,0,1,8,0,19,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-14,comp2,0,0,1,0,0,0,37,23,0,0,5,66,0,25,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-14,comp3,0,0,1,0,0,0,6,6,0,0,2,41,0,19,13,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-14,comp4,0,0,2,0,0,0,28,28,0,0,3,34,0,22,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-15,comp1,0,0,3,0,0,0,15,15,0,0,1,8,0,19,4,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-15,comp2,0,0,2,0,0,0,35,21,0,0,5,66,0,25,4,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-15,comp3,0,0,2,0,0,0,4,4,0,0,2,41,0,19,15,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-15,comp4,0,0,1,0,0,0,27,27,0,0,3,34,0,22,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-16,comp1,0,8,2,0,0,0,21,13,0,0,1,12,0,19,6,shortage,입고 8; 출고 2,derived:synthetic_operations_v1
+2015-12-16,comp2,0,15,2,1,0,0,48,33,0,0,5,65,0,25,0,above_target,입고 15; 출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-12-16,comp3,0,29,3,0,0,0,30,1,0,0,2,26,0,19,18,shortage,입고 29; 출고 3,derived:synthetic_operations_v1
+2015-12-16,comp4,0,7,4,0,0,0,30,23,0,0,3,41,0,22,0,above_target,입고 7; 출고 4,derived:synthetic_operations_v1
+2015-12-17,comp1,0,0,1,0,0,0,20,20,0,0,1,12,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-17,comp2,0,0,4,0,0,0,44,29,0,0,5,65,0,25,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-12-17,comp3,0,0,1,1,0,0,29,0,0,0,2,26,1,19,19,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-12-17,comp4,0,0,3,1,0,0,27,20,0,0,3,41,0,22,2,shortage,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-12-18,comp1,0,0,2,0,0,0,18,18,0,0,1,12,0,19,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-18,comp2,0,0,3,1,0,0,41,26,0,0,5,65,0,25,0,above_target,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-12-18,comp3,0,0,3,1,0,0,26,26,0,0,2,26,0,19,0,above_target,출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-12-18,comp4,0,0,1,0,0,0,26,19,0,0,3,41,0,22,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-19,comp1,0,0,1,1,0,0,17,17,0,0,1,12,0,19,2,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-12-19,comp2,0,0,3,0,0,0,38,23,0,0,5,65,0,25,2,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-19,comp3,0,0,3,0,0,0,23,23,0,0,2,26,0,19,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-19,comp4,0,0,3,0,0,0,23,23,0,0,3,41,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-20,comp1,0,0,1,0,0,0,16,16,0,0,1,12,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-20,comp2,0,0,2,0,0,0,36,21,0,0,5,65,0,25,4,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-20,comp3,0,0,1,0,0,0,22,22,0,0,2,26,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-20,comp4,0,0,2,0,0,0,21,21,0,0,3,41,0,22,1,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-21,comp1,0,0,1,1,0,0,15,15,0,0,1,12,0,19,4,shortage,출고 1; 기한초과 1,derived:synthetic_operations_v1
+2015-12-21,comp2,0,0,0,0,0,0,36,21,0,0,5,65,0,25,4,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-21,comp3,0,0,1,0,0,0,21,21,0,0,2,26,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-21,comp4,0,0,1,0,0,0,20,20,0,0,3,41,0,22,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-22,comp1,0,0,1,0,0,0,14,14,0,0,1,12,0,19,5,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-22,comp2,0,0,2,0,0,0,34,19,0,0,5,65,0,25,6,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-22,comp3,0,0,2,1,0,0,19,19,0,0,2,26,0,19,0,at_target,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-12-22,comp4,0,0,1,0,0,0,19,19,0,0,3,41,0,22,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-23,comp1,0,12,0,0,0,0,26,14,0,0,1,5,0,19,5,shortage,입고 12,derived:synthetic_operations_v1
+2015-12-23,comp2,0,13,0,0,0,0,47,34,0,0,5,67,0,25,0,above_target,입고 13,derived:synthetic_operations_v1
+2015-12-23,comp3,0,0,1,0,0,0,18,18,0,0,3,38,0,19,1,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-23,comp4,0,13,0,0,0,0,32,19,0,0,3,37,0,22,3,shortage,입고 13,derived:synthetic_operations_v1
+2015-12-24,comp1,0,0,4,0,0,0,22,22,0,0,1,5,0,19,0,above_target,출고 4,derived:synthetic_operations_v1
+2015-12-24,comp2,0,0,3,0,0,0,44,31,0,0,5,67,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-24,comp3,0,0,1,0,0,0,17,17,0,0,3,38,0,19,2,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-24,comp4,0,0,2,1,0,0,30,17,0,0,3,37,0,22,5,shortage,출고 2; 기한초과 1,derived:synthetic_operations_v1
+2015-12-25,comp1,0,0,1,0,0,0,21,21,0,0,1,5,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-25,comp2,0,0,0,1,0,0,44,31,0,0,5,67,0,25,0,above_target,기한초과 1,derived:synthetic_operations_v1
+2015-12-25,comp3,0,12,0,0,0,0,29,17,0,0,2,26,0,19,2,shortage,입고 12,derived:synthetic_operations_v1
+2015-12-25,comp4,0,0,0,0,0,0,30,17,0,0,3,37,0,22,5,shortage,변동 없음,derived:synthetic_operations_v1
+2015-12-26,comp1,0,0,2,0,0,0,19,19,0,0,1,5,0,19,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-12-26,comp2,0,0,2,0,0,0,42,29,0,0,5,67,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2015-12-26,comp3,0,0,1,0,0,0,28,16,0,0,2,26,0,19,3,shortage,출고 1,derived:synthetic_operations_v1
+2015-12-26,comp4,0,0,3,0,0,0,27,27,0,0,3,37,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-27,comp1,0,0,5,0,0,0,14,14,0,0,1,5,0,19,5,shortage,출고 5,derived:synthetic_operations_v1
+2015-12-27,comp2,0,0,4,0,0,0,38,25,0,0,5,67,0,25,0,at_target,출고 4,derived:synthetic_operations_v1
+2015-12-27,comp3,0,0,1,0,0,0,27,27,0,0,2,26,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-27,comp4,0,0,3,0,0,0,24,24,0,0,3,37,0,22,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-28,comp1,0,0,4,1,0,0,10,10,0,0,1,5,0,19,9,shortage,출고 4; 기한초과 1,derived:synthetic_operations_v1
+2015-12-28,comp2,0,0,2,0,0,0,36,23,0,0,5,67,0,25,2,shortage,출고 2,derived:synthetic_operations_v1
+2015-12-28,comp3,0,0,6,0,0,0,21,21,0,0,2,26,0,19,0,above_target,출고 6,derived:synthetic_operations_v1
+2015-12-28,comp4,0,0,2,0,0,0,22,22,0,0,3,37,0,22,0,at_target,출고 2,derived:synthetic_operations_v1
+2015-12-29,comp1,0,0,3,0,0,0,7,7,0,0,1,5,0,19,12,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-29,comp2,0,0,3,0,0,0,33,20,0,0,5,67,0,25,5,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-29,comp3,0,0,1,0,0,0,20,20,0,0,2,26,0,19,0,above_target,출고 1,derived:synthetic_operations_v1
+2015-12-29,comp4,0,0,0,0,0,0,22,22,0,0,3,37,0,22,0,at_target,변동 없음,derived:synthetic_operations_v1
+2015-12-30,comp1,0,5,4,0,0,0,8,3,0,0,1,26,0,19,16,shortage,입고 5; 출고 4,derived:synthetic_operations_v1
+2015-12-30,comp2,0,8,0,0,0,0,41,33,0,0,5,73,0,25,0,above_target,입고 8,derived:synthetic_operations_v1
+2015-12-30,comp3,0,14,3,1,0,0,31,17,0,0,2,25,0,19,2,shortage,입고 14; 출고 3; 기한초과 1,derived:synthetic_operations_v1
+2015-12-30,comp4,0,0,4,0,0,0,18,18,0,0,4,52,0,22,4,shortage,출고 4,derived:synthetic_operations_v1
+2015-12-31,comp1,0,0,8,0,0,0,0,0,0,0,1,26,0,19,19,shortage,출고 8,derived:synthetic_operations_v1
+2015-12-31,comp2,0,0,3,0,0,0,38,30,0,0,5,73,0,25,0,above_target,출고 3,derived:synthetic_operations_v1
+2015-12-31,comp3,0,0,3,0,0,0,28,14,0,0,2,25,0,19,5,shortage,출고 3,derived:synthetic_operations_v1
+2015-12-31,comp4,0,14,1,0,0,0,31,17,0,0,3,38,0,22,5,shortage,입고 14; 출고 1,derived:synthetic_operations_v1
+2016-01-01,comp1,0,0,0,0,0,0,0,0,0,0,1,26,2,19,19,shortage,변동 없음,derived:synthetic_operations_v1
+2016-01-01,comp2,0,0,2,0,0,0,36,28,0,0,5,73,0,25,0,above_target,출고 2,derived:synthetic_operations_v1
+2016-01-01,comp3,0,0,2,0,0,0,26,26,0,0,2,25,0,19,0,above_target,출고 2,derived:synthetic_operations_v1
+2016-01-01,comp4,0,0,1,0,0,0,30,16,0,0,3,38,0,22,6,shortage,출고 1,derived:synthetic_operations_v1
