@@ -33,3 +33,10 @@ plotly==7.1.0
 transformers==4.57.6
 huggingface-hub==0.36.2
 safetensors==0.8.0
+
+# GE 대시보드 운영 DB·로그인
+SQLAlchemy==2.1.1
+PyMySQL==1.2.3
+python-dotenv==1.2.3
+argon2-cffi==25.1.0
+cryptography==50.0.1
