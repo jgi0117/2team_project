@@ -10,4 +10,4 @@ if (-not (Test-Path -LiteralPath $python)) {
 }
 
 Set-Location -LiteralPath $projectRoot
-& $python -m src.ge_app
+& $python app.py

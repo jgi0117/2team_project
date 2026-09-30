@@ -28,7 +28,7 @@ def url(database: str | None = None) -> URL:
         password=os.getenv("DB_PASSWORD", ""),
         host=os.getenv("DB_HOST", "127.0.0.1"),
         port=int(os.getenv("DB_PORT", "3306")),
-        database=database if database is not None else os.getenv("DB_NAME", "ge_dashboard"),
+        database=database if database is not None else os.getenv("DB_NAME", "dashboard"),
         query={"charset": "utf8mb4"},
     )
 

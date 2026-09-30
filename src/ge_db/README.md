@@ -3,14 +3,15 @@
 ## 실행
 
 ```powershell
-.venv\Scripts\python.exe -m src.ge_db.setup
-.venv\Scripts\python.exe -m src.ge_app
+.venv\Scripts\python.exe app.py
 ```
 
 접속: http://127.0.0.1:8050
 최초 관리자 계정은 서버 PC의 `/setup`에서 생성합니다.
 접속 정보는 Git에 포함하지 않는 `.env`에서 읽습니다.
-`src.ui.app`은 CSV 실행용이며, DB 연결 실행은 `src.ge_app`을 사용합니다.
+DB 이름은 `dashboard`입니다. 일상적인 실행은 루트의 `app.py` 하나만 사용합니다.
+가상환경을 활성화했다면 `python app.py`로 실행할 수 있습니다.
+`src.ui.app`은 CSV 실행용이며, DB 연결 실행에는 사용하지 않습니다.
 
 ## 현재 데이터로 DB 재생성
 

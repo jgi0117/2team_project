@@ -4,6 +4,17 @@
 
 기준 문서: 2조 프로젝트 기획서(PDF, 저장소 미포함)와 [UI 기능 명세 기획서](docs/UI기능_명세_기획서.pptx). 기존 에너지·AI4I 설계와 이전 목업은 이번 구조에서 제외했습니다.
 
+## GE-DB 대시보드 실행
+
+프로젝트 루트에서 실행합니다. MySQL 데이터베이스 이름은 `dashboard`입니다.
+
+```powershell
+.venv\Scripts\python.exe app.py
+```
+
+접속 주소: http://127.0.0.1:8050 · 종료: `Ctrl+C`
+DB 초기화·재적재 방법은 [DB 안내](src/ge_db/README.md)를 참고하세요.
+
 ## 기획 방향
 
 | AS IS: 고장 예측 중심 | TO BE: 대응 시점 중심 |

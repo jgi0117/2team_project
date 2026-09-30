@@ -27,9 +27,13 @@ got_request_exception.connect(_capture_exception, app.server, weak=False)
 server = app.server
 
 
-if __name__ == "__main__":
+def main():
     app.run(
         debug=os.getenv("DASH_DEBUG", "false").lower() in {"1", "true", "yes", "on"},
         host=os.getenv("DASH_HOST", "127.0.0.1"),
         port=int(os.getenv("DASH_PORT", "8050")),
     )
+
+
+if __name__ == "__main__":
+    main()
