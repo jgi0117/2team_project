@@ -1,4 +1,4 @@
-"""Write-only persistence for GE browser stores; never a GE rendering dependency."""
+"""Observe completed GE callbacks and persist their results without adding Dash callbacks."""
 
 from __future__ import annotations
 
@@ -7,16 +7,24 @@ import json
 from collections import defaultdict
 from datetime import datetime
 
-from dash import Input, Output
-from flask import has_request_context, session
+from flask import has_request_context, request, session
 from sqlalchemy import select, update
 
 from .connection import Base, SessionLocal, enabled, engine
 from .models import OrderRecord, UiEvent, UiState
 
 
+TRACKED_STORES = {
+    "store-todo-dismissed": "todo",
+    "store-order-log": "orders",
+    "store-settings": "settings",
+}
+
+
 def _owner() -> str:
-    return f"user:{session.get('user_id')}" if has_request_context() and session.get("user_id") else "anonymous"
+    if has_request_context() and session.get("user_id"):
+        return f"user:{session.get('user_id')}"
+    return "anonymous"
 
 
 def _json(value) -> str:
@@ -61,29 +69,41 @@ def _sync_orders(db, owner: str, orders: list[dict]) -> None:
                 setattr(row, name, value)
 
 
-def persist(todo, orders, settings) -> int:
+def persist_updates(updates: dict[str, object], owner: str | None = None) -> int:
+    if not updates:
+        return 0
     Base.metadata.create_all(engine, tables=[UiState.__table__, UiEvent.__table__, OrderRecord.__table__])
-    owner = _owner()
+    owner = owner or _owner()
     changed = 0
     with SessionLocal.begin() as db:
-        changed += _sync_state(db, owner, "todo", todo or [])
-        changed += _sync_state(db, owner, "orders", orders or [])
-        changed += _sync_state(db, owner, "settings", settings or {})
-        _sync_orders(db, owner, orders or [])
+        for key, value in updates.items():
+            changed += _sync_state(db, owner, key, value)
+        if "orders" in updates:
+            _sync_orders(db, owner, list(updates["orders"] or []))
     return changed
 
 
-def register(app) -> None:
-    @app.callback(
-        Output("ge-db-sync", "data"),
-        Input("store-todo-dismissed", "data"),
-        Input("store-order-log", "data"),
-        Input("store-settings", "data"),
-    )
-    def mirror(todo, orders, settings):
-        if not enabled():
-            return {"enabled": False}
+def persist(todo, orders, settings, owner: str | None = None) -> int:
+    return persist_updates({"todo": todo or [], "orders": orders or [], "settings": settings or {}}, owner)
+
+
+def install(server) -> None:
+    """Attach a response observer; GE's layout and callback map remain untouched."""
+
+    @server.after_request
+    def observe_ge_callback(response):
+        if not enabled() or request.path != "/_dash-update-component" or response.status_code != 200:
+            return response
         try:
-            return {"enabled": True, "ok": True, "changed": persist(todo, orders, settings)}
-        except Exception as error:
-            return {"enabled": True, "ok": False, "error": type(error).__name__}
+            body = response.get_json(silent=True) or {}
+            callback_response = body.get("response", {})
+            updates = {
+                state_key: callback_response[store_id]["data"]
+                for store_id, state_key in TRACKED_STORES.items()
+                if isinstance(callback_response.get(store_id), dict)
+                and "data" in callback_response[store_id]
+            }
+            persist_updates(updates)
+        except Exception:
+            pass
+        return response

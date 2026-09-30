@@ -3,20 +3,15 @@
 from __future__ import annotations
 
 import os
-
-from dash import dcc
 from flask import got_request_exception, request, session
 
-from src.ge_db.bridge import register
+from src.ge_db.bridge import install
 from src.ge_db.web import configure, log_error
 from src.ui.app import app
 
 
 configure(app.server)
-children = list(app.layout.children)
-children.insert(-1, dcc.Store(id="ge-db-sync", storage_type="memory", data={}))
-app.layout.children = children
-register(app)
+install(app.server)
 
 
 def _capture_exception(_sender, exception, **_extra):

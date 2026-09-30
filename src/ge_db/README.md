@@ -17,5 +17,11 @@ GE 화면은 기존 CSV와 모델 결과를 그대로 읽고, MySQL은 다음 �
 .venv\Scripts\python.exe -m src.ge_app
 ```
 
+DB를 완전히 비우고 다시 만들 때는 다음 명령을 사용합니다.
+
+```powershell
+.venv\Scripts\python.exe -m src.ge_db.setup --rebuild
+```
+
 처음 접속하면 서버 PC의 `http://127.0.0.1:8050/setup`에서 관리자 계정을 만듭니다.
 초기 관리자 생성은 localhost에서만 허용됩니다.

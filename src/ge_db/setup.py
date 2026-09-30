@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import re
 from datetime import datetime
@@ -33,6 +34,17 @@ def create_database() -> None:
             f"CREATE DATABASE IF NOT EXISTS `{database}` "
             "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
         ))
+    admin_engine.dispose()
+
+
+def drop_database() -> None:
+    database = url().database
+    if not database or not re.fullmatch(r"[A-Za-z0-9_]+", database):
+        raise ValueError("DB_NAME에는 영문, 숫자, 밑줄만 사용할 수 있습니다.")
+    engine.dispose()
+    admin_engine = create_engine(url(database=""), pool_pre_ping=True)
+    with admin_engine.begin() as connection:
+        connection.execute(text(f"DROP DATABASE IF EXISTS `{database}`"))
     admin_engine.dispose()
 
 
@@ -70,6 +82,11 @@ def refresh_manifest() -> int:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Initialize the GE dashboard database")
+    parser.add_argument("--rebuild", action="store_true", help="Drop and recreate DB_NAME")
+    args = parser.parse_args()
+    if args.rebuild:
+        drop_database()
     create_database()
     Base.metadata.create_all(engine)
     count = refresh_manifest()

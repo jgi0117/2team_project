@@ -40,9 +40,10 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         with SessionLocal.begin() as session:
-            session.execute(delete(OrderRecord).where(OrderRecord.owner_key == "anonymous"))
-            session.execute(delete(UiEvent).where(UiEvent.owner_key == "anonymous"))
-            session.execute(delete(UiState).where(UiState.owner_key == "anonymous"))
+            owners = ["anonymous", f"user:{cls.user_id}"]
+            session.execute(delete(OrderRecord).where(OrderRecord.owner_key.in_(owners)))
+            session.execute(delete(UiEvent).where(UiEvent.owner_key.in_(owners)))
+            session.execute(delete(UiState).where(UiState.owner_key.in_(owners)))
             session.execute(delete(LoginAudit).where(LoginAudit.username == "integration_test"))
             session.execute(delete(User).where(User.user_id == cls.user_id))
 
@@ -53,12 +54,12 @@ class GeDatabaseIntegrationTests(unittest.TestCase):
         self.assertIn("f09-heatmap", statistics)
         self.assertIn("f10-heatmap", statistics)
 
-    def test_database_bridge_is_additive(self):
+    def test_database_observer_does_not_add_dash_components_or_callbacks(self):
         layout_ids = ids(app.layout)
-        self.assertIn("ge-db-sync", layout_ids)
+        self.assertNotIn("ge-db-sync", layout_ids)
         self.assertIn("store-login-log", layout_ids)
         self.assertIn("store-session-started", layout_ids)
-        self.assertIn("ge-db-sync.data", app.callback_map)
+        self.assertNotIn("ge-db-sync.data", app.callback_map)
 
     def test_order_and_settings_are_written_to_fresh_database(self):
         persist(["13-comp2"], [{
